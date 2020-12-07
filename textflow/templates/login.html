@@ -1,0 +1,28 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+    <div class="d-flex justify-content-center p-3 w-100">
+        <div class="card" style="max-width: 400px; min-width: 350px">
+            <div class="card-header">
+                <h3 class="mb-0">Login</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="/login?next={{ next | safe }}">
+                    {{ form.csrf_token }}
+                    <div class="form-group">
+                        {{ form.username.label }}
+                        {{ form.username(size=20, class_="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.password.label }}
+                        {{ form.password(size=20, class_="form-control") }}
+                    </div>
+                    <div class="row pr-3">
+                        <div class="mr-auto"></div>
+                        <input class="btn btn-light" type="submit" value="Login">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

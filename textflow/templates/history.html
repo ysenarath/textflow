@@ -1,0 +1,56 @@
+{% extends 'layouts/base.html' %}
+
+{% macro render_pagination(pagination, endpoint) %}
+    <nav aria-label="Page Navigation">
+        <ul class="pagination">
+            {%- for page in pagination.iter_pages() %}
+                {% if page %}
+                    {% if page != pagination.page %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for(endpoint, page=page) }}">
+                            {{ page }}
+                        </a></li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for(endpoint, page=page) }}">
+                            <strong>{{ page }}</strong>
+                        </a></li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item">
+                        <span class=ellipsis>…</span>
+                    </li>
+                {% endif %}
+
+            {%- endfor %}
+        </ul>
+    </nav>
+{% endmacro %}
+
+{% block content %}
+    <table class="table table-bordered">
+        <thead class="thead-light">
+        <tr>
+            <th>#</th>
+            <th>Text</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for doc in documents.items %}
+            <tr>
+                <th scope="row">{{ doc.id }}</th>
+                <td> {{ doc.text }}</td>
+                <td><a class="btn btn-primary" href="/annotate/{{ doc.id }}">
+                    <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-tag-fill" fill="currentColor"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd"
+                              d="M2 1a1 1 0 0 0-1 1v4.586a1 1 0 0 0 .293.707l7 7a1 1 0 0 0 1.414 0l4.586-4.586a1 1 0 0 0 0-1.414l-7-7A1 1 0 0 0 6.586 1H2zm4 3.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                    </svg>
+                </a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <div class="d-flex justify-content-center">
+        {{ render_pagination(documents, 'main.history') }}
+    </div>
+{% endblock %}

@@ -1,0 +1,15 @@
+.alert-container {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+}
+
+.alert-container > .alert {
+    width: 100%;
+}
+
+.spinner-border {
+    min-width: 2rem;
+    min-height: 2rem;
+}

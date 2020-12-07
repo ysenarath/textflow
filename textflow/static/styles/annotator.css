@@ -1,0 +1,33 @@
+.annotator-div {
+    background: #ffffff;
+    height: auto;
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.input-group > .custom-select {
+    border-radius: 0;
+    border-style: none;
+    background-color: transparent;
+}
+
+.annotation-span {
+    border-style: solid;
+    border-radius: 5px;
+    text-align: center;
+    margin-bottom: 2px;
+}
+
+.annotation-text {
+    border-style: solid;
+    border-color: transparent;
+}
+
+.annotation-span > .annotation-text {
+    border-style: none;
+    padding: 2px;
+}
+
+.annotation-span > .annotation-label {
+    color: whitesmoke;
+}

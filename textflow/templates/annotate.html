@@ -1,0 +1,126 @@
+{% extends 'layouts/base.html' %}
+
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="/static/styles/annotator.css">
+{% endblock %}
+
+{% block content %}
+    <div class="d-flex flex-column justify-content-center w-100">
+        {% if document is not none %}
+            <div class="d-flex flex-row-reverse pb-3">
+                <a href="javascript:void(0)" class="card-link btn btn-outline-primary" onclick="submit(null)">Next</a>
+            </div>
+            {% if header is defined %}
+                <div class="card mb-3">
+                    {{ header | safe }}
+                </div>
+            {% endif %}
+            <div class="card lead">
+                {% if project.type == 'sequence_labeling' %}
+                    <div class="card-body d-flex justify-content-between" style="min-height: 85px">
+                        <div class="annotator-div flex-grow-1" id="annotationField"></div>
+                    </div>
+                {% elif project.type == 'document_classification' %}
+                    <div class="card-body d-flex justify-content-between" style="min-height: 85px">
+                        <p class="card-text flex-grow-1">{{ document.text }}</p>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for ll in project.labels %}
+                            <li class="list-group-item">
+                                <div class="form-check">
+                                    <label class="form-check-label">
+                                        <input class="form-check-input" type="checkbox"
+                                               value={{ ll.value }} id="option_{{ ll.value }}"
+                                               onchange="submit(getLabel('{{ ll.value }}'))"
+                                               {% if annotation_set is not none and annotation_set.get_annotation(ll.value) is not none %}checked{% endif %}>
+                                        {{ ll.label }}
+                                    </label>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="card w-100">
+                <div class="card-body">
+                    <p class="card-text text-center">Congratulations!</p>
+                    <p class="card-text text-muted">You have completed annotating all documents in this project.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <template id="loadingTemplate">
+        <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </template>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/scripts/annotator.js"></script>
+    <!--suppress JSUnresolvedFunction, JSUnresolvedVariable -->
+    {% if document is not none %}
+        <script>
+            const loadingTemplate = document.getElementById('loadingTemplate');
+
+            function getLabel(id) {
+                let checkbox = $('#option_' + id);
+                return {value: checkbox.val(), status: checkbox.prop('checked')};
+            }
+
+            function showLoading() {
+                let temp = loadingTemplate.content.cloneNode(true);
+                document.getElementsByClassName('card-body')[0].appendChild(temp);
+            }
+
+            function submit(data, type = 'label', method = 'POST') {
+                showLoading();
+                let temp = {};
+                let target = '/annotate';
+                if (data !== null) {
+                    temp = {data, type};
+                    target = '/annotate/' + '{{ document.id | safe }}';
+            }
+            $.ajax({
+                type: method,
+                url: '/annotate/' + '{{ document.id | safe }}',
+                dataType: 'json',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(temp),
+                success: function (data) {
+                    console.log(data);
+                    window.location.href = target;
+                },
+            });
+            }
+
+            {% if project.type == 'sequence_labeling' %}
+                function initialize(annotations) {
+                    let a = new Annotator('annotationField', '{{ document.text.replace('\'', '\\\'') | safe }}', JSON.parse('{{ options | safe }}'));
+                    // load initial annotations
+                    a.setAnnotations(annotations);
+                    // listen to events - delete
+                    a.addEventListener('delete', (annotation) => {
+                        submit(annotation, 'annotation', 'DELETE');
+                    });
+                    // listen to events - update
+                    a.addEventListener('update', (annotation, value) => {
+                        annotation.label = value;
+                        submit(annotation, 'annotation');
+                    });
+                    // initialize annotator
+                    a.initialize();
+                }
+
+                $(document).ready(function () {
+                    let annotations = JSON.parse('{{ annotations | safe }}');
+                    initialize(annotations)
+                });
+            {% endif %}
+    </script>
+    {% endif %}
+{% endblock %}
