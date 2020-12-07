@@ -1,0 +1,17 @@
+""" Document Entity """
+
+import html
+
+from simtex.db import db
+
+
+class Document(db.Model):
+    """ Document Entity """
+    id = db.Column(db.String(128), primary_key=True)
+    text = db.Column(db.Text(), nullable=False)
+    meta = db.Column(db.JSON, nullable=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+
+    def __init__(self, **kwargs):
+        super(Document, self).__init__(**kwargs)
+        self.text = html.escape(self.text)
