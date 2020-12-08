@@ -1,0 +1,54 @@
+[
+    {
+        "id": "A01",
+        "text": "A1: this &is a \"sample document.",
+        "meta": {
+            "annotations": [
+                {
+                    "al": {
+                        "name": "4"
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "id": "A02",
+        "text": "A2: \"this is & a sample document.",
+        "meta": {
+            "annotations": [
+                {
+                    "al": {
+                        "name": "3"
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "id": "A03",
+        "text": "A3: this& is a \"sample document.",
+        "meta": {
+            "annotations": [
+                {
+                    "al": {
+                        "name": "2"
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "id": "A04",
+        "text": "A4: this is a `sample document.",
+        "meta": {
+            "annotations": [
+                {
+                    "al": {
+                        "name": "1"
+                    }
+                }
+            ]
+        }
+    }
+]
