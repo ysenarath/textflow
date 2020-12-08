@@ -1,13 +1,15 @@
-from simtex.model.document import Document
-from simtex.model.project import Project
-from simtex.model.label import Label
-from simtex.model.user import User
-from simtex.model.annotation import AnnotationSet
+""" Model """
+from textflow.model.annotation import AnnotationSet
+from textflow.model.document import Document
+from textflow.model.label import Label
+from textflow.model.project import Project
+from textflow.model.user import Assignment, User
 
 __all__ = [
     'AnnotationSet',
     'Document',
     'Project',
     'Label',
+    'Assignment',
     'User',
 ]

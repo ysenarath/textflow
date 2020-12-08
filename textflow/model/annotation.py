@@ -1,7 +1,5 @@
 """ Annotation Entity """
-
-from simtex.db import db
-from sqlalchemy.exc import SQLAlchemyError
+from textflow.db import db
 
 
 class AnnotationSpan(db.Model):
@@ -32,7 +30,7 @@ class AnnotationSet(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('annotation_set', lazy=True), uselist=False)
     annotations = db.relationship('Annotation', backref='annotation_set', lazy=True)
-    complete = db.Column(db.Boolean(), nullable=False, default=False)
+    completed = db.Column(db.Boolean(), nullable=False, default=False)
     created_on = db.Column(db.DateTime, server_default=db.func.now())
     updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
 
@@ -46,34 +44,3 @@ class AnnotationSet(db.Model):
             if a.label.value == value:
                 return a
         return None
-
-    @staticmethod
-    def get_or_create(current_user, doc_id):
-        """ Returns annotation set
-
-        :param current_user: user
-        :param doc_id: document id
-        :return: annotation set for user document pair
-        """
-        annotation_set = AnnotationSet.query \
-            .filter(AnnotationSet.document_id == doc_id, AnnotationSet.user_id == current_user.id) \
-            .first()
-        if annotation_set is None:
-            annotation_set = AnnotationSet(document_id=doc_id, user_id=current_user.id)
-            db.session.add(annotation_set)
-            db.session.commit()
-        return annotation_set
-
-    def add_annotation(self, annotation):
-        """ Add annotation to set of annotations
-
-        :param annotation:
-        :return:
-        """
-        try:
-            self.annotations.append(annotation)
-            db.session.commit()
-            return True
-        except SQLAlchemyError as err:
-            db.session.rollback()
-            return False

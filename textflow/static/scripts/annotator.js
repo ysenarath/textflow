@@ -63,14 +63,16 @@ class Annotator {
                 '<div class="annotation-span" style="border-width: 1px; border-color:' + item.color + '">' +
                 '<div class="annotation-text">' + this.text.substr(item.span.start, item.span.length) + '</div>' +
                 '<div class="annotation-label">' +
-                '<div class="input-group input-group-sm">' +
-                '<select class="custom-select" data-id="' + item.id + '">' +
-                options_html +
-                '</select>' +
-                '<div class="input-group-append">' +
-                '<button class="btn light" type="button" data-id="' + item.id + '">&times;</button>' +
+                //
+                '<div class="field has-addons m-1">' +
+                '<div class="control w-100"><div class="select is-small w-100">' +
+                '<select class="w-100" data-id="' + item.id + '">' + options_html + '</select>' +
+                '</div></div>' +
+                '<div class="control"> <button class="button is-small" type="button" data-id="' + item.id + '">' +
+                '&times;' +
+                '</button></div>' +
                 '</div>' +
-                '</div>' +
+                //
                 '</div></div>';
             lastIdx = item.span.start + item.span.length;
         }
@@ -204,7 +206,7 @@ class Annotator {
         // Change Annotation Type Selection
         $(document).on('change', '.annotation-span select', (el) => {
             try {
-                if (el.target.parentNode.parentNode.parentNode.parentNode === lookout) {
+                if (el.target.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode === lookout) {
                     let id = el.target.getAttribute('data-id');
                     let value = el.target.value;
                     events['update'](this.annotations[id], value);

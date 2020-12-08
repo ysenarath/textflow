@@ -1,6 +1,6 @@
 """ Label Entity """
 
-from simtex.db import db
+from textflow.db import db
 
 
 class Label(db.Model):

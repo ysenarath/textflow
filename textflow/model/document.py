@@ -2,7 +2,7 @@
 
 import html
 
-from simtex.db import db
+from textflow.db import db
 
 
 class Document(db.Model):

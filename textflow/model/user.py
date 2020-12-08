@@ -6,16 +6,22 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from textflow.db import db
 
 
+class Assignment(db.Model):
+    """ Project User Role Assignment Entity """
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), primary_key=True)
+    role = db.Column(db.String(512), nullable=False, default='default')
+
+
 class User(db.Model, UserMixin):
     """ User Entity """
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(512), nullable=False)
-    role = db.Column(db.String(512), nullable=False, default='default')
     first_name = db.Column(db.String(512), nullable=True)
     last_name = db.Column(db.String(80), unique=True, nullable=True)
     email = db.Column(db.String(120), unique=True, nullable=True)
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+    projects = db.relationship('Assignment', backref='user', lazy=True)
 
     def __init__(self, *args, **kwargs):
         super(User, self).__init__(*args, **kwargs)

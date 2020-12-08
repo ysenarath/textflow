@@ -1,0 +1,27 @@
+{% extends '_layout.html' %}
+
+{% block content %}
+    <div class="box">
+        <div class="table-container">
+            <table class="table is-fullwidth">
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+                {% for p in projects %}
+                    <tr>
+                        <td>{{ p.id }}</td>
+                        <td>{{ p.name }}</td>
+                        <td>{{ p.description }}</td>
+                        <td>
+                            <a href="/projects/{{ p.id }}" class="button is-primary"><i class="far fa-eye"></i></a>
+                            <a href="/projects/{{ p.id }}/annotate" class="button is-primary"><i class="fas fa-tag"></i></a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+{% endblock %}

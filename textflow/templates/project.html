@@ -1,0 +1,70 @@
+{% extends '_layout.html' %}
+
+{% macro render_pagination(pagination, endpoint) %}
+    <nav class="pagination is-rounded" role="navigation" aria-label="pagination">
+        <a href="{{ url_for(endpoint, project_id=project.id, page=current_page - 1, per_page=per_page) }}"
+           class="pagination-previous" {% if not documents.has_previous %}disabled{% endif %}>Previous</a>
+
+        <a href="{{ url_for(endpoint, project_id=project.id, page=current_page + 1, per_page=per_page) }}"
+           class="pagination-next" {% if not documents.has_next %}disabled{% endif %}>Next page</a>
+
+        <ul class="pagination-list">
+            {%- for page in pagination.iter_pages() %}
+                {% if page %}
+                    {% if page != pagination.page %}
+                        <li><a href="{{ url_for(endpoint, project_id=project.id, page=page, per_page=per_page) }}"
+                               class="pagination-link" aria-label="Goto page {{ page }}">{{ page }}</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for(endpoint, project_id=project.id, page=page, per_page=per_page) }}"
+                               class="pagination-link is-current" aria-label="Page {{ page }}"
+                               aria-current="page">{{ page }}</a></li>
+                    {% endif %}
+                {% else %}
+                    <li><span class="pagination-ellipsis">&hellip;</span></li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+{% endmacro %}
+
+{% block content %}
+    <section class="hero is-medium is-primary is-bold">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title">
+                    {{ project.name }}
+                </h1>
+                <h2 class="subtitle">
+                    {{ project.description }}
+                </h2>
+            </div>
+        </div>
+    </section>
+    <div class="box">
+        <div class="table-container">
+            <table class="table is-fullwidth">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Text</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for d in documents.items %}
+                    <tr>
+                        <th scope="row">{{ d.id }}</th>
+                        <td> {{ d.text }}</td>
+                        <td><a class="button" href="{{ project.id }}/annotate/{{ d.id }}">
+                            <i class="fas fa-tag"></i>
+                        </a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-center">
+            {{ render_pagination(documents, 'project_view.view_project') }}
+        </div>
+    </div>
+{% endblock %}
