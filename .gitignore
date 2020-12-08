@@ -137,4 +137,7 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# Extra gitignore files
 .idea/
+/examples/basic_server/config.json
+/examples/basic_server/database.sqlite
