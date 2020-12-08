@@ -1,0 +1,3 @@
+graft textflow/static
+graft textflow/templates
+global-exclude *.pyc
