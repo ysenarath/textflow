@@ -7,7 +7,8 @@ from textflow.db import db
 
 class Document(db.Model):
     """ Document Entity """
-    id = db.Column(db.String(128), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_str = db.Column(db.String(128), nullable=True)
     text = db.Column(db.Text(), nullable=False)
     meta = db.Column(db.JSON, nullable=True)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
