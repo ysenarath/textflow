@@ -10,20 +10,53 @@ from textflow.model.project import Project
 from textflow.model.user import User, Assignment
 
 
-def get_user(user_id):
+class Query:
+    """ Query class """
+
+    def __init__(self, fn):
+        self.fn = fn
+
+    def __call__(self, *args, **kwargs):
+        ctx = {'is_admin': False}
+        return self.fn(ctx, *args, **kwargs)
+
+    def run_as_admin(self, *args, **kwargs):
+        """ Try to run command as admin.
+
+        :param args: args for fn
+        :param kwargs: kwargs for fn
+        """
+        ctx = {'is_admin': True}
+        return self.fn(ctx, *args, **kwargs)
+
+
+def query(fn):
+    """ Creates and returns query callable.
+
+    :param fn: Function to decorate.
+    :return: Query
+    """
+    return Query(fn)
+
+
+@query
+def get_user(ctx, user_id):
     """ Loads user from ID
 
+    :param ctx:
     :param user_id: gets user from ID
     :return: user if exist
     """
     return User.query.get(int(user_id))
 
 
-def filter_users(**kwargs):
+@query
+def filter_users(ctx, **kwargs):
     """ Filter username
 
+    :param ctx:
     :param kwargs: {username}
-    :return: Returns one user with provided details
+    :return: Returns all user with provided details
     """
     filters = {}
     if 'username' in kwargs:
@@ -31,9 +64,11 @@ def filter_users(**kwargs):
     return User.query.filter_by(**filters).all()
 
 
-def list_documents(project_id, user_id, paginate=None, paginate_kwargs=None):
+@query
+def list_documents(ctx, project_id, user_id, paginate=None, paginate_kwargs=None):
     """ Gets documents completed by provided user.
 
+    :param ctx:
     :param project_id: project id
     :param user_id: id of user for getting completed documents
     :param paginate: whether to paginate output
@@ -50,9 +85,11 @@ def list_documents(project_id, user_id, paginate=None, paginate_kwargs=None):
     return q.all()
 
 
-def next_document(user_id, project_id):
+@query
+def next_document(ctx, user_id, project_id):
     """ Returns next document for annotation by provided user.
 
+    :param ctx:
     :param user_id: user id
     :param project_id: project id
     :param project_id: project id
@@ -79,9 +116,14 @@ def next_document(user_id, project_id):
         .first()
 
 
-def get_annotation(project_id, user_id, annotation_id):
+@query
+def get_annotation(ctx, project_id, user_id, annotation_id):
     """ Gets annotation by id
 
+    :param ctx:
+    :param project_id:
+    :param user_id:
+    :param annotation_id:
     :return:
     """
     return Annotation.query \
@@ -92,8 +134,9 @@ def get_annotation(project_id, user_id, annotation_id):
         .first()
 
 
-def filter_annotations_by_label(user_id, project_id, document_id, label_value):
-    """ Gets annotations by label of document
+@query
+def filter_annotations_by_label(ctx, user_id, project_id, document_id, label_value):
+    """ Gets annotations by label of document for the user.
 
     :return:
     """
@@ -107,9 +150,11 @@ def filter_annotations_by_label(user_id, project_id, document_id, label_value):
         .all()
 
 
-def add_annotation(project_id, user_id, document_id, data):
+@query
+def add_annotation(ctx, project_id, user_id, document_id, data):
     """ Add annotation to set of annotations
 
+    :param ctx: context
     :param project_id: project id
     :param user_id: user id
     :param document_id: document id
@@ -132,7 +177,8 @@ def add_annotation(project_id, user_id, document_id, data):
         return False
 
 
-def delete_annotation(user_id, project_id, annotation_id):
+@query
+def delete_annotation(ctx, user_id, project_id, annotation_id):
     """ Delete annotation by id
 
     :return: whether annotation is deleted or not
@@ -152,9 +198,11 @@ def delete_annotation(user_id, project_id, annotation_id):
     return True
 
 
-def get_annotation_set(user_id, project_id, document_id):
+@query
+def get_annotation_set(ctx, user_id, project_id, document_id):
     """ Returns annotation set
 
+    :param ctx: context
     :param user_id: user id
     :param project_id: project id
     :param document_id: document id
@@ -184,9 +232,11 @@ def get_annotation_set(user_id, project_id, document_id):
     return annotation_set
 
 
-def filter_label(project_id, value):
+@query
+def filter_label(ctx, project_id, value):
     """ Gets label from value [unique for project]
 
+    :param ctx: context
     :param project_id: project id
     :param value: value
     :return: label
@@ -194,9 +244,11 @@ def filter_label(project_id, value):
     return Label.query.filter_by(project_id=project_id, value=value).one()
 
 
-def update_annotation(project_id, user_id, annotation_id, data):
+@query
+def update_annotation(ctx, project_id, user_id, annotation_id, data):
     """ Update annotation [only label]
 
+    :param ctx: context
     :param project_id: project id
     :param user_id: user id
     :param annotation_id: annotation id
@@ -207,15 +259,17 @@ def update_annotation(project_id, user_id, annotation_id, data):
     if annotation is None:
         return False
     else:
-        label = filter_label(project_id, data['label']['value'])
+        label = filter_label(project_id, value=data['label']['value'])
         annotation.label = label
         db.session.commit()
     return True
 
 
-def get_project(user_id, project_id):
+@query
+def get_project(ctx, user_id, project_id):
     """ Gets project provided ID only if it is assigned to user
 
+    :param ctx: context
     :param user_id: user id
     :param project_id: project id
     :return: get project
@@ -226,9 +280,11 @@ def get_project(user_id, project_id):
         .first()
 
 
-def list_projects(user_id):
+@query
+def list_projects(ctx, user_id):
     """ Gets user provided ID
 
+    :param ctx: context
     :param user_id: user id
     :return: get user
     """
@@ -238,9 +294,11 @@ def list_projects(user_id):
         .all()
 
 
-def update_annotation_set(user_id, document_id, **params):
+@query
+def update_annotation_set(ctx, user_id, document_id, **params):
     """ Update annotated set
 
+    :param ctx: context
     :param user_id:
     :param document_id:
     :return:
@@ -256,9 +314,11 @@ def update_annotation_set(user_id, document_id, **params):
     return True
 
 
-def get_document(user_id, project_id, document_id):
+@query
+def get_document(ctx, user_id, project_id, document_id):
     """ get document from document ID
 
+    :param ctx: context
     :param user_id: user id
     :param project_id: project id
     :param document_id: document id
@@ -270,3 +330,26 @@ def get_document(user_id, project_id, document_id):
         .join(Assignment, Assignment.project_id == Project.id) \
         .filter(Assignment.user_id == user_id) \
         .first()
+
+
+@query
+def filter_document(ctx, user_id, project_id, id_str):
+    """ Gets and returns the first document by project id and id str
+
+    :param ctx: context
+    :param user_id:
+    :param project_id:
+    :param id_str:
+    :return:
+    """
+    if ctx.get('is_admin'):
+        return Document.query \
+            .filter(Document.project_id == project_id, Document.id_str == id_str) \
+            .first()
+    else:
+        return Document.query \
+            .filter(Document.project_id == project_id, Document.id_str == id_str) \
+            .join(Project, Project.id == Document.project_id) \
+            .join(Assignment, Assignment.project_id == Project.id) \
+            .filter(Assignment.user_id == user_id) \
+            .first()
