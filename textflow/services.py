@@ -274,10 +274,15 @@ def get_project(ctx, user_id, project_id):
     :param project_id: project id
     :return: get project
     """
-    return Project.query \
-        .join(Assignment, Assignment.project_id == Project.id) \
-        .filter(Assignment.user_id == user_id, Project.id == project_id) \
-        .first()
+    if ctx.get('is_admin'):
+        return Project.query \
+            .filter(Project.id == project_id) \
+            .first()
+    else:
+        return Project.query \
+            .join(Assignment, Assignment.project_id == Project.id) \
+            .filter(Assignment.user_id == user_id, Project.id == project_id) \
+            .first()
 
 
 @query

@@ -93,6 +93,26 @@ def cli_project_create(ctx):
             logger.error(str(e))
 
 
+@project_group.command(name='update')
+@click.option('-p', '--project_id', prompt='Project ID', help='Project ID')
+@click.option('-h', '--header', help='Header html file.', default=None)
+@click.pass_context
+def cli_project_update(ctx, project_id, header):
+    """ project_update """
+    config = ctx.obj['CONFIG']
+    tf = TextFlow(config)
+    with tf.app_context():
+        db.create_all()
+        try:
+            a = services.get_project.run_as_admin(None, project_id)
+            with open(header, encoding='utf-8') as fp:
+                a.header_template = fp.read()
+            db.session.commit()
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logger.error(str(e))
+
+
 @project_group.command(name='list')
 @click.pass_context
 def cli_project_show(ctx):
@@ -221,8 +241,8 @@ def cli_documents_upload(ctx, project_id, input):
 
 @annotation_group.command(name='create')
 @click.option('-p', '--project_id', prompt='Project ID', help='Project ident')
-@click.option('-d', '--document_id', prompt='Document ID', help='Document ident')
 @click.option('-u', '--user_id', prompt='User ID', help='User ident')
+@click.option('-d', '--document_id', prompt='Document ID', help='Document ident')
 @click.option('-l', '--label', prompt='Label Value', help='Label value')
 @click.option('-s', '--span', prompt='Span', help='Span range; format: <start, end>')
 @click.pass_context
