@@ -7,7 +7,7 @@ class AnnotationSpan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start = db.Column(db.Integer)
     length = db.Column(db.Integer)
-    annotation_id = db.Column(db.Integer, db.ForeignKey('annotation.id'), nullable=False)
+    annotation_id = db.Column(db.Integer, db.ForeignKey('annotation.id'), unique=True, nullable=False)
 
 
 class Annotation(db.Model):
@@ -33,6 +33,8 @@ class AnnotationSet(db.Model):
     completed = db.Column(db.Boolean(), nullable=False, default=False)
     created_on = db.Column(db.DateTime, server_default=db.func.now())
     updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
+
+    __table_args__ = (db.UniqueConstraint('user_id', 'document_id'),)
 
     def get_annotation(self, value):
         """ gets annotations with the value from the annotations

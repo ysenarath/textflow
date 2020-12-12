@@ -101,7 +101,7 @@ def next_document(ctx, user_id, project_id):
     subquery = db.session.query(AnnotationSet.document_id, func.count(AnnotationSet.user_id).label('frequency')) \
         .group_by(AnnotationSet.document_id) \
         .subquery()
-    return Document.query \
+    q2 = Document.query \
         .filter(Document.project_id == project_id) \
         .join(Project, Project.id == Document.project_id) \
         .join(Assignment, Assignment.project_id == Project.id) \
@@ -110,10 +110,9 @@ def next_document(ctx, user_id, project_id):
                     Project.redundancy > subquery.c.frequency)) \
         .outerjoin(AnnotationSet,
                    and_(AnnotationSet.document_id == Document.id, AnnotationSet.user_id == Assignment.user_id)) \
-        .filter(or_(AnnotationSet.completed.is_(False),
-                    AnnotationSet.user_id != user_id,
-                    AnnotationSet.completed.is_(None))) \
-        .first()
+        .filter(or_(and_(AnnotationSet.completed.is_(False), AnnotationSet.user_id == user_id),
+                    AnnotationSet.completed.is_(None)))
+    return q2.first()
 
 
 @query
