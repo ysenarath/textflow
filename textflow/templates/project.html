@@ -27,44 +27,83 @@
     </nav>
 {% endmacro %}
 
-{% block content %}
-    <section class="hero is-medium is-primary is-bold">
+{% block is_full_content %}
+    <section class="hero is-primary is-bold">
         <div class="hero-body">
-            <div class="container">
-                <h1 class="title">
-                    {{ project.name }}
+            <div class="container has-text-centered mb-6">
+                <h1 class="title">{{ project.name }}
+                    <a href="/projects/{{ project.id }}/annotate" class="button is-primary is-inverted">
+                        <span class="icon">
+                            <i class="fas fa-tag"></i>
+                        </span>
+                    </a>
                 </h1>
-                <h2 class="subtitle">
-                    {{ project.description }}
-                </h2>
+                <h2 class="subtitle">{{ project.description }}</h2>
+            </div>
+            <nav class="level is-mobile">
+                <div class="level-item has-text-centered">
+                    <div>
+                        <p class="heading">Total</p>
+                        <p class="title">{{ project_status.num_assigned }}</p>
+                    </div>
+                </div>
+                <div class="level-item has-text-centered">
+                    <div>
+                        <p class="heading">Completed</p>
+                        <p class="title">{{ project_status.num_completed }}</p>
+                    </div>
+                </div>
+                <div class="level-item has-text-centered">
+                    <div>
+                        <p class="heading">Remaining</p>
+                        <p class="title">{{ project_status.num_assigned - project_status.num_completed }}</p>
+                    </div>
+                </div>
+                <div class="level-item has-text-centered">
+                    <div>
+                        <p class="heading">Progress</p>
+                        <p class="title">{{ '%d' | format(project_status.progress) }}%</p>
+                    </div>
+                </div>
+            </nav>
+            <progress class="progress is-dark" value="{{ project_status.progress }}"
+                      max="100">{{ project_status.progress }}%
+            </progress>
+            <div class="is-flex flex-wrap is-justify-content-center">
+                {% for k, v in project_status.num_annotations.items() %}
+                    <p class="heading pr-3">{{ k }}-{{ v[1] }}</p>
+                    {% if not loop.last %}<p class="heading pr-3">/</p>{% endif %}
+                {% endfor %}
             </div>
         </div>
     </section>
-    <div class="box">
-        <div class="table-container">
-            <table class="table is-fullwidth">
-                <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Text</th>
-                    <th>Action</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for d in documents.items %}
+    <section class="section">
+        <div class="box">
+            <div class="table-container">
+                <table class="table is-fullwidth">
+                    <thead>
                     <tr>
-                        <th scope="row">{{ d.id }}</th>
-                        <td> {{ d.text }}</td>
-                        <td><a class="button" href="{{ project.id }}/annotate/{{ d.id }}">
-                            <i class="fas fa-tag"></i>
-                        </a></td>
+                        <th>#</th>
+                        <th>Text</th>
+                        <th>Action</th>
                     </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    {% for d in documents.items %}
+                        <tr>
+                            <th scope="row">{{ d.id }}</th>
+                            <td> {{ d.text | safe }}</td>
+                            <td><a class="button" href="{{ project.id }}/annotate/{{ d.id }}">
+                                <i class="fas fa-tag"></i>
+                            </a></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex justify-content-center">
+                {{ render_pagination(documents, 'project_view.view_project') }}
+            </div>
         </div>
-        <div class="d-flex justify-content-center">
-            {{ render_pagination(documents, 'project_view.view_project') }}
-        </div>
-    </div>
+    </section>
 {% endblock %}

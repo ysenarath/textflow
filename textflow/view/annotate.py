@@ -18,6 +18,8 @@ def annotate_next(project_id):
     :return: rendered template
     """
     project = services.get_project(current_user.id, project_id)
+    if project is None:
+        return redirect(url_for('project_view.list_projects'))
     document = services.next_document(current_user.id, project_id)
     if document is None:
         return render_template('annotate.html', project=project, document=document)
@@ -35,6 +37,12 @@ def annotate(project_id, document_id):
     """
     document_id = str(document_id)
     user_id = current_user.id
+    project = services.get_project(current_user.id, project_id)
+    if project is None:
+        return redirect(url_for('project_view.list_projects'))
+    document = services.get_document(user_id, project_id, document_id)
+    if document is None:
+        return redirect(url_for('annotate_view.annotate_next', project_id=project_id))
     if request.method == 'DELETE':
         annotation_id = request.json['data']['id']
         status = services.delete_annotation(current_user.id, project_id, annotation_id)
@@ -71,8 +79,6 @@ def annotate(project_id, document_id):
             status = services.update_annotation_set(user_id, document_id, completed=True)
         return jsonify(jsend.success({'title': 'Update success.', 'body': 'Successfully updated annotation.'}))
     else:
-        document = services.get_document(user_id, project_id, document_id)
-        project = services.get_project(user_id, project_id)
         options = json.dumps([{'value': label.value, 'label': label.label} for label in project.labels])
         annotation_set = services.get_annotation_set(user_id, project_id, document_id)
         annotations = []

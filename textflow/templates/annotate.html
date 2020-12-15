@@ -96,7 +96,7 @@
 
             {% if project.type == 'sequence_labeling' %}
                 function initialize(annotations) {
-                    let a = new Annotator('annotationField', '{{ document.text.replace('\'', '\\\'') | safe }}', JSON.parse('{{ options | safe }}'));
+                    let a = new Annotator('annotationField', '{{ document.text | safe }}', JSON.parse('{{ options | safe }}'));
                     // load initial annotations
                     a.setAnnotations(annotations);
                     // listen to events - delete

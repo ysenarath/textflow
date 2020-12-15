@@ -1,5 +1,5 @@
 """ Includes all service calls to database. """
-from sqlalchemy import or_, func, and_
+from sqlalchemy import or_, func, and_, distinct
 from sqlalchemy.exc import SQLAlchemyError
 
 from textflow.db import db
@@ -8,6 +8,7 @@ from textflow.model.document import Document
 from textflow.model.label import Label
 from textflow.model.project import Project
 from textflow.model.user import User, Assignment
+from textflow.utils import Dictionary as Map
 
 
 class Query:
@@ -17,16 +18,18 @@ class Query:
         self.fn = fn
 
     def __call__(self, *args, **kwargs):
-        ctx = {'is_admin': False}
+        ctx = Map(is_admin=False)
         return self.fn(ctx, *args, **kwargs)
 
     def run_as_admin(self, *args, **kwargs):
         """ Try to run command as admin.
 
+        This will disable all user level constrains.
+
         :param args: args for fn
         :param kwargs: kwargs for fn
         """
-        ctx = {'is_admin': True}
+        ctx = Map(is_admin=True)
         return self.fn(ctx, *args, **kwargs)
 
 
@@ -43,7 +46,7 @@ def query(fn):
 def get_user(ctx, user_id):
     """ Loads user from ID
 
-    :param ctx:
+    :param ctx: context
     :param user_id: gets user from ID
     :return: user if exist
     """
@@ -54,7 +57,7 @@ def get_user(ctx, user_id):
 def filter_users(ctx, **kwargs):
     """ Filter username
 
-    :param ctx:
+    :param ctx: context
     :param kwargs: {username}
     :return: Returns all user with provided details
     """
@@ -68,7 +71,7 @@ def filter_users(ctx, **kwargs):
 def list_documents(ctx, project_id, user_id, paginate=None, paginate_kwargs=None):
     """ Gets documents completed by provided user.
 
-    :param ctx:
+    :param ctx: context
     :param project_id: project id
     :param user_id: id of user for getting completed documents
     :param paginate: whether to paginate output
@@ -76,10 +79,11 @@ def list_documents(ctx, project_id, user_id, paginate=None, paginate_kwargs=None
     :return: completed documents
     """
     q = Document.query \
-        .filter(Document.project_id == project_id) \
         .join(AnnotationSet, AnnotationSet.document_id == Document.id) \
-        .filter(AnnotationSet.user_id == user_id, AnnotationSet.completed.is_(True)) \
-        .order_by(AnnotationSet.updated_on.desc())
+        .filter(Document.project_id == project_id, AnnotationSet.user_id == user_id,
+                AnnotationSet.completed.is_(True)) \
+        .order_by(AnnotationSet.updated_on.desc()) \
+        .distinct()
     if paginate is not None:
         return q.paginate(**paginate_kwargs)
     return q.all()
@@ -89,8 +93,8 @@ def list_documents(ctx, project_id, user_id, paginate=None, paginate_kwargs=None
 def next_document(ctx, user_id, project_id):
     """ Returns next document for annotation by provided user.
 
-    :param ctx:
-    :param user_id: user id
+    :param ctx: context
+    :param user_id: user id (not username)
     :param project_id: project id
     :param project_id: project id
     :return: document if exist else none
@@ -99,31 +103,31 @@ def next_document(ctx, user_id, project_id):
     #  -  required redundancy (project.redundancy) amount
     # Number of time each document is annotated
     subquery = db.session.query(AnnotationSet.document_id, func.count(AnnotationSet.user_id).label('frequency')) \
+        .filter(AnnotationSet.completed.is_(True)) \
         .group_by(AnnotationSet.document_id) \
         .subquery()
-    q2 = Document.query \
-        .filter(Document.project_id == project_id) \
+    q = Document.query \
         .join(Project, Project.id == Document.project_id) \
         .join(Assignment, Assignment.project_id == Project.id) \
         .outerjoin(subquery, Document.id == subquery.c.document_id) \
-        .filter(or_(subquery.c.frequency.is_(None),
-                    Project.redundancy > subquery.c.frequency)) \
         .outerjoin(AnnotationSet,
                    and_(AnnotationSet.document_id == Document.id, AnnotationSet.user_id == Assignment.user_id)) \
-        .filter(or_(and_(AnnotationSet.completed.is_(False), AnnotationSet.user_id == user_id),
-                    AnnotationSet.completed.is_(None)))
-    return q2.first()
+        .filter(Document.project_id == project_id) \
+        .filter(Assignment.user_id == user_id) \
+        .filter(or_(subquery.c.frequency.is_(None), Project.redundancy > subquery.c.frequency)) \
+        .filter(or_(AnnotationSet.completed.is_(None), AnnotationSet.completed.is_(False)))
+    return q.first()
 
 
 @query
 def get_annotation(ctx, project_id, user_id, annotation_id):
     """ Gets annotation by id
 
-    :param ctx:
-    :param project_id:
-    :param user_id:
-    :param annotation_id:
-    :return:
+    :param ctx: context
+    :param project_id: project id
+    :param user_id: user id (not username)
+    :param annotation_id: annotation id
+    :return: annotation with annotation id
     """
     return Annotation.query \
         .join(AnnotationSet, Annotation.annotation_set_id == AnnotationSet.id) \
@@ -137,7 +141,7 @@ def get_annotation(ctx, project_id, user_id, annotation_id):
 def filter_annotations_by_label(ctx, user_id, project_id, document_id, label_value):
     """ Gets annotations by label of document for the user.
 
-    :return:
+    :return: all annotations with provided label value
     """
     return Annotation.query \
         .join(AnnotationSet, AnnotationSet.id == Annotation.annotation_set_id) \
@@ -155,7 +159,7 @@ def add_annotation(ctx, project_id, user_id, document_id, data):
 
     :param ctx: context
     :param project_id: project id
-    :param user_id: user id
+    :param user_id: user id (not username)
     :param document_id: document id
     :param data: annotation params
     :return: adds annotation and return status
@@ -202,7 +206,7 @@ def get_annotation_set(ctx, user_id, project_id, document_id):
     """ Returns annotation set
 
     :param ctx: context
-    :param user_id: user id
+    :param user_id: user id (not username)
     :param project_id: project id
     :param document_id: document id
     :return: annotation set for user document pair
@@ -249,7 +253,7 @@ def update_annotation(ctx, project_id, user_id, annotation_id, data):
 
     :param ctx: context
     :param project_id: project id
-    :param user_id: user id
+    :param user_id: user id (not username)
     :param annotation_id: annotation id
     :param data: parameters for updating annotations
     :return: whether updated or not
@@ -269,11 +273,11 @@ def get_project(ctx, user_id, project_id):
     """ Gets project provided ID only if it is assigned to user
 
     :param ctx: context
-    :param user_id: user id
+    :param user_id: user id (not username)
     :param project_id: project id
     :return: get project
     """
-    if ctx.get('is_admin'):
+    if ctx.is_admin:
         return Project.query \
             .filter(Project.id == project_id) \
             .first()
@@ -289,7 +293,7 @@ def list_projects(ctx, user_id):
     """ Gets user provided ID
 
     :param ctx: context
-    :param user_id: user id
+    :param user_id: user id (not username)
     :return: get user
     """
     return Project.query \
@@ -303,9 +307,9 @@ def update_annotation_set(ctx, user_id, document_id, **params):
     """ Update annotated set
 
     :param ctx: context
-    :param user_id:
-    :param document_id:
-    :return:
+    :param user_id: user id (not username)
+    :param document_id: document id
+    :return: update status
     """
     annotation_set = AnnotationSet.query \
         .filter(AnnotationSet.user_id == user_id, AnnotationSet.document_id == document_id) \
@@ -322,31 +326,40 @@ def update_annotation_set(ctx, user_id, document_id, **params):
 def get_document(ctx, user_id, project_id, document_id):
     """ get document from document ID
 
+    Admin level access will ignore user_id, project_id parameters.
+
     :param ctx: context
-    :param user_id: user id
+    :param user_id: user id (not username)
     :param project_id: project id
     :param document_id: document id
     :return:
     """
-    return Document.query \
-        .filter(Document.id == document_id, Document.project_id == project_id) \
-        .join(Project, Project.id == Document.project_id) \
-        .join(Assignment, Assignment.project_id == Project.id) \
-        .filter(Assignment.user_id == user_id) \
-        .first()
+    if ctx.is_admin:
+        return Document.query \
+            .filter(Document.id == document_id) \
+            .first()
+    else:
+        return Document.query \
+            .filter(Document.id == document_id, Document.project_id == project_id) \
+            .join(Project, Project.id == Document.project_id) \
+            .join(Assignment, Assignment.project_id == Project.id) \
+            .filter(Assignment.user_id == user_id) \
+            .first()
 
 
 @query
 def filter_document(ctx, user_id, project_id, id_str):
     """ Gets and returns the first document by project id and id str
 
+    Admin level access will ignore user_id parameter.
+
     :param ctx: context
-    :param user_id:
-    :param project_id:
+    :param user_id: user id (not username)
+    :param project_id: project id
     :param id_str:
     :return:
     """
-    if ctx.get('is_admin'):
+    if ctx.is_admin:
         return Document.query \
             .filter(Document.project_id == project_id, Document.id_str == id_str) \
             .first()
@@ -357,3 +370,38 @@ def filter_document(ctx, user_id, project_id, id_str):
             .join(Assignment, Assignment.project_id == Project.id) \
             .filter(Assignment.user_id == user_id) \
             .first()
+
+
+@query
+def generate_status_report(ctx, user_id, project_id=None):
+    """ Generates and returns status report
+
+    :param ctx: context
+    :param user_id: user id (not username)
+    :param project_id: project id
+    :return: status report
+    """
+    if project_id is not None:
+        num_completed = Document.query \
+            .join(AnnotationSet, AnnotationSet.document_id == Document.id) \
+            .join(Project, Project.id == Document.project_id) \
+            .filter(AnnotationSet.user_id == user_id, Document.project_id == project_id,
+                    AnnotationSet.completed.is_(True)) \
+            .count()
+        num_annotations = db.session.query(Label.value, Label.label, func.count(distinct(Annotation.id))) \
+            .outerjoin(Annotation, Annotation.label_id == Label.id) \
+            .filter(Label.project_id == project_id) \
+            .outerjoin(AnnotationSet, AnnotationSet.id == Annotation.annotation_set_id) \
+            .filter(or_(AnnotationSet.user_id == user_id, AnnotationSet.user_id.is_(None))) \
+            .group_by(Label.label) \
+            .all()
+        num_assigned = Document.query \
+            .filter(Document.project_id == project_id) \
+            .count()
+        return Map(
+            num_annotations=Map({v: (l, c) for v, l, c in num_annotations}),
+            num_assigned=num_assigned,
+            num_completed=num_completed,
+            progress=num_completed * 100 / num_assigned,
+        )
+    return Map()

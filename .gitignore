@@ -141,3 +141,4 @@ cython_debug/
 .idea/
 /examples/basic_server/config.json
 /examples/basic_server/database.sqlite
+/examples/healther/
