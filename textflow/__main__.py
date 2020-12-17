@@ -1,3 +1,5 @@
+""" TextFlow CLI """
+
 import json
 import logging
 import os
@@ -19,7 +21,15 @@ logger = logging.getLogger(__name__)
 @click.option('--database_url', default=None)
 @click.pass_context
 def cli(ctx, debug, mode, config_path, database_url):
-    """ Run main group commands """
+    """ Run main group commands
+
+    :param ctx: context
+    :param debug: debug mode
+    :param mode: default: config
+    :param config_path: path to config
+    :param database_url: url to db
+    :return: None
+    """
     ctx.obj['DEBUG'] = debug
     if mode == 'config':
         config = {}
@@ -45,38 +55,57 @@ def cli(ctx, debug, mode, config_path, database_url):
 
 @cli.group(name='project')
 def project_group():
-    """ Run project commands """
+    """ Run project commands
+
+    :return: None
+    """
     pass
 
 
 @cli.group(name='user')
 def user_group():
-    """ Run user commands """
+    """ Run user commands
+
+    :return: None
+    """
     pass
 
 
 @cli.group(name='label')
 def label_group():
-    """ Run document commands """
+    """ Run document commands
+
+    :return: None
+    """
     pass
 
 
 @cli.group(name='document')
 def document_group():
-    """ Run label commands """
+    """ Run label commands
+
+    :return: None
+    """
     pass
 
 
 @cli.group(name='annotation')
 def annotation_group():
-    """ Run label commands """
+    """ Run label commands
+
+    :return: None
+    """
     pass
 
 
 @project_group.command(name='create')
 @click.pass_context
 def cli_project_create(ctx):
-    """ project_create """
+    """ Create a project
+
+    :param ctx: context
+    :return: None
+    """
     config = ctx.obj['CONFIG']
     tf = TextFlow(config)
     with tf.app_context():
@@ -98,7 +127,13 @@ def cli_project_create(ctx):
 @click.option('-h', '--header', help='Header html file.', default=None)
 @click.pass_context
 def cli_project_update(ctx, project_id, header):
-    """ project_update """
+    """ Update project
+
+    :param ctx: Context
+    :param project_id: Project ID
+    :param header: Header
+    :return: None
+    """
     config = ctx.obj['CONFIG']
     tf = TextFlow(config)
     with tf.app_context():
@@ -116,7 +151,11 @@ def cli_project_update(ctx, project_id, header):
 @project_group.command(name='list')
 @click.pass_context
 def cli_project_show(ctx):
-    """ project_show: -- show all projects -- """
+    """ project_show: -- show all projects --
+
+    :param ctx: Context
+    :return: None
+    """
     config = ctx.obj['CONFIG']
     tf = TextFlow(config)
     with tf.app_context():
@@ -140,11 +179,12 @@ def cli_project_show(ctx):
 @click.option('-p', '--password', prompt='User password', help='Password for login.')
 @click.pass_context
 def cli_user_create(ctx, username, password):
-    """ Creates user using provided args
+    """Creates user using provided args
 
     :param ctx: context
     :param username: Username
     :param password: Password
+    :return: None
     """
     config = ctx.obj['CONFIG']
     tf = TextFlow(config)
@@ -198,6 +238,7 @@ def cli_label_create(ctx, project_id, value, label):
     :param project_id: Project ID
     :param value: Value
     :param label: Label
+    :return: None
     """
     config = ctx.obj['CONFIG']
     tf = TextFlow(config)
@@ -223,6 +264,7 @@ def cli_documents_upload(ctx, project_id, input):
     :param ctx: context
     :param project_id: project id
     :param input: input path
+    :return: None
     """
     config = ctx.obj['CONFIG']
     tf = TextFlow(config)
