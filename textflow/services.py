@@ -405,3 +405,33 @@ def generate_status_report(ctx, user_id, project_id=None):
             progress=num_completed * 100 / num_assigned,
         )
     return Map()
+
+
+@query
+def get_assignment(ctx, user_id, project_id):
+    """ get assignment using provided user and project id.
+
+    :param ctx: context
+    :param user_id: user id
+    :param project_id: project id
+    :return: Assigment if exist else None
+    """
+    return Assignment.query.filter(user_id=user_id, project_id=project_id).first()
+
+
+@query
+def remove_assignment(ctx, user_id, project_id):
+    """ Remove assignment of a user from the provided project.
+
+    :param ctx: context
+    :param user_id: user id
+    :param project_id: project id
+    :return: status
+    """
+    a = get_assignment(user_id=user_id, project_id=project_id)
+    if a is not None:
+        db.session.delete(a)
+        db.session.commit()
+    else:
+        return False
+    return True

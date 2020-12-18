@@ -226,6 +226,33 @@ def cli_user_assign(ctx, username, project_id):
             logger.error('Completed with an error: {}'.format(str(e)))
 
 
+@user_group.command(name='unassign')
+@click.option('-u', '--username', prompt='Username', help='Username of assignee.')
+@click.option('-p', '--project_id', prompt='Project ID', help='Project ID to assign.')
+@click.pass_context
+def cli_user_assign(ctx, username, project_id):
+    """ Creates user using provided args
+
+    :param ctx: context
+    :param username: Username
+    :param project_id: Project ID
+    """
+    config = ctx.obj['CONFIG']
+    tf = TextFlow(config)
+    with tf.app_context():
+        db.create_all()
+        try:
+            u = services.filter_users(username=username)
+            status = services.remove_assignment(user_id=u[0].id, project_id=project_id)
+            if status:
+                logger.info('Completed successfully.')
+            else:
+                logger.error('Completed with an error: assignment not found.')
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logger.error('Completed with an error: {}'.format(str(e)))
+
+
 @label_group.command(name='create')
 @click.option('-p', '--project_id', prompt='Project ID', help='Project ID')
 @click.option('-l', '--label', prompt='Label', help='Label')
@@ -308,7 +335,7 @@ def cli_annotation_create(ctx, project_id, document_id, user_id, label, span):
             doc = services.filter_document.run_as_admin(None, project_id=int(project_id), id_str=document_id)
             data = {'label': {'value': label}, 'span': {'start': span[0], 'length': span[1] - span[0]}}
             services.add_annotation(project_id, user_id, doc.id, data)
-            logger.error('Completed successfully.')
+            logger.info('Completed successfully.')
         except SQLAlchemyError as e:
             db.session.rollback()
             logger.error('Completed with an error: {}'.format(str(e)))
