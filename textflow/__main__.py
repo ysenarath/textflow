@@ -99,11 +99,16 @@ def annotation_group():
 
 
 @project_group.command(name='create')
+@click.option('-n', '--name', prompt='Project Name', help='Name of project used in identifying the project by user')
+@click.option('-t', '--type', prompt='Project Type', help='Type of project used to identify annotation type')
 @click.pass_context
-def cli_project_create(ctx):
+def cli_project_create(ctx, name, type):
     """ Create a project
 
     :param ctx: context
+    :param name: Name of project used in identifying the project by user
+    :param type: Type of project used to identify annotation type.
+        Expected one of {sequence_labeling, document_classification}
     :return: None
     """
     config = ctx.obj['CONFIG']
@@ -111,10 +116,7 @@ def cli_project_create(ctx):
     with tf.app_context():
         db.create_all()
         try:
-            a = Project(
-                name=input('Enter the name of project: '),
-                type=input('Enter type of project: '),
-            )
+            a = Project(name=name, type=type)
             db.session.add(a)
             db.session.commit()
         except SQLAlchemyError as e:
