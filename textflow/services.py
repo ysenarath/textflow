@@ -416,7 +416,7 @@ def get_assignment(ctx, user_id, project_id):
     :param project_id: project id
     :return: Assigment if exist else None
     """
-    return Assignment.query.filter(user_id=user_id, project_id=project_id).first()
+    return Assignment.query.filter(Assignment.user_id == user_id, Assignment.project_id == project_id).first()
 
 
 @query

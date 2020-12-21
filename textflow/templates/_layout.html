@@ -14,23 +14,35 @@
 <body>
 {% block header %}{% include '_header.html' %}{% endblock %}
 {% block is_full_content %}
-<section class="hero">
-    <div class="hero-body">
-        <div class="container">{% block content %}{% endblock %}</div>
-    </div>
-</section>
-{% endblock %}
-{#
-    {% for message in get_flashed_messages() %}
-        <div class="alert alert-dark" role="alert">
-            {{ message }}
+    <section class="hero">
+        <div class="hero-body">
+            <div class="container">{% block content %}{% endblock %}</div>
         </div>
-    {% endfor %}
-#}
+    </section>
+{% endblock %}
 {% block scripts %}
     <script src="/static/scripts/jquery-3.5.1.min.js"></script>
     <script src="/static/scripts/fontawesome.all.js"></script>
+    <script src="/static/scripts/notify.min.js"></script>
     <script src="/static/scripts/base.js"></script>
+    <script>
+        $.notify.addStyle('success-notification-style', {
+            html: '<div><div class="notification is-success is-light"><button class="delete"></button><span data-notify-text/></div></div>',
+        });
+        $.notify.addStyle('error-notification-style', {
+            html: '<div><div class="notification is-danger is-light"><button class="delete"></button><span data-notify-text/></div></div>',
+        });
+        {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    $.notify('{{ message }}', {
+                        style: '{{ category }}-notification-style',
+                        position: 'bottom left',
+                    });
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </script>
 {% endblock %}
 </body>
 </html>

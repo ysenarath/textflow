@@ -1,6 +1,6 @@
 """ Login View """
 
-from flask import redirect, flash, url_for, render_template, abort, request, Blueprint
+from flask import redirect, flash, url_for, render_template, abort, request, Blueprint, get_flashed_messages
 from flask_login import login_required, logout_user, login_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, validators
@@ -41,31 +41,29 @@ def login():
 
     :return: rendered login form
     """
-    errors = []
     target = request.args.get('next', '')
     # Here we use a class of some kind to represent and validate our
     # client-side form data. For example, WTForms is a library that will
     # handle this for us, and we use a custom LoginForm to validate.
     form = login_form()
-    if form.validate_on_submit():
-        users = services.filter_users(username=form.username.data)
-        if len(users) < 0:
-            errors.append('User not found. Please check your username and retry again.')
-            return render_template('login.html', next=target, form=form, errors=errors)
-        user = users[0]
-        #
-        if user is None or not user.verify_password(form.password.data):
-            flash('Invalid username or password')
-            return redirect(url_for('login_view.login'))
-        # Login and validate the user.
-        # user should be an instance of your `User` class
-        login_user(user)
-        flash('Logged in successfully.')
-        # login_user(user, remember=form.remember_me.data)
-        # check whether it is safe to redirect to provide next
-        if not is_safe_url(target):
-            return abort(400)
-        return redirect(target or url_for('index_view.index'))
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            users = services.filter_users(username=form.username.data)
+            if (len(users) <= 0) or (users[0] is None) or not users[0].verify_password(form.password.data):
+                flash('Invalid login credentials', 'error')
+            else:
+                user = users[0]
+                # Login and validate the user.
+                # user should be an instance of your `User` class
+                login_user(user)
+                flash('Logged in successfully', 'success')
+                # login_user(user, remember=form.remember_me.data)
+                # check whether it is safe to redirect to provide next
+                if not is_safe_url(target):
+                    return abort(400)
+                return redirect(target or url_for('index_view.index'))
+        else:
+            flash('Invalid login credentials', 'error')
     return render_template('login.html', next=target, form=form)
 
 

@@ -22,3 +22,18 @@ tr td:last-child {
     width: 1%;
     white-space: nowrap;
 }
+
+/* custom notify.js style */
+
+.notifyjs-corner {
+    width: 100% !important;
+}
+
+.notifyjs-wrapper {
+    display: flex !important;
+    justify-content: center !important;
+}
+
+.notifyjs-container {
+    max-width: 250px !important;
+}
