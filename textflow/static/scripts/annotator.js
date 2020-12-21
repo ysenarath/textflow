@@ -125,12 +125,36 @@ class Annotator {
         }
     }
 
-    encode(text) {
+    escape(text) {
         return text.replace(/&/g, '&amp;')
             .replace(/"/g, '&quot;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
             .replace(/'/g, '&#x27;')
+    }
+
+    getAnnotation(id) {
+        let item = this.annotations[id];
+        return {
+            id: item.id,
+            label: item.label,
+            span: {
+                start: [...this.text.substr(0, item.span.start)].length,
+                length: [...this.text.substr(item.span.start, item.span.length)].length
+            }
+        }
+    }
+
+    putAnnotation(item) {
+        this.annotations[item.id] = item;
+        this.annotations[item.id] = {
+            id: item.id,
+            label: item.label,
+            span: {
+                start: [...this.text].slice(0, item.span.start).join('').length,
+                length: [...this.text].slice(item.span.start, item.span.start + item.span.length).join('').length
+            }
+        };
     }
 
     initialize() {
@@ -172,10 +196,10 @@ class Annotator {
                     for (let i = 0; i < this.lookout.childNodes.length; i++) {
                         let node = this.lookout.childNodes[i];
                         if (node === startNode) {
-                            startOffset = this.encode(startNode.textContent.substr(0, startOffset)).length + counter;
+                            startOffset = this.escape(startNode.textContent.substr(0, startOffset)).length + counter;
                         }
                         if (node === endNode) {
-                            endOffset = this.encode(endNode.textContent.substr(0, endOffset)).length + counter;
+                            endOffset = this.escape(endNode.textContent.substr(0, endOffset)).length + counter;
                             break;
                         }
                         let textContent = '';
@@ -184,17 +208,10 @@ class Annotator {
                         } else {
                             textContent = node.textContent;
                         }
-                        textContent = textContent
-                            .replace(/&/g, '&amp;')
-                            .replace(/"/g, '&quot;')
-                            .replace(/</g, '&lt;')
-                            .replace(/>/g, '&gt;')
-                            .replace(/'/g, '&#x27;');
-                        console.log(textContent);
+                        textContent = this.escape(textContent);
                         counter += textContent.length;
                     }
                     _selection = {start: startOffset, end: endOffset};
-                    console.log(_selection);
                 }
             }
             if (this.selection.span !== null || _selection !== null) {
@@ -209,7 +226,7 @@ class Annotator {
                 if (el.target.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode === lookout) {
                     let id = el.target.getAttribute('data-id');
                     let value = el.target.value;
-                    events['update'](this.annotations[id], value);
+                    events['update'](this.getAnnotation(id), value);
                 }
             } catch (e) {
                 // ignore event
@@ -221,7 +238,7 @@ class Annotator {
             try {
                 if (el.target.parentNode.parentNode.parentNode.parentNode.parentNode === lookout) {
                     let id = el.target.getAttribute('data-id');
-                    events['delete'](this.annotations[id]);
+                    events['delete'](this.getAnnotation(id));
                 }
             } catch (e) {
                 // ignore event
@@ -234,7 +251,7 @@ class Annotator {
     setAnnotations(items) {
         this.annotations = {};
         items.forEach((item) => {
-            this.annotations[item.id] = item;
+            this.putAnnotation(item);
         });
         this.update();
     }

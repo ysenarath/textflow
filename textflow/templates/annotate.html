@@ -61,8 +61,6 @@
     <!--suppress JSUnresolvedFunction, JSUnresolvedVariable -->
     {% if document is not none %}
         <script>
-            const loadingTemplate = document.getElementById('loadingTemplate');
-
             function getLabel(id) {
                 let checkbox = $('#option_' + id);
                 return {value: checkbox.val(), status: checkbox.prop('checked')};
@@ -88,7 +86,6 @@
                     contentType: "application/json; charset=utf-8",
                     data: JSON.stringify(temp),
                     success: function (data) {
-                        console.log(data);
                         window.location.href = target;
                     },
                 });
@@ -117,6 +114,6 @@
                     initialize(annotations)
                 });
             {% endif %}
-    </script>
+        </script>
     {% endif %}
 {% endblock %}
