@@ -99,8 +99,9 @@ def annotation_group():
 
 
 @project_group.command(name='create')
-@click.option('-n', '--name', prompt='Project Name', help='Name of project used in identifying the project by user')
-@click.option('-t', '--type', prompt='Project Type', help='Type of project used to identify annotation type')
+@click.option('-n', '--name', prompt='Project name', help='Name of project used in identifying the project by user')
+@click.option('-t', '--type', prompt='Project type', help='Type of project used to identify annotation type - ' +
+                                                          'Accepts one of [sequence_labeling, document_classification]')
 @click.pass_context
 def cli_project_create(ctx, name, type):
     """ Create a project
@@ -177,11 +178,11 @@ def cli_project_show(ctx):
 
 
 @user_group.command(name='create')
-@click.option('-u', '--username', prompt='User username', help='Username for login.')
-@click.option('-p', '--password', prompt='User password', help='Password for login.')
+@click.option('-u', '--username', prompt='Username', help='Username for login')
+@click.option('-p', '--password', prompt='Password', help='Password for login')
 @click.pass_context
 def cli_user_create(ctx, username, password):
-    """Creates user using provided args
+    """ Creates user using provided args
 
     :param ctx: context
     :param username: Username
@@ -197,6 +198,36 @@ def cli_user_create(ctx, username, password):
             db.session.add(a)
             db.session.commit()
             logger.info('Completed successfully.')
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logger.error('Completed with an error: {}'.format(str(e)))
+
+
+@user_group.command(name='update')
+@click.option('-u', '--username', prompt='Username', help='Username for the account that needs the change of password')
+@click.option('-p', '--password', prompt='New password', help='New password')
+@click.pass_context
+def cli_user_update(ctx, username, password):
+    """ Updates password for provided user
+
+    :param ctx: context
+    :param username: username for the account that needs the change of password
+    :param password: new password
+    :return:
+    """
+    config = ctx.obj['CONFIG']
+    tf = TextFlow(config)
+    with tf.app_context():
+        db.create_all()
+        try:
+            users = services.filter_users(username=username)
+            if len(users) == 1:
+                user = users[0]
+                user.set_password(password)
+                db.session.commit()
+                logger.info('Completed successfully.')
+            else:
+                logger.error('Completed with an error: User not found.')
         except SQLAlchemyError as e:
             db.session.rollback()
             logger.error('Completed with an error: {}'.format(str(e)))
@@ -314,7 +345,7 @@ def cli_documents_upload(ctx, project_id, input):
 @click.option('-p', '--project_id', prompt='Project ID', help='Project ident')
 @click.option('-u', '--user_id', prompt='User ID', help='User ident')
 @click.option('-d', '--document_id', prompt='Document ID', help='Document ident')
-@click.option('-l', '--label', prompt='Label Value', help='Label value')
+@click.option('-l', '--label', prompt='Label value', help='Label value')
 @click.option('-s', '--span', prompt='Span', help='Span range; format: <start, end>')
 @click.pass_context
 def cli_annotation_create(ctx, project_id, document_id, user_id, label, span):
