@@ -10,3 +10,4 @@ MarkupSafe
 SQLAlchemy
 Werkzeug
 WTForms
+nltk
