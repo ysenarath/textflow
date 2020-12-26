@@ -4,6 +4,7 @@ from textflow.model.document import Document
 from textflow.model.label import Label
 from textflow.model.project import Project
 from textflow.model.user import Assignment, User
+from textflow.model.dataset import Dataset
 
 __all__ = [
     'AnnotationSet',
@@ -12,4 +13,5 @@ __all__ = [
     'Label',
     'Assignment',
     'User',
+    'Dataset',
 ]

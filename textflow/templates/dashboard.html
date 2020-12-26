@@ -1,0 +1,41 @@
+{% extends '_layout.html' %}
+
+{% macro render_table(data) %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+            <tr>
+                {% for k in data.header %}
+                    <th>{{ k }}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for r in data.rows %}
+                <tr>
+                    {% for c in r %}
+                        <th>{{ c }}</th>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endmacro %}
+
+{% block is_full_content %}
+    {% for section in sections %}
+        <section class="section p-3">
+            <div class="container">
+                <div class="box">
+                    <h1><span>{{ section.title }}</span></h1>
+                    {% if section.type == 'table' %}
+                        {{ render_table(section.data) }}
+                    {% elif section.type == 'value' %}
+                        <h2>{{ section.data }}</h2>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+    {% endfor %}
+{% endblock %}

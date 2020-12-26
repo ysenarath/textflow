@@ -3,6 +3,7 @@ from sqlalchemy import or_, func, and_, distinct
 from sqlalchemy.exc import SQLAlchemyError
 
 from textflow.db import db
+from textflow.model import dataset
 from textflow.model.annotation import AnnotationSet, Annotation, AnnotationSpan
 from textflow.model.document import Document
 from textflow.model.label import Label
@@ -18,10 +19,10 @@ class Query:
         self.fn = fn
 
     def __call__(self, *args, **kwargs):
-        ctx = Map(is_admin=False)
+        ctx = Map(ignore_user=False)
         return self.fn(ctx, *args, **kwargs)
 
-    def run_as_admin(self, *args, **kwargs):
+    def ignore_user(self, *args, **kwargs):
         """ Try to run command as admin.
 
         This will disable all user level constrains.
@@ -29,7 +30,7 @@ class Query:
         :param args: args for fn
         :param kwargs: kwargs for fn
         """
-        ctx = Map(is_admin=True)
+        ctx = Map(ignore_user=True)
         return self.fn(ctx, *args, **kwargs)
 
 
@@ -277,7 +278,7 @@ def get_project(ctx, user_id, project_id):
     :param project_id: project id
     :return: get project
     """
-    if ctx.is_admin:
+    if ctx.ignore_user:
         return Project.query \
             .filter(Project.id == project_id) \
             .first()
@@ -334,7 +335,7 @@ def get_document(ctx, user_id, project_id, document_id):
     :param document_id: document id
     :return:
     """
-    if ctx.is_admin:
+    if ctx.ignore_user:
         return Document.query \
             .filter(Document.id == document_id) \
             .first()
@@ -359,7 +360,7 @@ def filter_document(ctx, user_id, project_id, id_str):
     :param id_str:
     :return:
     """
-    if ctx.is_admin:
+    if ctx.ignore_user:
         return Document.query \
             .filter(Document.project_id == project_id, Document.id_str == id_str) \
             .first()
@@ -435,3 +436,18 @@ def remove_assignment(ctx, user_id, project_id):
     else:
         return False
     return True
+
+
+@query
+def get_dataset(ctx, project_id):
+    """Create dataset from project ID.
+
+    :param ctx: context
+    :param project_id: project id
+    :return: dataset
+    """
+    p = get_project.ignore_user(user_id=None, project_id=project_id)
+    annotation_sets = AnnotationSet.query \
+        .outerjoin(Document, Document.id == AnnotationSet.document_id) \
+        .filter(Document.project_id == project_id).all()
+    return dataset.types[p.type](annotation_sets)

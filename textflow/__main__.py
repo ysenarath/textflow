@@ -142,7 +142,7 @@ def cli_project_update(ctx, project_id, header):
     with tf.app_context():
         db.create_all()
         try:
-            a = services.get_project.run_as_admin(None, project_id)
+            a = services.get_project.ignore_user(None, project_id)
             with open(header, encoding='utf-8') as fp:
                 a.header_template = fp.read()
             db.session.commit()
@@ -365,7 +365,7 @@ def cli_annotation_create(ctx, project_id, document_id, user_id, label, span):
     with tf.app_context():
         db.create_all()
         try:
-            doc = services.filter_document.run_as_admin(None, project_id=int(project_id), id_str=document_id)
+            doc = services.filter_document.ignore_user(None, project_id=int(project_id), id_str=document_id)
             data = {'label': {'value': label}, 'span': {'start': span[0], 'length': span[1] - span[0]}}
             services.add_annotation(project_id, user_id, doc.id, data)
             logger.info('Completed successfully.')

@@ -5,6 +5,7 @@ import logging
 import jinja2
 
 from textflow.db import db
+from textflow.model import dataset
 
 logger = logging.getLogger(__name__)
 

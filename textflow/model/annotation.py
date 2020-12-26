@@ -9,6 +9,13 @@ class AnnotationSpan(db.Model):
     length = db.Column(db.Integer)
     annotation_id = db.Column(db.Integer, db.ForeignKey('annotation.id'), unique=True, nullable=False)
 
+    def get_slice(self):
+        """ Get slice from span
+
+        :return: slice object
+        """
+        return slice(self.start, self.start + self.length)
+
 
 class Annotation(db.Model):
     """ Annotation Entity - contains annotation with span or whole document """
@@ -20,6 +27,15 @@ class Annotation(db.Model):
     created_on = db.Column(db.DateTime, server_default=db.func.now())
     updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
     annotation_set_id = db.Column(db.Integer, db.ForeignKey('annotation_set.id'), nullable=False)
+
+    def get_slice(self):
+        """  Get slice from span
+
+        :return: slice object
+        """
+        if self.span is None:
+            return slice(None, None, None)
+        return self.span.slice()
 
 
 class AnnotationSet(db.Model):

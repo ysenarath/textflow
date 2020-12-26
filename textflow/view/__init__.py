@@ -1,6 +1,6 @@
 """ View """
 
-from textflow.view import about, annotate, errors, index, login, project
+from textflow.view import about, annotate, errors, index, login, project, dashboard
 
 __all__ = [
     about,
@@ -9,6 +9,7 @@ __all__ = [
     index,
     login,
     project,
+    dashboard,
 ]
 
 
@@ -17,4 +18,4 @@ def get_blueprints():
 
     :return:
     """
-    return [about.view, annotate.view, errors.view, index.view, login.view, project.view]
+    return [about.view, annotate.view, errors.view, index.view, login.view, project.view, dashboard.view]
