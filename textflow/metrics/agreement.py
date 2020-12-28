@@ -83,11 +83,11 @@ class AgreementScore:
         for ix, pair in enumerate(pairs):
             scores[ix] = func(*pair, return_support=True)
         weighted_sum = sum([score * w for score, w in scores])
-        avg_score = weighted_sum / sum([w for _, w in scores])
+        weighted_avg_score = weighted_sum / sum([w for _, w in scores])
+        avg_score = statistics.mean([score for score, _ in scores])
         scores, support = list(zip(*scores))
-        return avg_score, Map(
-            header=('pair', 'score', 'support'), rows=list(zip(pairs, scores, support))
-        )
+        score_table = Map(header=('pair', 'score', 'support'), rows=list(zip(pairs, scores, support)))
+        return Map(avg_score=avg_score, weighted_avg_score=weighted_avg_score, score_table=score_table)
 
     def kappa_pairwise(self, c_a, c_b, return_support=True):
         """Gets kappa score for provided pair of coders.
@@ -109,11 +109,9 @@ class AgreementScore:
                 score = 0
         return (score, sup) if return_support else score
 
-    def kappa(self, return_table=False):
+    def kappa(self):
         """Cohen 1960 - Averages naively over kappas for each coder pair.
 
-        :param return_table: whether to return score of each pair
         :return: average kappa score and table of pairwise kappa scores (optional)
         """
-        avg_score, table = self._pairwise_average(self.kappa_pairwise)
-        return (avg_score, table) if return_table else avg_score
+        return self._pairwise_average(self.kappa_pairwise)
