@@ -23,6 +23,18 @@ tr td:last-child {
     white-space: nowrap;
 }
 
+/* show ehn page is loading */
+
+.loading-page {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+}
+
 /* custom notify.js style */
 
 .notifyjs-corner {
