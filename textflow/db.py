@@ -1,6 +1,10 @@
-""" Contains db object. """
+""" Contains db object """
 
 from flask_sqlalchemy import BaseQuery, SQLAlchemy
+
+__all__ = [
+    'db'
+]
 
 
 class ExtendedQuery(BaseQuery):
