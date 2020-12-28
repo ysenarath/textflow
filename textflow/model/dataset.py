@@ -1,28 +1,15 @@
 """ Base class and in-built dataset types. """
 
 from textflow.utils.text import Tokenizer
-from textflow.utils import Dictionary as Map
+from textflow.utils import Dictionary as Map, PluginManager
 
 __all__ = [
     'Dataset',
-    'types',
+    'datasets',
+    'SequenceLabelingDataset',
 ]
 
-types = {}
-
-
-def register(name):
-    """Register Dataset for task.
-
-    :param name: type name of project (dataset)
-    :return: decorator
-    """
-
-    def decorator(cls):
-        types[name] = cls
-        return cls
-
-    return decorator
+datasets = PluginManager()
 
 
 class Dataset:
@@ -57,8 +44,24 @@ class Dataset:
         """
         return [sorted([(x, ll.count(x)) for x in set(ll)], key=lambda x: x[1])[-1][0] for ll in zip(*labels)]
 
+    @property
+    def X(self):
+        """Gets feature/independent variable of dataset
 
-@register('sequence_labeling')
+        :return: an iterable of feature/independent variable
+        """
+        raise NotImplementedError
+
+    @property
+    def y(self):
+        """Gets target/dependent variable of dataset
+
+        :return: an iterable of target/dependent variable
+        """
+        raise NotImplementedError
+
+
+@datasets.register('sequence_labeling')
 class SequenceLabelingDataset(Dataset):
     def build_dataset(self, annotation_sets, tokenizer=None):
         """Builds dataset from provided annotation sets
@@ -96,7 +99,8 @@ class SequenceLabelingDataset(Dataset):
                 annotation_span = annotation.span
                 for tix in range(annotation_span.start,
                                  annotation_span.start + annotation_span.length):
-                    labels[token_index[tix]] = label_value
+                    if tix in token_index:
+                        labels[token_index[tix]] = label_value
             document.labels['__{}__'.format(user.username)] = labels
             records[document.id] = document
         for i in records:
@@ -114,3 +118,32 @@ class SequenceLabelingDataset(Dataset):
                 for index, (label, (_, _, token)) in enumerate(zip(labels, d.tokens)):
                     result.append((coder, '{}_{}'.format(d.id, index), label))
         return result
+
+    @staticmethod
+    def _format_labels(tags):
+        """Format labels by converting None to 'O'.
+
+        :param tags: list of tags
+        :return: formatted list of tags
+        """
+        return ['O' if t is None else t for t in tags]
+
+    @property
+    def X(self):
+        """Gets tokens for each sentence
+
+        :return: list of tokens for each sentence
+        """
+        # select third position in tokens (i.e. index 2) to get string token
+        # token tuple struct (start, end, token)
+        X = [list(zip(*self.records[r].tokens))[2] for r in self.records]
+        return X
+
+    @property
+    def y(self):
+        """Gets (multi-class) labels for each token of each sentence
+
+        :return: list of labels for each token of each sentence
+        """
+        X = [self._format_labels(self.records[r].labels['MAJORITY']) for r in self.records]
+        return X
