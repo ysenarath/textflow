@@ -66,9 +66,11 @@
                     </div>
                 </div>
             </nav>
-            <progress class="progress is-dark" value="{{ project_status.progress }}"
-                      max="100">{{ project_status.progress }}%
-            </progress>
+            <div class="container pb-3">
+                <progress class="progress is-dark" value="{{ project_status.progress }}"
+                          max="100">{{ project_status.progress }}%
+                </progress>
+            </div>
             <div class="is-flex flex-wrap is-justify-content-center">
                 {% for k, v in project_status.num_annotations.items() %}
                     <p class="heading pr-3">{{ k }}-{{ v[1] }}</p>
@@ -77,32 +79,36 @@
             </div>
         </div>
     </section>
-    <section class="section">
-        <div class="box">
-            <div class="table-container">
-                <table class="table is-fullwidth">
-                    <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Text</th>
-                        <th>Action</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for d in documents.items %}
-                        <tr>
-                            <th scope="row">{{ d.id }}</th>
-                            <td> {{ d.text | safe }}</td>
-                            <td><a class="button" href="{{ project.id }}/annotate/{{ d.id }}">
-                                <i class="fas fa-tag"></i>
-                            </a></td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="d-flex justify-content-center">
-                {{ render_pagination(documents, 'project_view.view_project') }}
+    <section class="hero">
+        <div class="hero-body">
+            <div class="container">
+                <div class="box">
+                    <div class="table-container">
+                        <table class="table is-fullwidth">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Text</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for d in documents.items %}
+                                <tr>
+                                    <th scope="row">{{ d.id }}</th>
+                                    <td> {{ d.text | safe }}</td>
+                                    <td><a class="button" href="{{ project.id }}/annotate/{{ d.id }}">
+                                        <i class="fas fa-tag"></i>
+                                    </a></td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        {{ render_pagination(documents, 'project_view.view_project') }}
+                    </div>
+                </div>
             </div>
         </div>
     </section>

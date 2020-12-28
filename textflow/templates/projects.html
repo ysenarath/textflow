@@ -16,8 +16,14 @@
                         <td>{{ p.name }}</td>
                         <td>{{ p.description }}</td>
                         <td>
-                            <a href="/projects/{{ p.id }}" class="button is-primary"><i class="far fa-eye"></i></a>
-                            <a href="/projects/{{ p.id }}/annotate" class="button is-primary"><i class="fas fa-tag"></i></a>
+                            <a href="/projects/{{ p.id }}" class="button is-primary">
+                                <i class="fas fa-tasks mr-1"></i></a>
+                            <a href="/projects/{{ p.id }}/annotate" class="button is-primary">
+                                <i class="fas fa-tag"></i></a>
+                            {% if p.role == 'admin' %}
+                                <a href="/projects/{{ p.id }}/dashboard" class="button is-primary">
+                                    <i class="fas fa-chart-line"></i></a>
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}
