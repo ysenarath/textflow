@@ -7,7 +7,7 @@ view = Blueprint('errors_view', __name__)
 
 @view.app_errorhandler(403)
 def forbidden(_):
-    """
+    """forbidden
 
     :param _:
     :return:
@@ -17,7 +17,7 @@ def forbidden(_):
 
 @view.app_errorhandler(404)
 def page_not_found(_):
-    """
+    """page_not_found
 
     :param _:
     :return:
@@ -27,7 +27,7 @@ def page_not_found(_):
 
 @view.app_errorhandler(500)
 def internal_server_error(_):
-    """
+    """internal_server_error
 
     :param _:
     :return:

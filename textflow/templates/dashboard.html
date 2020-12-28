@@ -1,41 +1,179 @@
 {% extends '_layout.html' %}
 
-{% macro render_table(data) %}
-    <div class="table-container">
-        <table class="table">
-            <thead>
-            <tr>
-                {% for k in data.header %}
-                    <th>{{ k }}</th>
-                {% endfor %}
-            </tr>
-            </thead>
-            <tbody>
-            {% for r in data.rows %}
-                <tr>
-                    {% for c in r %}
-                        <th>{{ c }}</th>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
-{% endmacro %}
-
-{% block is_full_content %}
-    {% for section in sections %}
-        <section class="section p-3">
-            <div class="container">
-                <div class="box">
-                    <h1><span>{{ section.title }}</span></h1>
-                    {% if section.type == 'table' %}
-                        {{ render_table(section.data) }}
-                    {% elif section.type == 'value' %}
-                        <h2>{{ section.data }}</h2>
-                    {% endif %}
+{% block content %}
+    <div id="app">
+        <template v-if="isLoading">
+            <div class="loading-page">
+                <div class="container">
+                    <div class="columns">
+                        <div class="column is-half is-offset-one-quarter">
+                            <progress class="progress is-small is-primary" max="100">Loading</progress>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </section>
-    {% endfor %}
+        </template>
+        <template v-else>
+            <div class="container is-fluid">
+                <div class="box">
+                    <p class="title">Annotation Agreement</p>
+                    <div class="block" v-for="(item, i) in agreement_scores" :key="i">
+                        <p class="subtitle">(( item.title ))</p>
+                        <template v-if="item.type == 'table'">
+                            <div class="table-container">
+                                <table class="table">
+                                    <tr>
+                                        <th v-for="col in item.data.header">(( col ))</th>
+                                    </tr>
+                                    <tr v-for="cols in item.data.rows">
+                                        <td v-for="col in cols">
+                                            <template v-if="Array.isArray(col)">
+                                                <div class="tags are-small">
+                                                    <span class="tag" v-for="item in col">(( item ))</span>
+                                                </div>
+                                            </template>
+                                            <template v-else>
+                                                (( col ))
+                                            </template>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </template>
+                        <template v-else-if="item.type == 'value'">
+                            <p>(( item.data ))</p>
+                        </template>
+                    </div>
+                </div>
+                <div class="box">
+                    <p class="title">Model Evaluation</p>
+                    <div class="block field is-horizontal">
+                        <div class="field is-horizontal pr-6">
+                            <div class="field-label is-normal">
+                                <label class="label">Dataset</label>
+                            </div>
+                            <div class="field-body">
+                                <div class="control">
+                                    <div class="select is-rounded is-primary">
+                                        <select v-model="selected_dataset">
+                                            <option v-for="dataset in datasets">(( dataset ))</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field is-horizontal pr-6">
+                            <div class="field-label is-normal">
+                                <label class="label">Model</label>
+                            </div>
+                            <div class="field-body">
+                                <div class="control">
+                                    <div class="select is-rounded is-primary">
+                                        <select v-model="selected_model">
+                                            <option v-for="model in models">(( model ))</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field is-horizontal">
+                            <div class="control">
+                                <!--suppress XmlUnboundNsPrefix -->
+                                <button class="button is-primary is-rounded" v-on:click="submit()">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="block" v-for="(item, i) in eval_scores" :key="i">
+                        <p class="subtitle">(( item.title ))</p>
+                        <template v-if="item.type == 'table'">
+                            <p>(( item.data ))</p>
+                        </template>
+                        <template v-else-if="item.type == 'value'">
+                            <p>(( item.data ))</p>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <!--suppress JSUnresolvedFunction, JSUnresolvedVariable -->
+    <script>
+        let app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    agreement_scores: null,
+                    eval_scores: null,
+                    datasets: null,
+                    models: null,
+                    selected_model: null,
+                    selected_dataset: null,
+                }
+            },
+            methods: {
+                initialize: function () {
+                    $.get('/api/projects/{{ project_id }}/agreement').then(
+                        (data) => {
+                            this.agreement_scores = data.data;
+                        }
+                    ).catch((error) => {
+                        console.log(error);
+                    });
+                    $.get('/api/projects/{{ project_id }}/models').then(
+                        (data) => {
+                            this.models = data.data;
+                            this.selected_model = this.models[0];
+                        }
+                    ).catch((error) => {
+                        console.log(error);
+                    });
+                    $.get('/api/projects/{{ project_id }}/datasets').then(
+                        (data) => {
+                            this.datasets = data.data;
+                            this.selected_dataset = this.datasets[0];
+                        }
+                    ).catch((error) => {
+                        console.log(error);
+                    });
+                },
+                submit: function () {
+                    console.log({
+                        dataset: this.selected_dataset,
+                        model: this.selected_model,
+                    });
+                    let data = {
+                        dataset: this.selected_dataset,
+                        model: this.selected_model,
+                    };
+                    $.post({
+                        type: "POST",
+                        url: '/api/projects/{{ project_id }}/models',
+                        data: JSON.stringify(data),
+                        contentType: 'application/json;charset=UTF-8',
+                    }).then(
+                        (data) => {
+                            this.eval_scores = data.data;
+                        }
+                    ).catch((error) => {
+                        console.log(error);
+                    });
+                },
+            },
+            mounted: function () {
+                this.initialize();
+            },
+            computed: {
+                isLoading: function () {
+                    return (this.agreement_scores === null) || (this.datasets === null) || (this.models === null);
+                }
+            },
+            delimiters: ['((', '))']
+        });
+    </script>
 {% endblock %}

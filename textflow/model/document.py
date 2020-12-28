@@ -2,7 +2,7 @@
 
 import html
 
-from textflow.db import db
+from textflow.service.base import database as db
 
 
 class Document(db.Model):

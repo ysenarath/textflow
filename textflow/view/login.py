@@ -1,24 +1,45 @@
 """ Login View """
 
-from flask import redirect, flash, url_for, render_template, abort, request, Blueprint, get_flashed_messages
-from flask_login import login_required, logout_user, login_user
+from urllib.parse import urlparse, urljoin
+
+from flask import redirect, flash, url_for, render_template, abort, request, Blueprint
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, validators
 
-from textflow import services
-from textflow.login import is_safe_url, login_manager
+from textflow import service, auth
 
 view = Blueprint('login_view', __name__)
 
 
-@login_manager.user_loader
+def is_safe_url(target):
+    """Checks whether URL target is safe.
+
+    :param target: URL
+    :return: whether target is safe or not
+    """
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
+
+
+@auth.login_manager.user_loader
 def load_user(user_id):
-    """ Loads user from ID
+    """Loads user from ID
 
     :param user_id: user_id
     :return: rendered template
     """
-    return services.get_user(int(user_id))
+    return service.get_user(int(user_id))
+
+
+@auth.login_manager.unauthorized_handler
+def unauthorized():
+    """Unauthorized redirection
+
+    :return: rendered unauthorized
+    """
+    flash('You are not authorized to continue. Please login first.')
+    return redirect(url_for('login_view.login'))
 
 
 class LoginForm(FlaskForm):
@@ -28,7 +49,7 @@ class LoginForm(FlaskForm):
 
 
 def login_form():
-    """ Creates and returns login form
+    """Creates and returns login form
 
     :return: New LoginForm
     """
@@ -37,7 +58,7 @@ def login_form():
 
 @view.route('/login', methods=['GET', 'POST'])
 def login():
-    """ Login operation
+    """Login operation
 
     :return: rendered login form
     """
@@ -48,14 +69,14 @@ def login():
     form = login_form()
     if request.method == 'POST':
         if form.validate_on_submit():
-            users = services.filter_users(username=form.username.data)
+            users = service.filter_users(username=form.username.data)
             if (len(users) <= 0) or (users[0] is None) or not users[0].verify_password(form.password.data):
                 flash('Invalid login credentials', 'error')
             else:
                 user = users[0]
                 # Login and validate the user.
                 # user should be an instance of your `User` class
-                login_user(user)
+                auth.login_user(user)
                 flash('Logged in successfully', 'success')
                 # login_user(user, remember=form.remember_me.data)
                 # check whether it is safe to redirect to provide next
@@ -68,21 +89,11 @@ def login():
 
 
 @view.route("/logout")
-@login_required
+@auth.login_required
 def logout():
-    """ Logout
+    """Logout
 
     :return: root page
     """
-    logout_user()
+    auth.logout_user()
     return redirect('/')
-
-
-@login_manager.unauthorized_handler
-def unauthorized():
-    """ unauthorized redirection
-
-    :return: rendered unauthorized
-    """
-    flash('You are not authorized to continue. Please login first.')
-    return redirect(url_for('login_view.login'))

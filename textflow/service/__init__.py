@@ -1,51 +1,16 @@
-""" Includes all service calls to database. """
+"""Includes all service calls to database. """
+
 from sqlalchemy import or_, func, and_, distinct
 from sqlalchemy.exc import SQLAlchemyError
 
-from textflow.db import db
-from textflow.model import dataset
-from textflow.model.annotation import AnnotationSet, Annotation, AnnotationSpan
-from textflow.model.document import Document
-from textflow.model.label import Label
-from textflow.model.project import Project
-from textflow.model.user import User, Assignment
+from textflow.model import *
+from textflow.service.base import service, database as db
 from textflow.utils import Dictionary as Map
 
 
-class Query:
-    """ Query class """
-
-    def __init__(self, fn):
-        self.fn = fn
-
-    def __call__(self, *args, **kwargs):
-        ctx = Map(ignore_user=False)
-        return self.fn(ctx, *args, **kwargs)
-
-    def ignore_user(self, *args, **kwargs):
-        """ Try to run command as admin.
-
-        This will disable all user level constrains.
-
-        :param args: args for fn
-        :param kwargs: kwargs for fn
-        """
-        ctx = Map(ignore_user=True)
-        return self.fn(ctx, *args, **kwargs)
-
-
-def query(fn):
-    """ Creates and returns query callable.
-
-    :param fn: Function to decorate.
-    :return: Query
-    """
-    return Query(fn)
-
-
-@query
+@service
 def get_user(ctx, user_id):
-    """ Loads user from ID
+    """Loads user from ID
 
     :param ctx: context
     :param user_id: gets user from ID
@@ -54,9 +19,9 @@ def get_user(ctx, user_id):
     return User.query.get(int(user_id))
 
 
-@query
+@service
 def filter_users(ctx, **kwargs):
-    """ Filter username
+    """Filter username
 
     :param ctx: context
     :param kwargs: {username}
@@ -68,9 +33,9 @@ def filter_users(ctx, **kwargs):
     return User.query.filter_by(**filters).all()
 
 
-@query
+@service
 def list_documents(ctx, project_id, user_id, paginate=None, paginate_kwargs=None):
-    """ Gets documents completed by provided user.
+    """Gets documents completed by provided user.
 
     :param ctx: context
     :param project_id: project id
@@ -90,9 +55,9 @@ def list_documents(ctx, project_id, user_id, paginate=None, paginate_kwargs=None
     return q.all()
 
 
-@query
+@service
 def next_document(ctx, user_id, project_id):
-    """ Returns next document for annotation by provided user.
+    """Returns next document for annotation by provided user.
 
     :param ctx: context
     :param user_id: user id (not username)
@@ -120,9 +85,9 @@ def next_document(ctx, user_id, project_id):
     return q.first()
 
 
-@query
+@service
 def get_annotation(ctx, project_id, user_id, annotation_id):
-    """ Gets annotation by id
+    """Gets annotation by id
 
     :param ctx: context
     :param project_id: project id
@@ -138,9 +103,9 @@ def get_annotation(ctx, project_id, user_id, annotation_id):
         .first()
 
 
-@query
+@service
 def filter_annotations_by_label(ctx, user_id, project_id, document_id, label_value):
-    """ Gets annotations by label of document for the user.
+    """Gets annotations by label of document for the user.
 
     :return: all annotations with provided label value
     """
@@ -154,9 +119,9 @@ def filter_annotations_by_label(ctx, user_id, project_id, document_id, label_val
         .all()
 
 
-@query
+@service
 def add_annotation(ctx, project_id, user_id, document_id, data):
-    """ Add annotation to set of annotations
+    """Add annotation to set of annotations
 
     :param ctx: context
     :param project_id: project id
@@ -181,9 +146,9 @@ def add_annotation(ctx, project_id, user_id, document_id, data):
         return False
 
 
-@query
+@service
 def delete_annotation(ctx, user_id, project_id, annotation_id):
-    """ Delete annotation by id
+    """Delete annotation by id
 
     :return: whether annotation is deleted or not
     """
@@ -202,9 +167,9 @@ def delete_annotation(ctx, user_id, project_id, annotation_id):
     return True
 
 
-@query
+@service
 def get_annotation_set(ctx, user_id, project_id, document_id):
-    """ Returns annotation set
+    """Returns annotation set
 
     :param ctx: context
     :param user_id: user id (not username)
@@ -236,9 +201,9 @@ def get_annotation_set(ctx, user_id, project_id, document_id):
     return annotation_set
 
 
-@query
+@service
 def filter_label(ctx, project_id, value):
-    """ Gets label from value [unique for project]
+    """Gets label from value [unique for project]
 
     :param ctx: context
     :param project_id: project id
@@ -248,9 +213,9 @@ def filter_label(ctx, project_id, value):
     return Label.query.filter_by(project_id=project_id, value=value).one()
 
 
-@query
+@service
 def update_annotation(ctx, project_id, user_id, annotation_id, data):
-    """ Update annotation [only label]
+    """Update annotation [only label]
 
     :param ctx: context
     :param project_id: project id
@@ -269,9 +234,9 @@ def update_annotation(ctx, project_id, user_id, annotation_id, data):
     return True
 
 
-@query
+@service
 def get_project(ctx, user_id, project_id):
-    """ Gets project provided ID only if it is assigned to user
+    """Gets project provided ID only if it is assigned to user
 
     :param ctx: context
     :param user_id: user id (not username)
@@ -289,9 +254,9 @@ def get_project(ctx, user_id, project_id):
             .first()
 
 
-@query
+@service
 def list_projects(ctx, user_id):
-    """ Gets user provided ID
+    """Gets user provided ID
 
     :param ctx: context
     :param user_id: user id (not username)
@@ -303,9 +268,9 @@ def list_projects(ctx, user_id):
         .all()
 
 
-@query
+@service
 def update_annotation_set(ctx, user_id, document_id, **params):
-    """ Update annotated set
+    """Update annotated set
 
     :param ctx: context
     :param user_id: user id (not username)
@@ -323,9 +288,9 @@ def update_annotation_set(ctx, user_id, document_id, **params):
     return True
 
 
-@query
+@service
 def get_document(ctx, user_id, project_id, document_id):
-    """ get document from document ID
+    """Get document from document ID
 
     Admin level access will ignore user_id, project_id parameters.
 
@@ -348,9 +313,9 @@ def get_document(ctx, user_id, project_id, document_id):
             .first()
 
 
-@query
+@service
 def filter_document(ctx, user_id, project_id, id_str):
-    """ Gets and returns the first document by project id and id str
+    """Gets and returns the first document by project id and id str
 
     Admin level access will ignore user_id parameter.
 
@@ -373,9 +338,9 @@ def filter_document(ctx, user_id, project_id, id_str):
             .first()
 
 
-@query
+@service
 def generate_status_report(ctx, user_id, project_id=None):
-    """ Generates and returns status report
+    """Generates and returns status report
 
     :param ctx: context
     :param user_id: user id (not username)
@@ -408,9 +373,9 @@ def generate_status_report(ctx, user_id, project_id=None):
     return Map()
 
 
-@query
+@service
 def get_assignment(ctx, user_id, project_id):
-    """ get assignment using provided user and project id.
+    """Gets assignment using provided user and project id.
 
     :param ctx: context
     :param user_id: user id
@@ -420,9 +385,9 @@ def get_assignment(ctx, user_id, project_id):
     return Assignment.query.filter(Assignment.user_id == user_id, Assignment.project_id == project_id).first()
 
 
-@query
+@service
 def remove_assignment(ctx, user_id, project_id):
-    """ Remove assignment of a user from the provided project.
+    """Remove assignment of a user from the provided project.
 
     :param ctx: context
     :param user_id: user id
@@ -438,16 +403,49 @@ def remove_assignment(ctx, user_id, project_id):
     return True
 
 
-@query
-def get_dataset(ctx, project_id):
-    """Create dataset from project ID.
+@service
+def list_plugin_names(ctx, project_id, type):
+    if type == 'dataset':
+        p = get_project.ignore_user(user_id=None, project_id=project_id)
+        return list(set(datasets.list_names(project_id) + datasets.list_names(p.type)))
+    elif type == 'model':
+        p = get_project.ignore_user(user_id=None, project_id=project_id)
+        return list(set(models.list_names(project_id) + models.list_names(p.type)))
+    else:
+        return []
+
+
+@service
+def get_dataset(ctx, project_id, name=None):
+    """Gets dataset from project ID.
 
     :param ctx: context
     :param project_id: project id
+    :param name: dataset name (gets `default` if None)
     :return: dataset
     """
-    p = get_project.ignore_user(user_id=None, project_id=project_id)
+    plugin = datasets.get_plugin(project_id, name)
+    if plugin is None:
+        p = get_project.ignore_user(user_id=None, project_id=project_id)
+        plugin = datasets.get_plugin(p.type, name)
+    # get annotation set to build the model
     annotation_sets = AnnotationSet.query \
         .outerjoin(Document, Document.id == AnnotationSet.document_id) \
         .filter(Document.project_id == project_id).all()
-    return dataset.types[p.type](annotation_sets)
+    return plugin(annotation_sets)
+
+
+@service
+def get_model(ctx, project_id, name=None):
+    """Gets (non trained) model from project ID.
+
+    :param ctx: context
+    :param project_id: project id
+    :param name: model name (gets `default` if None)
+    :return: model
+    """
+    plugin = models.get_plugin(project_id, name)
+    if plugin is None:
+        p = get_project.ignore_user(user_id=None, project_id=project_id)
+        plugin = models.get_plugin(p.type, name)
+    return plugin()

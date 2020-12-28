@@ -10,3 +10,5 @@ SQLAlchemy
 Werkzeug
 WTForms
 nltk
+scikit-learn
+sklearn-crfsuite

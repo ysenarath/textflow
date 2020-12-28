@@ -1,6 +1,6 @@
 """ Label Entity """
 
-from textflow.db import db
+from textflow.service.base import database as db
 
 
 class Label(db.Model):

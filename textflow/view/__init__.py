@@ -14,8 +14,8 @@ __all__ = [
 
 
 def get_blueprints():
-    """ Get all views
+    """Get all views
 
-    :return:
+    :return: list of views
     """
-    return [about.view, annotate.view, errors.view, index.view, login.view, project.view, dashboard.view]
+    return [about.view, annotate.view, index.view, login.view, project.view, dashboard.view, errors.view]
