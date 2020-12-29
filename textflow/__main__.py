@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 @click.option('--database_url', default=None)
 @click.pass_context
 def cli(ctx, debug, mode, config_path, database_url):
-    """ Run main group commands
+    """Run main group commands
 
     :param ctx: context
     :param debug: debug mode
@@ -55,7 +55,7 @@ def cli(ctx, debug, mode, config_path, database_url):
 
 @cli.group(name='project')
 def project_group():
-    """ Run project commands
+    """Run project commands
 
     :return: None
     """
@@ -64,7 +64,7 @@ def project_group():
 
 @cli.group(name='user')
 def user_group():
-    """ Run user commands
+    """Run user commands
 
     :return: None
     """
@@ -73,7 +73,7 @@ def user_group():
 
 @cli.group(name='label')
 def label_group():
-    """ Run document commands
+    """Run document commands
 
     :return: None
     """
@@ -82,7 +82,7 @@ def label_group():
 
 @cli.group(name='document')
 def document_group():
-    """ Run label commands
+    """Run label commands
 
     :return: None
     """
@@ -91,7 +91,7 @@ def document_group():
 
 @cli.group(name='annotation')
 def annotation_group():
-    """ Run label commands
+    """Run label commands
 
     :return: None
     """
@@ -104,7 +104,7 @@ def annotation_group():
                                                           'Accepts one of [sequence_labeling, document_classification]')
 @click.pass_context
 def cli_project_create(ctx, name, type):
-    """ Create a project
+    """Create a project
 
     :param ctx: context
     :param name: Name of project used in identifying the project by user
@@ -130,7 +130,7 @@ def cli_project_create(ctx, name, type):
 @click.option('-h', '--header', help='Header html file.', default=None)
 @click.pass_context
 def cli_project_update(ctx, project_id, header):
-    """ Update project
+    """Update project
 
     :param ctx: Context
     :param project_id: Project ID
@@ -154,7 +154,7 @@ def cli_project_update(ctx, project_id, header):
 @project_group.command(name='list')
 @click.pass_context
 def cli_project_show(ctx):
-    """ project_show: -- show all projects --
+    """project_show: -- show all projects --
 
     :param ctx: Context
     :return: None
@@ -182,7 +182,7 @@ def cli_project_show(ctx):
 @click.option('-p', '--password', prompt='Password', help='Password for login')
 @click.pass_context
 def cli_user_create(ctx, username, password):
-    """ Creates user using provided args
+    """Creates user using provided args
 
     :param ctx: context
     :param username: Username
@@ -208,7 +208,7 @@ def cli_user_create(ctx, username, password):
 @click.option('-p', '--password', prompt='New password', help='New password')
 @click.pass_context
 def cli_user_update(ctx, username, password):
-    """ Updates password for provided user
+    """Updates password for provided user
 
     :param ctx: context
     :param username: username for the account that needs the change of password
@@ -238,7 +238,7 @@ def cli_user_update(ctx, username, password):
 @click.option('-p', '--project_id', prompt='Project ID', help='Project ID to assign.')
 @click.pass_context
 def cli_user_assign(ctx, username, project_id):
-    """ Creates user using provided args
+    """Creates user using provided args
 
     :param ctx: context
     :param username: Username
@@ -264,7 +264,7 @@ def cli_user_assign(ctx, username, project_id):
 @click.option('-p', '--project_id', prompt='Project ID', help='Project ID to assign.')
 @click.pass_context
 def cli_user_assign(ctx, username, project_id):
-    """ Creates user using provided args
+    """Creates user using provided args
 
     :param ctx: context
     :param username: Username
@@ -292,7 +292,7 @@ def cli_user_assign(ctx, username, project_id):
 @click.option('-v', '--value', prompt='Value', help='Value')
 @click.pass_context
 def cli_label_create(ctx, project_id, value, label):
-    """ Creates user using provided args
+    """Creates user using provided args
 
     :param ctx: context
     :param project_id: Project ID
@@ -319,7 +319,7 @@ def cli_label_create(ctx, project_id, value, label):
 @click.option('-i', '--input', prompt='Input', help='Path to input file containing document')
 @click.pass_context
 def cli_documents_upload(ctx, project_id, input):
-    """ Creates user using provided args
+    """Creates user using provided args
 
     :param ctx: context
     :param project_id: project id
@@ -349,7 +349,7 @@ def cli_documents_upload(ctx, project_id, input):
 @click.option('-s', '--span', prompt='Span', help='Span range; format: <start, end>')
 @click.pass_context
 def cli_annotation_create(ctx, project_id, document_id, user_id, label, span):
-    """ Creates user using provided args
+    """Creates user using provided args
 
     :param ctx: context
     :param project_id: project id
