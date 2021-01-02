@@ -30,7 +30,7 @@
                 <div class="box">
                     {% if project.type == 'sequence_labeling' %}
                         <div class="annotator-div is-family-primary is-size-4" id="annotationField"></div>
-                    {% elif project.type == 'document_classification' %}
+                    {% elif project.type == 'classification' %}
                         <p class="card-text flex-grow-1">{{ document.text }}</p>
                         {% for ll in project.labels %}
                             <label class="form-check-label">{{ ll.label }}</label>
@@ -50,7 +50,8 @@
                     <div class="box">
                         <h1 class="title">Congratulations!</h1>
                         <div class="block">
-                            <p>We do not have any more documents for you to annotate now. We will let you know if we need your help again.</p>
+                            <p>We do not have any more documents for you to annotate now. We will let you know if we
+                                need your help again.</p>
                         </div>
                         <h2 class="subtitle">Thank you for your contribution.</h2>
                     </div>
@@ -66,59 +67,125 @@
     <!--suppress JSUnresolvedFunction, JSUnresolvedVariable -->
     {% if document is not none %}
         <script>
+            // collection of URL endpoints
+            const url_of = {
+                annotations_api: '{{ url_for('annotate_view.get_annotations', project_id = project.id, document_id = document.id) }}',
+                annotate_next: '{{ url_for('annotate_view.annotate_next', project_id = project.id) }}',
+            };
+
+            const documentText = '{{ document.text | safe }}';
+
+            const projectType = '{{ project.type }}';
+
+            const labelOptions = JSON.parse('{{ options | safe }}');
+
+            let annotator = null;
+
+            function loading(state = true) {
+                let nextButton = document.getElementById('nextButton');
+                if (state) {
+                    nextButton.classList.add('is-loading')
+                } else {
+                    nextButton.classList.remove('is-loading');
+                }
+            }
+
+            /**
+             * Gets status of checkbox indicated by provided label ident
+             *
+             * @param id: label id
+             */
             function getLabel(id) {
                 let checkbox = $('#option_' + id);
                 return {value: checkbox.val(), status: checkbox.prop('checked')};
             }
 
-            function showLoading() {
-                let nextButton = document.getElementById('nextButton');
-                nextButton.classList.add('is-loading');
-            }
-
+            /**
+             * Submit data to server
+             *
+             * @param data: JSON data
+             * @param type: type of submission; options: (label, annotation)
+             * @param method: method to use for submission; options: (POST, DELETE)
+             */
             function submit(data, type = 'label', method = 'POST') {
-                showLoading();
+                loading();
                 let temp = {};
-                let target = '/projects/{{ project.id }}/annotate';
+                let target = url_of.annotate_next;
                 if (data !== null) {
                     temp = {data, type};
-                    target = '/projects/{{ project.id }}/annotate/' + '{{ document.id | safe }}';
+                    target = null;
                 }
                 $.ajax({
                     type: method,
-                    url: '/projects/{{ project.id }}/annotate/' + '{{ document.id | safe }}',
+                    url: url_of.annotations_api,
                     dataType: 'json',
                     contentType: "application/json; charset=utf-8",
                     data: JSON.stringify(temp),
                     success: function (data) {
-                        window.location.href = target;
+                        loading(false);
+                        refresh(target);
                     },
                 });
             }
 
-            {% if project.type == 'sequence_labeling' %}
-                function initialize(annotations) {
-                    let a = new Annotator('annotationField', '{{ document.text | safe }}', JSON.parse('{{ options | safe }}'));
-                    // load initial annotations
-                    a.setAnnotations(annotations);
+            /**
+             * Update annotations
+             */
+            function refreshAnnotations() {
+                loading();
+                $.get(url_of.annotations_api).then(
+                    (data) => {
+                        let annotations = data.data;
+                        annotator.setAnnotations(annotations);
+                        loading(false);
+                    }
+                ).catch((error) => {
+                    console.log(error);
+                });
+            }
+
+            /**
+             * Refresh page
+             *
+             * @param target:
+             */
+            function refresh(target) {
+                if (target === null && annotator !== null) {
+                    refreshAnnotations();
+                } else if (target === null) {
+                    location.reload();
+                } else {
+                    window.location.href = target;
+                }
+            }
+
+            /**
+             * Initialize page
+             */
+            function initialize() {
+                if (projectType === 'sequence_labeling') {
+                    // set new annotator
+                    annotator = new Annotator('annotationField', documentText, labelOptions);
                     // listen to events - delete
-                    a.addEventListener('delete', (annotation) => {
+                    annotator.addEventListener('delete', (annotation) => {
                         submit(annotation, 'annotation', 'DELETE');
                     });
                     // listen to events - update
-                    a.addEventListener('update', (annotation, value) => {
+                    annotator.addEventListener('update', (annotation, value) => {
                         annotation.label = value;
                         submit(annotation, 'annotation');
                     });
                     // initialize annotator
-                    a.initialize();
+                    annotator.initialize();
+                    // refresh page
+                    refresh(null);
                 }
+            }
 
-                $(document).ready(function () {
-                    let annotations = JSON.parse('{{ annotations | safe }}');
-                    initialize(annotations)
-                });
-            {% endif %}
+            /**
+             * Initialize when document is ready
+             */
+            $(document).ready(initialize);
         </script>
     {% endif %}
 {% endblock %}
