@@ -1,0 +1,8 @@
+[submodule "Documentation"]
+    path = docs/_build/html
+    url = https://github.com/ysenarath/textflow.git
+    branch = master
+[submodule "docs/_build/html"]
+	path = docs/_build/html
+	url = https://github.com/ysenarath/textflow.git
+	branch = gh-pages
