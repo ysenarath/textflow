@@ -120,9 +120,10 @@ def cli_project_create(ctx, name, type):
             a = Project(name=name, type=type)
             db.session.add(a)
             db.session.commit()
+            logger.info('Project with name {} created successfully'.format(name))
         except SQLAlchemyError as e:
             db.session.rollback()
-            logger.error(str(e))
+            logger.error('Error: {}'.format(str(e)))
 
 
 @project_group.command(name='update')
@@ -148,7 +149,7 @@ def cli_project_update(ctx, project_id, header):
             db.session.commit()
         except SQLAlchemyError as e:
             db.session.rollback()
-            logger.error(str(e))
+            logger.error('Error: {}'.format(str(e)))
 
 
 @project_group.command(name='list')
@@ -200,7 +201,7 @@ def cli_user_create(ctx, username, password):
             logger.info('Completed successfully.')
         except SQLAlchemyError as e:
             db.session.rollback()
-            logger.error('Completed with an error: {}'.format(str(e)))
+            logger.error('Error: {}'.format(str(e)))
 
 
 @user_group.command(name='update')
@@ -230,7 +231,7 @@ def cli_user_update(ctx, username, password):
                 logger.error('Completed with an error: User not found.')
         except SQLAlchemyError as e:
             db.session.rollback()
-            logger.error('Completed with an error: {}'.format(str(e)))
+            logger.error('Error: {}'.format(str(e)))
 
 
 @user_group.command(name='assign')
@@ -256,7 +257,7 @@ def cli_user_assign(ctx, username, project_id):
             logger.info('Completed successfully.')
         except SQLAlchemyError as e:
             db.session.rollback()
-            logger.error('Completed with an error: {}'.format(str(e)))
+            logger.error('Error: {}'.format(str(e)))
 
 
 @user_group.command(name='unassign')
@@ -283,7 +284,7 @@ def cli_user_assign(ctx, username, project_id):
                 logger.error('Completed with an error: assignment not found.')
         except SQLAlchemyError as e:
             db.session.rollback()
-            logger.error('Completed with an error: {}'.format(str(e)))
+            logger.error('Error: {}'.format(str(e)))
 
 
 @label_group.command(name='create')
@@ -311,7 +312,7 @@ def cli_label_create(ctx, project_id, value, label):
             logger.info('Completed successfully.')
         except SQLAlchemyError as e:
             db.session.rollback()
-            logger.error('Completed with an error: {}'.format(str(e)))
+            logger.error('Error: {}'.format(str(e)))
 
 
 @document_group.command(name='upload')
@@ -338,7 +339,7 @@ def cli_documents_upload(ctx, project_id, input):
             logger.info('Completed successfully.')
         except SQLAlchemyError as e:
             db.session.rollback()
-            logger.error('Completed with an error: {}'.format(str(e)))
+            logger.error('Error: {}'.format(str(e)))
 
 
 @annotation_group.command(name='create')
@@ -369,9 +370,10 @@ def cli_annotation_create(ctx, project_id, document_id, user_id, label, span):
             data = {'label': {'value': label}, 'span': {'start': span[0], 'length': span[1] - span[0]}}
             service.add_annotation(project_id, user_id, doc.id, data)
             logger.info('Completed successfully.')
-        except SQLAlchemyError as e:
+        except SQLAlchemyError as err:
             db.session.rollback()
-            logger.error('Completed with an error: {}'.format(str(e)))
+            err_msg = err.args[0]
+            logger.error('Error: {}'.format(err_msg))
 
 
 if __name__ == '__main__':
