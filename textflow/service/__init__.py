@@ -364,11 +364,15 @@ def generate_status_report(ctx, user_id, project_id=None):
         num_assigned = Document.query \
             .filter(Document.project_id == project_id) \
             .count()
+        if num_assigned == 0:
+            progress = 100
+        else:
+            progress = num_completed * 100 / num_assigned
         return Map(
             num_annotations=Map({v: (l, c) for v, l, c in num_annotations}),
             num_assigned=num_assigned,
             num_completed=num_completed,
-            progress=num_completed * 100 / num_assigned,
+            progress=progress,
         )
     return Map()
 
