@@ -1,25 +1,136 @@
 {% extends '_layout.html' %}
 
+{% set is_index = true %}
+
+{% block styles %}
+    {{ super() }}
+{% endblock %}
+
 {% block is_full_content %}
-    <section class="hero is-primary is-medium is-light is-bold">
+    <section class="hero is-fullheight-with-navbar" style="font-family: 'Roboto', sans-serif;">
         <div class="hero-body">
-            <div class="container">
+            <div class="container p-6">
                 <div class="columns">
-                    <div class="col">
-                        <h1 class="title">
+                    <div class="column has-text-centered">
+                        <h1 class="title is-1">
                             TextFlow
                         </h1>
                         <h2 class="subtitle">
-                            Annotation Simplified
+                            Text Modeling Simplified!
                         </h2>
                     </div>
-                    <div class="col">
-                        <figure class="image is-square">
-                            <img src="static/images/hero-image.png">
-                        </figure>
+                </div>
+                <div class="columns">
+                    <div class="column has-text-centered">
+                        <p class="is-text">A simple and extensible framework for end to end text based natural language
+                            understanding.</p>
+                    </div>
+                </div>
+                <div class="columns is-centered">
+                    <div class="buttons is-centered">
+                        <a class="button is-success" href="https://docs.textflow.app/">Documentation</a>
+                        <a class="button is-info" href="https://github.com/ysenarath/textflow">GitHub Project</a>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="m-6 p-3"></div>
+                </div>
+                <!-- </div><div class="hero-foot"> -->
+                <div class="columns">
+                    <div class="column">
+                        <nav class="level">
+                            <div class="level-item has-text-centered">
+                                <div>
+                                    <p class="heading">Annotate</p>
+                                    <span class="is-size-1">
+                                <i class="fas fa-tag"></i>
+                            </span>
+                                </div>
+                            </div>
+                            <div class="level-item has-text-centered">
+                                <div>
+                                    <p class="heading">Model</p>
+                                    <span class="is-size-1">
+                                <i class="fas fa-cogs"></i>
+                            </span>
+                                </div>
+                            </div>
+                            <div class="level-item has-text-centered">
+                                <div>
+                                    <p class="heading">Evaluate</p>
+                                    <span class="is-size-1">
+                                <i class="fas fa-chart-pie"></i>
+                            </span>
+                                </div>
+                            </div>
+                        </nav>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+    <span class="p-6"></span>
+    <section class="section" style="font-family: 'Roboto', sans-serif;">
+        <div class="container">
+            <div class="columns pb-6">
+                <div class="column">
+                    <p class="title has-text-centered">Supported Task Types</p>
+                </div>
+            </div>
+            <div class="columns">
+                <div class="column">
+                    <div class="card">
+                        <header class="card-header">
+                            <p class="card-header-title">
+                                Document Classification
+                            </p>
+                        </header>
+                        <div class="card-image">
+                            <figure class="image is-3by2">
+                                <img src="https://bulma.io/images/placeholders/1280x960.png" alt="Placeholder image">
+                            </figure>
+                        </div>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="card">
+                        <header class="card-header">
+                            <p class="card-header-title">
+                                Document Annotation
+                            </p>
+                        </header>
+                        <div class="card-image">
+                            <figure class="image is-3by2">
+                                <img src="https://bulma.io/images/placeholders/1280x960.png" alt="Placeholder image">
+                            </figure>
+                        </div>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="card">
+                        <header class="card-header">
+                            <p class="card-header-title">
+                                Custom Format<span class="pl-1">?</span>
+                            </p>
+                        </header>
+                        <div class="card-image">
+                            <figure class="image is-3by2">
+                                <img src="https://bulma.io/images/placeholders/1280x960.png" alt="Placeholder image">
+                            </figure>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <footer class="footer">
+        <div class="content has-text-centered">
+            <p>
+                <strong>TextFlow</strong> by <a href="https://www.ysenarath.com">Yasas Senarath</a>. The source code is
+                licensed
+                <a href="http://opensource.org/licenses/mit-license.php">MIT</a>. The website content
+                is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
+            </p>
+        </div>
+    </footer>
 {% endblock %}

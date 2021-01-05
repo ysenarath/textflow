@@ -49,3 +49,8 @@ tr td:last-child {
 .notifyjs-container {
     max-width: 250px !important;
 }
+
+@font-face {
+  font-family: Roboto;
+  src: url(/static/fonts/Roboto/Roboto-Light.ttf);
+}
