@@ -61,6 +61,9 @@ def get_annotations(project_id, document_id):
     if annotation_set is not None and project.type == 'sequence_labeling':
         for a in annotation_set.annotations:
             annotations.append(dict(id=a.id, label=a.label.value, span=dict(start=a.span.start, length=a.span.length)))
+    elif annotation_set is not None:
+        for a in annotation_set.annotations:
+            annotations.append(dict(id=a.id, label=a.label.value))
     return jsonify(jsend.success(annotations))
 
 

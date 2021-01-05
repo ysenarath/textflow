@@ -51,6 +51,18 @@ tr td:last-child {
 }
 
 @font-face {
-  font-family: Roboto;
-  src: url(/static/fonts/Roboto/Roboto-Light.ttf);
+    font-family: Roboto;
+    src: url(/static/fonts/Roboto/Roboto-Light.ttf);
+}
+
+.checkbox {
+    background-color: #fff;
+    color: #363636;
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    padding: calc(.5em - 1px) 1em;
+    justify-content: center;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
 }

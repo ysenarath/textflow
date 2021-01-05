@@ -30,15 +30,22 @@
                 <div class="box">
                     {% if project.type == 'sequence_labeling' %}
                         <div class="annotator-div is-family-primary is-size-4" id="annotationField"></div>
-                    {% elif project.type == 'classification' %}
-                        <p class="card-text flex-grow-1">{{ document.text }}</p>
-                        {% for ll in project.labels %}
-                            <label class="form-check-label">{{ ll.label }}</label>
-                            <input class="form-check-input" type="checkbox"
-                                   value={{ ll.value }} id="option_{{ ll.value }}"
-                                   onchange="submit(getLabel('{{ ll.value }}'))"
-                                   {% if annotation_set is not none and annotation_set.get_annotation(ll.value) is not none %}checked{% endif %}>
-                        {% endfor %}
+                    {% else %}
+                        <div class="block">
+                            <p class="subtitle">{{ document.text | safe }}</p>
+                        </div>
+                        <div class="block">
+                            <div class="field">
+                                {% for ll in project.labels %}
+                                    <label class="checkbox">
+                                        <input type="checkbox"
+                                               value={{ ll.value }} id="option_{{ ll.value }}"
+                                               onchange="submit(getLabel('{{ ll.value }}'))">
+                                        {{ ll.label }}
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
                     {% endif %}
                 </div>
             </div>
@@ -84,7 +91,7 @@
             function loading(state = true) {
                 let nextButton = document.getElementById('nextButton');
                 if (state) {
-                    nextButton.classList.add('is-loading')
+                    nextButton.classList.add('is-loading');
                 } else {
                     nextButton.classList.remove('is-loading');
                 }
@@ -150,10 +157,8 @@
              * @param target:
              */
             function refresh(target) {
-                if (target === null && annotator !== null) {
+                if (target === null) {
                     refreshAnnotations();
-                } else if (target === null) {
-                    location.reload();
                 } else {
                     window.location.href = target;
                 }
@@ -177,9 +182,29 @@
                     });
                     // initialize annotator
                     annotator.initialize();
-                    // refresh page
-                    refresh(null);
+                } else {
+                    annotator = {
+                        setAnnotations: function (annotations) {
+                            let checkedLabels = [];
+                            for (let ak in annotations) {
+                                let lv = annotations[ak].label;
+                                checkedLabels.push(lv);
+                            }
+                            for (let lk in labelOptions) {
+                                let lv = labelOptions[lk].value;
+                                let checkbox = $('#option_' + lv);
+                                if (checkedLabels.includes(lv)) {
+                                    checkbox.prop('checked', true);
+                                } else {
+                                    checkbox.prop('checked', false);
+                                }
+                            }
+
+                        }
+                    }
                 }
+                // refresh page
+                refresh(null);
             }
 
             /**
