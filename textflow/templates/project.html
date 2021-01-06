@@ -28,86 +28,90 @@
 {% endmacro %}
 
 {% block is_full_content %}
-    <section class="hero is-primary is-bold">
-        <div class="hero-body">
-            <div class="container has-text-centered mb-6">
-                <h1 class="title">{{ project.name }}
-                    <a href="/projects/{{ project.id }}/annotate" class="button is-primary is-inverted">
+    <section class="section">
+        <div class="container box p-6">
+            <!-- Header -->
+            <div class="block">
+                <h1 class="title has-text-centered">{{ project.name }}
+                    <a href="/projects/{{ project.id }}/annotate" class="button is-inverted">
                         <span class="icon">
                             <i class="fas fa-tag"></i>
                         </span>
                     </a>
                 </h1>
-                <h2 class="subtitle">{{ project.description }}</h2>
+                <h2 class="subtitle has-text-centered">{{ project.description }}</h2>
             </div>
-            <nav class="level is-mobile">
-                <div class="level-item has-text-centered">
-                    <div>
-                        <p class="heading">Total</p>
-                        <p class="title">{{ project_status.num_assigned }}</p>
+            <!-- Information -->
+            <div class="block">
+                <nav class="level">
+                    <div class="level-item has-text-centered">
+                        <div>
+                            <p class="heading">Total</p>
+                            <p class="title">{{ project_status.num_assigned }}</p>
+                        </div>
                     </div>
-                </div>
-                <div class="level-item has-text-centered">
-                    <div>
-                        <p class="heading">Completed</p>
-                        <p class="title">{{ project_status.num_completed }}</p>
+                    <div class="level-item has-text-centered">
+                        <div>
+                            <p class="heading">Completed</p>
+                            <p class="title">{{ project_status.num_completed }}</p>
+                        </div>
                     </div>
-                </div>
-                <div class="level-item has-text-centered">
-                    <div>
-                        <p class="heading">Remaining</p>
-                        <p class="title">{{ project_status.num_assigned - project_status.num_completed }}</p>
+                    <div class="level-item has-text-centered">
+                        <div>
+                            <p class="heading">Remaining</p>
+                            <p class="title">{{ project_status.num_assigned - project_status.num_completed }}</p>
+                        </div>
                     </div>
-                </div>
-                <div class="level-item has-text-centered">
-                    <div>
-                        <p class="heading">Progress</p>
-                        <p class="title">{{ '%d' | format(project_status.progress) }}%</p>
+                    <div class="level-item has-text-centered">
+                        <div>
+                            <p class="heading">Progress</p>
+                            <p class="title">{{ '%d' | format(project_status.progress) }}%</p>
+                        </div>
                     </div>
-                </div>
-            </nav>
-            <div class="container pb-3">
+                </nav>
+            </div>
+            <!-- Progress <div class="block">
                 <progress class="progress is-dark" value="{{ project_status.progress }}"
                           max="100">{{ project_status.progress }}%
                 </progress>
-            </div>
-            <div class="is-flex flex-wrap is-justify-content-center">
-                {% for k, v in project_status.num_annotations.items() %}
-                    <p class="heading pr-3">{{ k }}-{{ v[1] }}</p>
-                    {% if not loop.last %}<p class="heading pr-3">/</p>{% endif %}
-                {% endfor %}
+            </div> -->
+            <!-- Label items -->
+            <div class="block">
+                <div class="is-flex flex-wrap is-justify-content-center">
+                    {% for k, v in project_status.num_annotations.items() %}
+                        <p class="heading pr-3">{{ v[0] }}-{{ v[1] }}</p>
+                        {% if not loop.last %}<p class="heading pr-3">/</p>{% endif %}
+                    {% endfor %}
+                </div>
             </div>
         </div>
-    </section>
-    <section class="hero">
-        <div class="hero-body">
-            <div class="container">
-                <div class="box">
-                    <div class="table-container">
-                        <table class="table is-fullwidth">
-                            <thead>
+        <div class="container p-6 box">
+            <!-- Annotated documents table -->
+            <div class="block">
+                <div class="table-container">
+                    <table class="table is-fullwidth">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Text</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for d in documents.items %}
                             <tr>
-                                <th>#</th>
-                                <th>Text</th>
-                                <th>Action</th>
+                                <th scope="row">{{ d.id }}</th>
+                                <td> {{ d.text | safe }}</td>
+                                <td><a class="button" href="{{ project.id }}/annotate/{{ d.id }}">
+                                    <i class="fas fa-tag"></i>
+                                </a></td>
                             </tr>
-                            </thead>
-                            <tbody>
-                            {% for d in documents.items %}
-                                <tr>
-                                    <th scope="row">{{ d.id }}</th>
-                                    <td> {{ d.text | safe }}</td>
-                                    <td><a class="button" href="{{ project.id }}/annotate/{{ d.id }}">
-                                        <i class="fas fa-tag"></i>
-                                    </a></td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="d-flex justify-content-center">
-                        {{ render_pagination(documents, 'project_view.view_project') }}
-                    </div>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="d-flex justify-content-center">
+                    {{ render_pagination(documents, 'project_view.view_project') }}
                 </div>
             </div>
         </div>
