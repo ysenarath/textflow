@@ -4,7 +4,7 @@
     <div class="columns">
         <div class="column is-one-third is-offset-one-third">
             <div class="box">
-                <h1 class="title">Log in</h1>
+                <h1 class="title has-text-centered">Log in</h1>
                 <form method="POST" action="/login?next={{ next | safe }}">
                     {{ form.csrf_token }}
                     <div class="field">
@@ -25,10 +25,8 @@
                     </span>
                         </p>
                     </div>
-                    <div class="field">
-                        <p class="control">
-                            <input class="button is-success" type="submit" value="Login"/>
-                        </p>
+                    <div class="buttons has-addons is-right pt-3">
+                        <input class="button is-primary is-outlined" type="submit" value="Login"/>
                     </div>
                 </form>
             </div>

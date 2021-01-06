@@ -9,9 +9,10 @@
     {% if document is not none %}
         <div class="columns">
             <div class="column">
-                <a href="/projects/{{ project.id }}" class="button is-pulled-left"><i
-                        class="fas fa-tasks mr-1"></i><span>Project</span></a>
-                <a id="nextButton" href="javascript:void(0)" class="button is-primary is-pulled-right"
+                <a href="/projects/{{ project.id }}" class="button is-info is-outlined is-pulled-left">
+                    <i class="fas fa-tasks mr-1"></i><span>Project</span>
+                </a>
+                <a id="nextButton" href="javascript:void(0)" class="button is-primary is-outlined is-pulled-right"
                    onclick="submit(null)">
                     <span>Next</span><i class="fas fa-arrow-circle-right pl-1"></i></a>
             </div>
