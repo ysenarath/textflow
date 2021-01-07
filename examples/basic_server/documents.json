@@ -1,15 +1,9 @@
 [
     {
         "id": "A01",
-        "text": "A1: this &is a \"sample document.",
+        "text": "It has been a good experience! If you need anything, please reach out. \uD83D\uDE0A️",
         "meta": {
-            "annotations": [
-                {
-                    "al": {
-                        "name": "4"
-                    }
-                }
-            ]
+            "image": "https://upload.wikimedia.org/wikipedia/commons/b/bb/How_Technology_Is_Changing_the_Way_We_Love.jpg"
         }
     },
     {

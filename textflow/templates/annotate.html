@@ -8,7 +8,7 @@
 {% block content %}
     {% if document is not none %}
         <div class="columns">
-            <div class="column">
+            <div class="column" style="min-height: 64px">
                 <a href="/projects/{{ project.id }}" class="button is-info is-outlined is-pulled-left">
                     <i class="fas fa-tasks mr-1"></i><span>Project</span>
                 </a>
@@ -38,7 +38,7 @@
                         <div class="block">
                             <div class="field">
                                 {% for ll in project.labels %}
-                                    <label class="checkbox">
+                                    <label class="checkbox m-1">
                                         <input type="checkbox"
                                                value={{ ll.value }} id="option_{{ ll.value }}"
                                                onchange="submit(getLabel('{{ ll.value }}'))">
@@ -52,17 +52,15 @@
             </div>
         </div>
     {% else %}
-        <div class="container">
-            <div class="columns">
-                <div class="column is-half is-offset-one-quarter">
-                    <div class="box">
-                        <h1 class="title">Congratulations!</h1>
-                        <div class="block">
-                            <p>We do not have any more documents for you to annotate now. We will let you know if we
-                                need your help again.</p>
-                        </div>
-                        <h2 class="subtitle">Thank you for your contribution.</h2>
+        <div class="columns">
+            <div class="column is-half is-offset-one-quarter">
+                <div class="box">
+                    <h1 class="title">Congratulations!</h1>
+                    <div class="block">
+                        <p>We do not have any more documents for you to annotate now. We will let you know if we
+                            need your help again.</p>
                     </div>
+                    <h2 class="subtitle">Thank you for your contribution.</h2>
                 </div>
             </div>
         </div>
