@@ -141,5 +141,8 @@ cython_debug/
 .idea/
 /examples/basic_server/config.json
 /examples/basic_server/database.sqlite
-/examples/healther/
 .DS_Store
+
+# Ignore dependent servers
+/examples/healther/
+/examples/advance_server/
