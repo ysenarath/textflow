@@ -1,0 +1,29 @@
+{% macro render_pagination(pagination, endpoint) %}
+    {% if project is defined %}
+        {% set project_id = project.id %}
+    {% else %}
+        {% set project_id = 0 %}
+    {% endif %}
+    <nav class="pagination is-rounded" role="navigation" aria-label="pagination">
+        <a href="{{ url_for(endpoint, project_id=project_id, page=current_page - 1, per_page=per_page) }}"
+           class="pagination-previous" {% if not pagination.has_prev %}disabled{% endif %}>Previous</a>
+        <a href="{{ url_for(endpoint, project_id=project_id, page=current_page + 1, per_page=per_page) }}"
+           class="pagination-next" {% if not pagination.has_next %}disabled{% endif %}>Next page</a>
+        <ul class="pagination-list">
+            {%- for page in pagination.iter_pages() %}
+                {% if page %}
+                    {% if page != pagination.page %}
+                        <li><a href="{{ url_for(endpoint, project_id=project_id, page=page, per_page=per_page) }}"
+                               class="pagination-link" aria-label="Goto page {{ page }}">{{ page }}</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for(endpoint, project_id=project_id, page=page, per_page=per_page) }}"
+                               class="pagination-link is-current" aria-label="Page {{ page }}"
+                               aria-current="page">{{ page }}</a></li>
+                    {% endif %}
+                {% else %}
+                    <li><span class="pagination-ellipsis">&hellip;</span></li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+{% endmacro %}

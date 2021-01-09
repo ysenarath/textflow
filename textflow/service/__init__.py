@@ -62,7 +62,6 @@ def next_document(ctx, user_id, project_id):
     :param ctx: context
     :param user_id: user id (not username)
     :param project_id: project id
-    :param project_id: project id
     :return: document if exist else none
     """
     # get documents that were only annotated by less than
@@ -255,17 +254,21 @@ def get_project(ctx, user_id, project_id):
 
 
 @service
-def list_projects(ctx, user_id):
+def list_projects(ctx, user_id, paginate=None, paginate_kwargs=None):
     """Gets user provided ID
 
     :param ctx: context
     :param user_id: user id (not username)
+    :param paginate: whether to paginate output
+    :param paginate_kwargs: paginate keyword args
     :return: get user
     """
-    return Project.query \
+    q = Project.query \
         .join(Assignment, Assignment.project_id == Project.id) \
-        .filter(Assignment.user_id == user_id) \
-        .all()
+        .filter(Assignment.user_id == user_id)
+    if paginate is not None:
+        return q.paginate(**paginate_kwargs)
+    return q.all()
 
 
 @service
