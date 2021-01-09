@@ -80,10 +80,17 @@ class AgreementScore:
         """
         pairs = self._get_pairs()
         scores = [0 for _ in range(len(pairs))]
+        if len(scores) == 0:
+            score_table = Map(header=('pair', 'score', 'support'), rows=list())
+            return Map(avg_score=0.0, weighted_avg_score=0.0, score_table=score_table)
         for ix, pair in enumerate(pairs):
             scores[ix] = func(*pair, return_support=True)
-        weighted_sum = sum([score * w for score, w in scores])
-        weighted_avg_score = weighted_sum / sum([w for _, w in scores])
+        sum_of_weights = sum([w for _, w in scores])
+        if sum_of_weights == 0:
+            weighted_avg_score = 0
+        else:
+            weighted_sum = sum([score * w for score, w in scores])
+            weighted_avg_score = weighted_sum / sum_of_weights
         avg_score = statistics.mean([score for score, _ in scores])
         scores, support = list(zip(*scores))
         score_table = Map(header=('pair', 'score', 'support'), rows=list(zip(pairs, scores, support)))
