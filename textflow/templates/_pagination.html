@@ -5,10 +5,18 @@
         {% set project_id = 0 %}
     {% endif %}
     <nav class="pagination is-rounded" role="navigation" aria-label="pagination">
-        <a href="{{ url_for(endpoint, project_id=project_id, page=current_page - 1, per_page=per_page) }}"
-           class="pagination-previous" {% if not pagination.has_prev %}disabled{% endif %}>Previous</a>
-        <a href="{{ url_for(endpoint, project_id=project_id, page=current_page + 1, per_page=per_page) }}"
-           class="pagination-next" {% if not pagination.has_next %}disabled{% endif %}>Next page</a>
+        {% if pagination.has_prev %}
+            <a href="{{ url_for(endpoint, project_id=project_id, page=current_page - 1, per_page=per_page) }}"
+               class="pagination-previous">Previous</a>
+        {% else %}
+            <button class="pagination-next" disabled>Previous</button>
+        {% endif %}
+        {% if pagination.has_next %}
+            <a href="{{ url_for(endpoint, project_id=project_id, page=current_page + 1, per_page=per_page) }}"
+                class="pagination-next">Next</a>
+        {% else %}
+            <button class="pagination-next" disabled>Next</button>
+        {% endif %}
         <ul class="pagination-list">
             {%- for page in pagination.iter_pages() %}
                 {% if page %}
