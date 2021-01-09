@@ -14,21 +14,36 @@
         <div class="navbar-start"></div>
         <div class="navbar-end">
             {% if current_user.is_authenticated %}
-                <a class="navbar-item" href="/">
-                    <i class="fas fa-home"></i>
-                </a>
-                <a class="navbar-item" href="/logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                </a>
+                <div class="navbar-item p-1">
+                    <a class="button is-rounded" href="/">
+                        <i class="fas fa-home"></i>
+                    </a>
+                </div>
+                <div class="navbar-item p-1">
+                    <div class="field has-addons">
+                        <p class="control">
+                            <a class="button is-rounded">
+                                <i class="fas fa-user"></i>
+                            </a>
+                        </p>
+                        <p class="control">
+                            <a class="button">
+                                <span class="is-text">{{ current_user.username }}</span>
+                            </a>
+                        </p>
+                        <p class="control">
+                            <a class="button is-rounded" href="/logout">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </a>
+                        </p>
+                    </div>
+                </div>
             {% else %}
-                <!--
-                <a href="/signup" class="button is-light">
-                    <i class="fas fa-user-plus"></i>
-                </a>
-                -->
-                <a class="navbar-item" href="/login">
-                    <i class="fas fa-sign-in-alt"></i>
-                </a>
+                <div class="navbar-item p-1">
+                    <a class="button is-rounded" href="/login">
+                        <i class="fas fa-sign-in-alt mr-3"></i> Login
+                    </a>
+                </div>
             {% endif %}
         </div>
     </div>
