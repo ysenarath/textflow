@@ -1,6 +1,10 @@
 """ Implements model types: `classifiers` and `sequence classifier` """
 
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.linear_model import LogisticRegression
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.preprocessing import MultiLabelBinarizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 import sklearn_crfsuite
 
 from textflow.utils import PluginManager
@@ -123,3 +127,36 @@ class SequenceClassifier(BaseEstimator, SequenceClassifierMixin):
         else:
             features['EOS'] = True
         return features
+
+
+@models.register('classification')
+class MultiLabelClassifier(BaseEstimator, ClassifierMixin):
+    def __init__(self):
+        pass
+
+    # noinspection PyAttributeOutsideInit
+    def fit(self, X, y, **kwargs):
+        """
+
+        :param X: iterable of documents
+        :param y: labels
+        :param kwargs:
+        :return:
+        """
+        clf = LogisticRegression()
+        self.model_ = MultiOutputClassifier(clf)
+        self.mlb_ = MultiLabelBinarizer()
+        self.ext_ = TfidfVectorizer()
+        X = self.ext_.fit_transform(X)
+        y = self.mlb_.fit_transform(y)
+        self.model_.fit(X, y)
+
+    def predict(self, X):
+        """Predict labels for provided iterable of documents
+
+        :param X: iterable of documents
+        :return: labels
+        """
+        X = self.ext_.transform(X)
+        yt = self.model_.predict(X)
+        return self.mlb_.inverse_transform(yt)
