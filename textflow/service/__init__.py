@@ -435,7 +435,7 @@ def get_dataset(ctx, project_id, name=None):
     # get annotation set to build the model
     annotation_sets = AnnotationSet.query \
         .outerjoin(Document, Document.id == AnnotationSet.document_id) \
-        .filter(Document.project_id == project_id).all()
+        .filter(Document.project_id == project_id, AnnotationSet.completed.is_(True)).all()
     return plugin(annotation_sets)
 
 
