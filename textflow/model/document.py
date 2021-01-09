@@ -15,7 +15,9 @@ class Document(db.Model):
 
     def __init__(self, **kwargs):
         super(Document, self).__init__(**kwargs)
-        self.text = html.escape(self.text)
+        # TODO: fix \n repr
+        text = self.text.replace('\n', ' ')
+        self.text = html.escape(text)
 
     def __getitem__(self, item):
         return html.unescape(self.text.__getitem__(item))
