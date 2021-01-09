@@ -66,8 +66,11 @@ def get_models(project_id):
     if request.method == 'POST':
         dataset = service.get_dataset(project_id, request.json['dataset'])
         model = service.get_model(project_id, request.json['model'])
-        train_X, test_X, train_y, test_y = train_test_split(dataset.X, dataset.y)
-        flat_f1 = model.fit(train_X, train_y).score(test_X, test_y)
+        try:
+            train_X, test_X, train_y, test_y = train_test_split(dataset.X, dataset.y)
+            flat_f1 = model.fit(train_X, train_y).score(test_X, test_y)
+        except ValueError as err:
+            return jsonify(jsend.fail([dict(type='error', title='Error', data=str(err))]))
         tile_1 = {
             'title': 'Flat F1 Score',
             'type': 'value',

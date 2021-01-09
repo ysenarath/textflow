@@ -91,6 +91,9 @@
                         <template v-else-if="item.type == 'value'">
                             <p>(( item.data ))</p>
                         </template>
+                        <template v-else-if="item.type == 'error'">
+                            <p>(( item.data ))</p>
+                        </template>
                     </div>
                 </div>
             </div>
