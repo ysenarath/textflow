@@ -237,13 +237,15 @@ def cli_user_update(ctx, username, password):
 @user_group.command(name='assign')
 @click.option('-u', '--username', prompt='Username', help='Username of assignee.')
 @click.option('-p', '--project_id', prompt='Project ID', help='Project ID to assign.')
+@click.option('-r', '--role', help='Role of user in project.', default=None)
 @click.pass_context
-def cli_user_assign(ctx, username, project_id):
-    """Creates user using provided args
+def cli_user_assign(ctx, username, project_id, role):
+    """Assign/reassign user using provided values
 
     :param ctx: context
     :param username: Username
     :param project_id: Project ID
+    :param role: role of user in provided project
     """
     config = ctx.obj['CONFIG']
     tf = TextFlow(config)
@@ -251,10 +253,25 @@ def cli_user_assign(ctx, username, project_id):
         db.create_all()
         try:
             u = service.filter_users(username=username)
-            a = Assignment(user_id=u[0].id, project_id=project_id)
-            db.session.add(a)
-            db.session.commit()
-            logger.info('Completed successfully.')
+            if len(u) == 1:
+                r = service.get_assignment(user_id=u[0].id, project_id=project_id)
+                if r is None:
+                    if role is not None:
+                        a = Assignment(user_id=u[0].id, project_id=project_id, role=role)
+                    else:
+                        a = Assignment(user_id=u[0].id, project_id=project_id)
+                    db.session.add(a)
+                    db.session.commit()
+                    logger.info('Completed successfully.')
+                else:
+                    if role is not None:
+                        r.role = role
+                        db.session.commit()
+                        logger.info('Completed successfully.')
+                    else:
+                        logger.error('Error: {}'.format('unable to update existing assignment - invalid parameters'))
+            else:
+                logger.error('Error: {}'.format('Invalid user'))
         except SQLAlchemyError as e:
             db.session.rollback()
             logger.error('Error: {}'.format(str(e)))
@@ -264,7 +281,7 @@ def cli_user_assign(ctx, username, project_id):
 @click.option('-u', '--username', prompt='Username', help='Username of assignee.')
 @click.option('-p', '--project_id', prompt='Project ID', help='Project ID to assign.')
 @click.pass_context
-def cli_user_assign(ctx, username, project_id):
+def cli_user_unassign(ctx, username, project_id):
     """Creates user using provided args
 
     :param ctx: context
