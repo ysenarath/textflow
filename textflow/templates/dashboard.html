@@ -1,6 +1,121 @@
 {% extends '_layout.html' %}
 
-{% block content %}
+{% macro sidebar() %}
+    <aside class="menu pl-3">
+        <template v-for="(page, title, index) in pages">
+            <a class="menu-label">
+                (( title ))
+            </a>
+            <ul class="menu-list">
+                <li v-for="section in page.sections">
+                    <a v-bind:class="{'is-active': active_page===page.value && active_section===section.value}"
+                       v-on:click="active_page=page.value;active_section=section.value;">
+                        (( section.label ))
+                    </a>
+                </li>
+            </ul>
+        </template>
+    </aside>
+{% endmacro %}
+
+{% macro content() %}
+    <div class="container is-fluid">
+        <div class="box" v-if="active_section === 'annotation'">
+            <p class="title">Annotation Agreement</p>
+            <div class="block" v-for="(item, i) in agreement_scores" :key="i">
+                <p class="subtitle">(( item.title ))</p>
+                <template v-if="item.type == 'table'">
+                    <div class="table-container">
+                        <table class="table">
+                            <tr>
+                                <th v-for="col in item.data.header">(( col ))</th>
+                            </tr>
+                            <tr v-for="cols in item.data.rows">
+                                <td v-for="col in cols">
+                                    <template v-if="Array.isArray(col)">
+                                        <div class="tags are-small">
+                                            <span class="tag" v-for="item in col">(( item ))</span>
+                                        </div>
+                                    </template>
+                                    <template v-else>
+                                        (( col ))
+                                    </template>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </template>
+                <template v-else-if="item.type == 'value'">
+                    <p>(( item.data ))</p>
+                </template>
+            </div>
+        </div>
+        <div class="box" v-if="active_section === 'dataset'">
+            <p class="title">Dataset</p>
+            <div class="block">
+                <div class="field is-grouped">
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label for="dataset-select" class="label">Dataset Name</label>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <div class="select is-rounded is-primary">
+                            <select id="dataset-select" v-model="selected_dataset">
+                                <option v-for="dataset in datasets">(( dataset ))</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <button class="button is-primary is-rounded" v-on:click="download">
+                            Download
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="box" v-if="active_section === 'modeling'">
+            <p class="title">Evaluate</p>
+            <div class="block">
+                <div class="field is-grouped">
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label for="model-select" class="label">Model Name</label>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <div class="select is-rounded is-primary">
+                            <select for="model-select" v-model="selected_dataset">
+                                <option v-for="dataset in datasets">(( dataset ))</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <button class="button is-primary is-rounded" v-on:click="evaluate">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Results block -->
+            <div class="block" v-for="(item, i) in eval_scores" :key="i">
+                <p class="subtitle">(( item.title ))</p>
+                <template v-if="item.type == 'table'">
+                    <p>(( item.data ))</p>
+                </template>
+                <template v-else-if="item.type == 'value'">
+                    <p>(( item.data ))</p>
+                </template>
+                <template v-else-if="item.type == 'error'">
+                    <p>(( item.data ))</p>
+                </template>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+<!--suppress XmlUnboundNsPrefix -->
+{% block is_full_content %}
     <div id="app">
         <template v-if="isLoading">
             <div class="loading-page">
@@ -14,102 +129,15 @@
             </div>
         </template>
         <template v-else>
-            <div class="container is-fluid">
-                <div class="box">
-                    <p class="title">Annotation Agreement</p>
-                    <div class="block" v-for="(item, i) in agreement_scores" :key="i">
-                        <p class="subtitle">(( item.title ))</p>
-                        <template v-if="item.type == 'table'">
-                            <div class="table-container">
-                                <table class="table">
-                                    <tr>
-                                        <th v-for="col in item.data.header">(( col ))</th>
-                                    </tr>
-                                    <tr v-for="cols in item.data.rows">
-                                        <td v-for="col in cols">
-                                            <template v-if="Array.isArray(col)">
-                                                <div class="tags are-small">
-                                                    <span class="tag" v-for="item in col">(( item ))</span>
-                                                </div>
-                                            </template>
-                                            <template v-else>
-                                                (( col ))
-                                            </template>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </template>
-                        <template v-else-if="item.type == 'value'">
-                            <p>(( item.data ))</p>
-                        </template>
-                    </div>
+            <div class="columns is-fullheight-with-navbar">
+                <div class="column" style="max-width: 250px;border-right: 2px solid gray;">
+                    {{ sidebar() }}
                 </div>
-                <div class="box">
-                    <p class="title">Dataset</p>
-                    <div class="block field is-horizontal">
-                        <div class="field is-horizontal pr-6">
-                            <div class="field-label is-normal">
-                                <label class="label">Dataset</label>
-                            </div>
-                            <div class="field-body">
-                                <div class="control">
-                                    <div class="select is-rounded is-primary">
-                                        <select v-model="selected_dataset">
-                                            <option v-for="dataset in datasets">(( dataset ))</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="field is-horizontal is-grouped">
-                            <div class="control">
-                                <!--suppress XmlUnboundNsPrefix -->
-                                <a class="button is-primary is-rounded" v-on:click="download">Download</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="box">
-                    <p class="title">Evaluate</p>
-                    <div class="block field is-horizontal">
-                        <div class="field is-horizontal pr-6">
-                            <div class="field-label is-normal">
-                                <label class="label">Model</label>
-                            </div>
-                            <div class="field-body">
-                                <div class="control">
-                                    <div class="select is-rounded is-primary">
-                                        <select v-model="selected_model">
-                                            <option v-for="model in models">(( model ))</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="field is-horizontal">
-                            <div class="control">
-                                <!--suppress XmlUnboundNsPrefix -->
-                                <button class="button is-primary is-rounded" v-on:click="evaluate">Submit</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="block" v-for="(item, i) in eval_scores" :key="i">
-                        <p class="subtitle">(( item.title ))</p>
-                        <template v-if="item.type == 'table'">
-                            <p>(( item.data ))</p>
-                        </template>
-                        <template v-else-if="item.type == 'value'">
-                            <p>(( item.data ))</p>
-                        </template>
-                        <template v-else-if="item.type == 'error'">
-                            <p>(( item.data ))</p>
-                        </template>
-                    </div>
+                <div class="column">
+                    {{ content() }}
                 </div>
             </div>
         </template>
-
     </div>
 {% endblock %}
 
@@ -133,6 +161,18 @@
             el: '#app',
             data() {
                 return {
+                    pages: {
+                        'General': {
+                            value: 'general',
+                            sections: [
+                                {label: 'Annotations', value: 'annotation'},
+                                {label: 'Dataset', value: 'dataset'},
+                                {label: 'Modeling', value: 'modeling'},
+                            ]
+                        }
+                    },
+                    active_page: 'general',
+                    active_section: 'annotation',
                     agreement_scores: null,
                     eval_scores: null,
                     datasets: null,
@@ -163,15 +203,11 @@
                         .then((data) => {
                             if (data['status'] === 'success') {
                                 const fn = this.selected_dataset + '.json';
-                                saveAsFile(data['data'], fn);
+                                saveAsFile(data.data, fn);
                             }
                         }).catch(console.log);
                 },
                 evaluate: function () {
-                    console.log({
-                        dataset: this.selected_dataset,
-                        model: this.selected_model,
-                    });
                     let data = {
                         dataset: this.selected_dataset,
                         model: this.selected_model,
