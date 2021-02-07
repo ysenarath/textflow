@@ -43,8 +43,8 @@ python -m textflow document upload -p 2 -i documents.json
 python -m textflow user create -u admin -p admin@123
 
 # assign user to project
-python -m textflow user assign -u admin -p 1
-python -m textflow user assign -u admin -p 2
+python -m textflow user assign -u admin -p 1 -r admin
+python -m textflow user assign -u admin -p 2 -r admin
 
 # now run the project using __main__.sh
 python app.py
