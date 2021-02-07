@@ -46,7 +46,7 @@
                     </div>
                 </div>
                 <div class="box">
-                    <p class="title">Model Evaluation</p>
+                    <p class="title">Dataset</p>
                     <div class="block field is-horizontal">
                         <div class="field is-horizontal pr-6">
                             <div class="field-label is-normal">
@@ -62,6 +62,17 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="field is-horizontal is-grouped">
+                            <div class="control">
+                                <!--suppress XmlUnboundNsPrefix -->
+                                <a class="button is-primary is-rounded" v-on:click="download">Download</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="box">
+                    <p class="title">Evaluate</p>
+                    <div class="block field is-horizontal">
                         <div class="field is-horizontal pr-6">
                             <div class="field-label is-normal">
                                 <label class="label">Model</label>
@@ -79,7 +90,7 @@
                         <div class="field is-horizontal">
                             <div class="control">
                                 <!--suppress XmlUnboundNsPrefix -->
-                                <button class="button is-primary is-rounded" v-on:click="submit()">Submit</button>
+                                <button class="button is-primary is-rounded" v-on:click="evaluate">Submit</button>
                             </div>
                         </div>
                     </div>
@@ -107,6 +118,17 @@
     <script src="/static/scripts/vue.js"></script>
     <!--suppress JSUnresolvedFunction, JSUnresolvedVariable -->
     <script>
+        function saveAsFile(content, filename) {
+            const blob = new Blob([JSON.stringify(content, null, 2)], {
+                type: "application/json"
+            })
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.download = filename;
+            a.href = url;
+            a.click();
+        }
+
         let app = new Vue({
             el: '#app',
             data() {
@@ -121,31 +143,31 @@
             },
             methods: {
                 initialize: function () {
-                    $.get('/api/projects/{{ project_id }}/agreement').then(
-                        (data) => {
+                    $.get('/api/projects/{{ project_id }}/agreement')
+                        .then((data) => {
                             this.agreement_scores = data.data;
-                        }
-                    ).catch((error) => {
-                        console.log(error);
-                    });
-                    $.get('/api/projects/{{ project_id }}/models').then(
-                        (data) => {
+                        }).catch(console.log);
+                    $.get('/api/projects/{{ project_id }}/models')
+                        .then((data) => {
                             this.models = data.data;
                             this.selected_model = this.models[0];
-                        }
-                    ).catch((error) => {
-                        console.log(error);
-                    });
-                    $.get('/api/projects/{{ project_id }}/datasets').then(
-                        (data) => {
+                        }).catch(console.log);
+                    $.get('/api/projects/{{ project_id }}/datasets')
+                        .then((data) => {
                             this.datasets = data.data;
                             this.selected_dataset = this.datasets[0];
-                        }
-                    ).catch((error) => {
-                        console.log(error);
-                    });
+                        }).catch(console.log);
                 },
-                submit: function () {
+                download: function (event) {
+                    $.get('/api/projects/{{ project_id }}/datasets/download')
+                        .then((data) => {
+                            if (data['status'] === 'success') {
+                                const fn = this.selected_dataset + '.json';
+                                saveAsFile(data['data'], fn);
+                            }
+                        }).catch(console.log);
+                },
+                evaluate: function () {
                     console.log({
                         dataset: this.selected_dataset,
                         model: this.selected_model,
@@ -159,13 +181,9 @@
                         url: '/api/projects/{{ project_id }}/models',
                         data: JSON.stringify(data),
                         contentType: 'application/json;charset=UTF-8',
-                    }).then(
-                        (data) => {
-                            this.eval_scores = data.data;
-                        }
-                    ).catch((error) => {
-                        console.log(error);
-                    });
+                    }).then((data) => {
+                        this.eval_scores = data.data;
+                    }).catch(console.log);
                 },
             },
             mounted: function () {

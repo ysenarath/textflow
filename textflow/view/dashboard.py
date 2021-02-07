@@ -1,5 +1,7 @@
 """ project admin view """
 
+import json
+
 from flask import render_template, Blueprint, jsonify, request
 from sklearn.model_selection import train_test_split
 
@@ -26,6 +28,15 @@ def dashboard(project_id):
 @auth.roles_required(role='admin')
 def get_dataset_names(project_id):
     return jsonify(jsend.success(service.list_plugin_names(project_id, 'dataset')))
+
+
+@view.route('/api/projects/<project_id>/datasets/download')
+@auth.login_required
+@auth.roles_required(role='admin')
+def get_dataset(project_id):
+    dataset = service.get_dataset(project_id=project_id)
+    data = [[xs, ys] for xs, ys in zip(dataset.X, dataset.y)]
+    return jsonify(jsend.success(data))
 
 
 @view.route('/api/projects/<project_id>/agreement')
