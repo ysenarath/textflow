@@ -88,6 +88,9 @@ class Annotator {
         }
         // HTML build success
         this.lookout.innerHTML = html;
+        $('.annotation-span select').change((el) => this.selectionLabelChanged(el));
+        if (this.verbose)
+            console.debug('Updating Annotations... [done]');
         return !error;
     }
 
@@ -114,6 +117,8 @@ class Annotator {
             let status = this.update();
             // rollback on error
             if (!status) {
+                if (this.verbose)
+                    console.error('Invalid Annotation: rollback to backup annotations');
                 this.annotations = backup;
                 this.update();
                 throw 'Invalid Selection for Annotation. ' +
@@ -163,11 +168,11 @@ class Annotator {
 
         document.onmouseup = (e) => {
             // todo: fix only update for lookout
-            if (e !== null && typeof e.target !== 'undefined' && e.target !== null &&
-                (e.target.nodeName === 'SELECT' || e.target.nodeName === 'BUTTON'))
+            if (typeof e.target !== 'undefined' && e.target !== null &&
+                (e.target.nodeName === 'SELECT' || e.target.nodeName === 'OPTION' || e.target.nodeName === 'BUTTON'))
                 return;
             try {
-                // 0 is reserved annotation
+                // 0 is reserved annotation id
                 this._annotate_selection({id: 0, label: null, color: 'gray'});
             } catch (e) {
                 delete this.annotations[0];
@@ -220,18 +225,11 @@ class Annotator {
             }
         };
 
+        // # Following code segment did not support Firefox browser -- removing
         // Change Annotation Type Selection
-        $(document).on('change', '.annotation-span select', (el) => {
-            try {
-                if (el.target.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode === lookout) {
-                    let id = el.target.getAttribute('data-id');
-                    let value = el.target.value;
-                    events['update'](this.getAnnotation(id), value);
-                }
-            } catch (e) {
-                // ignore event
-            }
-        });
+        // $(document).on('change', '.annotation-span select', (el) => {
+        // no support for firefox
+        // });
 
         // Delete Annotation Button
         $(document).on('click', '.annotation-span button', (el) => {
@@ -244,8 +242,24 @@ class Annotator {
                 // ignore event
             }
         });
-
         this.update();
+    }
+
+    // Change Annotation Type Selection
+    selectionLabelChanged(el) {
+        try {
+            if ($(el.target).parents($('#' + this.lookout.id)).length === 14) {
+                let id = el.target.getAttribute('data-id');
+                let value = el.target.value;
+                if (this.verbose)
+                    console.debug('Selection Changed: {ID = ' + id + ', Value = ' + value + '}');
+                this.events['update'](this.getAnnotation(id), value);
+            }
+        } catch (e) {
+            // ignore event
+            if (this.verbose)
+                console.error(e);
+        }
     }
 
     setAnnotations(items) {
