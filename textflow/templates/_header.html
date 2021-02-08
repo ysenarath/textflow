@@ -1,4 +1,4 @@
-{% set url_path = request.url.split('/') %}
+{% set url_path = request.url.split('?')[0].split('/') %}
 {% if 'projects' in  url_path %}
     {% set url_path = url_path[url_path.index('projects') + 1:] %}
 {% else %}
