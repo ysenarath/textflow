@@ -1,3 +1,10 @@
+{% set url_path = request.url.split('/') %}
+{% if 'projects' in  url_path %}
+    {% set url_path = url_path[url_path.index('projects') + 1:] %}
+{% else %}
+    {% set url_path = none %}
+{% endif %}
+
 <nav class="navbar is-fixed-top is-white is-bold pl-6 pr-6" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
         <a class="navbar-item" href="/">
@@ -11,28 +18,33 @@
         </a>
     </div>
     <div id="navbarBasic" class="navbar-menu">
-        <div class="navbar-start"></div>
+        <div class="navbar-start">
+            {% if current_user.is_authenticated and url_path is not none %}
+                <div class="navbar-item">
+                    <nav class="breadcrumb" aria-label="breadcrumbs">
+                        <ul>
+                            <li>
+                                <a href="/"></a>
+                            </li>
+                            {% for pix in url_path %}
+                                <li>
+                                    <a href="/projects/{{ '/'.join(url_path[:loop.index]) }}">
+                                        <span>{{ pix[0] | upper }}{{ pix[1:] }}</span>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        </div>
         <div class="navbar-end">
             {% if current_user.is_authenticated %}
                 <div class="navbar-item p-1">
-                    <a class="button is-rounded" href="/">
-                        <i class="fas fa-home"></i>
-                    </a>
-                </div>
-                <div class="navbar-item p-1">
                     <div class="field has-addons">
                         <p class="control">
-                            <a class="button is-rounded">
-                                <i class="fas fa-user"></i>
-                            </a>
-                        </p>
-                        <p class="control">
-                            <a class="button">
-                                <span class="is-text">{{ current_user.username }}</span>
-                            </a>
-                        </p>
-                        <p class="control">
                             <a class="button is-rounded" href="/logout">
+                                <span class="is-text mr-2">{{ current_user.username }}</span>
                                 <i class="fas fa-sign-out-alt"></i>
                             </a>
                         </p>
@@ -40,9 +52,14 @@
                 </div>
             {% else %}
                 <div class="navbar-item p-1">
-                    <a class="button is-rounded" href="/login">
-                        <i class="fas fa-sign-in-alt mr-3"></i> Login
-                    </a>
+                    <div class="field has-addons">
+                        <p class="control">
+                            <a class="button is-rounded" href="/login" style="">
+                                <span class="is-text mr-2">Login</span>
+                                <i class="fas fa-sign-in-alt"></i>
+                            </a>
+                        </p>
+                    </div>
                 </div>
             {% endif %}
         </div>
