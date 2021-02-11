@@ -12,6 +12,8 @@ __all__ = [
 
 datasets = PluginManager()
 
+IB_TAGS = ['I', 'B']
+
 
 class Dataset:
     def __init__(self, annotation_sets, tokenizer=None):
@@ -92,21 +94,50 @@ class SequenceLabelingDataset(Dataset):
             if '__{}__'.format(user.username) in document.labels:
                 labels = document.labels['__{}__'.format(user.username)]
             else:
-                labels = [None for _ in document.tokens]
+                labels = [('O', None) for _ in document.tokens]
             for annotation in annotation_set.annotations:
                 label_value = annotation.label.value
                 annotation_span = annotation.span
-                for tix in range(annotation_span.start,
-                                 annotation_span.start + annotation_span.length):
-                    if tix in token_index:
-                        labels[token_index[tix]] = label_value
+                for aix in range(annotation_span.start, annotation_span.start + annotation_span.length):
+                    bio_tag = IB_TAGS[aix == annotation_span.start]
+                    # update only tags marked as other
+                    if (aix in token_index) and (labels[token_index[aix]] == ('O', None)):
+                        labels[token_index[aix]] = (bio_tag, label_value)
             document.labels['__{}__'.format(user.username)] = labels
             # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
             records[document.id] = document
         for i in records:
             labels = records[i].labels.values()
-            majority_vote = [sorted([(x, ll.count(x)) for x in set(ll)], key=lambda x: x[1])[-1][0] for ll in
-                             zip(*labels)]
+            majority_vote = []
+            prv_label = 'O'
+            for ll in zip(*labels):
+                # count lbl values
+                lbl_counts, lbl_val = [], list(map(lambda x: x[1], ll))
+                for lbl in set(lbl_val):
+                    lbl_counts.append((lbl, lbl_val.count(lbl)))
+                maj_lbl, maj_lbl_count = sorted(lbl_counts, key=lambda x: x[-1])[-1]
+                # count BIO tags
+                tag_counts, tag_val = [], list(map(lambda x: x[0], ll))
+                for tag in set(tag_val):
+                    tag_counts.append((tag, tag_val.count(tag)))
+                maj_tag, _ = sorted(tag_counts, key=lambda x: x[-1])[-1]
+                min_num = len(ll) // 2 + 1
+                # Update word position tag (BIO)
+                if maj_lbl_count >= min_num:
+                    if maj_lbl is not None:
+                        if prv_label[0] in ['O', '?']:
+                            maj_tag = 'B'
+                        else:
+                            # keep the majority tag
+                            pass
+                    else:
+                        maj_tag = 'O'
+                else:
+                    # disagreement
+                    # -- unable to identify majority
+                    maj_tag, maj_lbl = '?', None
+                prv_label = (maj_tag, maj_lbl)
+                majority_vote.append(prv_label)
             records[i].labels['MAJORITY'] = majority_vote
         return records
 
@@ -119,7 +150,7 @@ class SequenceLabelingDataset(Dataset):
         for d in self.records.values():
             for coder, labels in d.labels.items():
                 for index, (label, (_, _, token)) in enumerate(zip(labels, d.tokens)):
-                    result.append((coder, '{}_{}'.format(d.id, index), label))
+                    result.append((coder, '{}_{}'.format(d.id, index), label[-1]))
         return result
 
     @property
@@ -127,7 +158,7 @@ class SequenceLabelingDataset(Dataset):
         label_set = set()
         for d in self.records.values():
             for _, labels in d.labels.items():
-                label_set.update(labels)
+                label_set.update([label[-1] for label in labels])
         return label_set
 
     @property
@@ -148,7 +179,7 @@ class SequenceLabelingDataset(Dataset):
         :param tags: list of tags
         :return: formatted list of tags
         """
-        return ['O' if t is None else t for t in tags]
+        return [t + ('' if l is None else '_{}'.format(l)) for t, l in tags]
 
     @property
     def y(self):
@@ -198,15 +229,18 @@ class MultiLabelDataset(Dataset):
             # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
             records[document.id] = document
         for i in records:
+            # labels by different coders
             labels = records[i].labels.values()
-            min_num = int((len(labels)) / 2)
             label_counts = {}
             for ls in labels:
                 for ll in set(ls):
                     if ll not in label_counts:
                         label_counts[ll] = 0
                     label_counts[ll] += 1
-            majority_vote = [k for k, v in label_counts.items() if v > min_num]
+            # minimum number of labels needed
+            #   to consider for annotation (half of the number of available annotations)
+            min_num = labels // 2 + 1
+            majority_vote = [k for k, v in label_counts.items() if v >= min_num]
             records[i].labels['MAJORITY'] = majority_vote
         return records
 
