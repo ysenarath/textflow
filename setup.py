@@ -10,10 +10,10 @@ with open('packages.txt') as fh:
 
 setuptools.setup(
     name="textflow",
-    version="0.1.8",
+    version="0.2.0",
     author="Yasas Senarath",
     author_email="ysenarath.93@gmail.com",
-    description="Minimal Annotation Framework",
+    description="Simple and extensible framework for end to end text based natural language understanding.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ysenarath/textflow",
@@ -26,4 +26,9 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     include_package_data=True,
+    entry_points={
+        'console_scripts': [
+            'textflow = textflow.script:main',
+        ],
+    },
 )

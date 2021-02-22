@@ -393,5 +393,5 @@ def cli_annotation_create(ctx, project_id, document_id, user_id, label, span):
             logger.error('Error: {}'.format(err_msg))
 
 
-if __name__ == '__main__':
+def main():
     cli(obj={})

@@ -1,6 +1,6 @@
 # TextFlow
 
-#### Annotation Simplified
+#### Simple and extensible framework for end to end text based natural language understanding.
 
 ---
 
@@ -24,7 +24,7 @@ i.e. it is capable of getting annotations, processing them and creating models o
     
 The platform is highly extensible for running a specific NLP project and very much beneficial for researchers. 
     
-To read the full documentation please visit [here](https://docs.textflow.app/) (not complete).
+To read the full documentation please visit [here](https://docs.textflow.app/).
 
 ---
 
