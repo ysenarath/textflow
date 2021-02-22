@@ -248,7 +248,7 @@ class Annotator {
     // Change Annotation Type Selection
     selectionLabelChanged(el) {
         try {
-            if ($(el.target).parents($('#' + this.lookout.id)).length === 14) {
+            if ($(el.target).parents('#' + this.lookout.id).length === 1) {
                 let id = el.target.getAttribute('data-id');
                 let value = el.target.value;
                 if (this.verbose)

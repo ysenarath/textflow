@@ -10,7 +10,7 @@ with open('packages.txt') as fh:
 
 setuptools.setup(
     name="textflow",
-    version="0.1.7",
+    version="0.1.8",
     author="Yasas Senarath",
     author_email="ysenarath.93@gmail.com",
     description="Minimal Annotation Framework",
