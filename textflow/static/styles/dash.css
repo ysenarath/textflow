@@ -1,0 +1,29 @@
+html {
+    height: 100%;
+}
+
+body {
+    height: 100%;
+}
+
+#app {
+    height: 100%;
+}
+
+@media screen and (min-width: 768px) {
+    .sidebar {
+        width: 250px;
+        min-height: 100%;
+        position: fixed;
+    }
+
+    .content {
+        margin-left: 250px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+    }
+}

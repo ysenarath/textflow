@@ -16,8 +16,9 @@ IB_TAGS = ['I', 'B']
 
 
 class Dataset:
-    def __init__(self, annotation_sets, tokenizer=None):
+    def __init__(self, annotation_sets, tokenizer=None, validator='MAJORITY'):
         self.records = self.build_dataset(annotation_sets, tokenizer=tokenizer)
+        self.validator = validator
 
     def build_dataset(self, annotation_sets, tokenizer):
         """Builds dataset from provided annotation sets
@@ -36,12 +37,24 @@ class Dataset:
         raise NotImplementedError
 
     @property
+    def groups_(self):
+        group_set = set()
+        for d in self.records.values():
+            for user, _ in d.labels.items():
+                group_set.add(user)
+        return group_set
+
+    @property
     def classes_(self):
         """List all classes of dataset if defined else return None
 
         :return: list of unique classes
         """
-        return None
+        label_set = set()
+        for d in self.records.values():
+            for _, labels in d.labels.items():
+                label_set.update(labels)
+        return label_set
 
     @property
     def X(self):
@@ -155,6 +168,10 @@ class SequenceLabelingDataset(Dataset):
 
     @property
     def classes_(self):
+        """List all classes of dataset if defined else return None
+
+        :return: list of unique classes
+        """
         label_set = set()
         for d in self.records.values():
             for _, labels in d.labels.items():
@@ -187,7 +204,8 @@ class SequenceLabelingDataset(Dataset):
 
         :return: list of labels for each token of each sentence
         """
-        X = [self._format_labels(self.records[r].labels['MAJORITY']) for r in self.records]
+        X = [self._format_labels(self.records[r].labels[self.validator]) for r in self.records if
+             self.validator in self.records[r].labels]
         return X
 
 
@@ -258,14 +276,6 @@ class MultiLabelDataset(Dataset):
         return result
 
     @property
-    def classes_(self):
-        label_set = set()
-        for d in self.records.values():
-            for _, labels in d.labels.items():
-                label_set.update(labels)
-        return label_set
-
-    @property
     def X(self):
         """Gets tokens for each sentence
 
@@ -280,5 +290,5 @@ class MultiLabelDataset(Dataset):
 
         :return: list of labels of each document
         """
-        y = [self.records[r].labels['MAJORITY'] for r in self.records]
+        y = [self.records[r].labels[self.validator] for r in self.records]
         return y

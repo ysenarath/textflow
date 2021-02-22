@@ -23,6 +23,15 @@ def dashboard(project_id):
     return render_template('dashboard.html', project_id=project_id)
 
 
+@view.route('/api/projects/<project_id>/groups')
+@auth.login_required
+@auth.roles_required(role='admin')
+def get_group_names(project_id):
+    name = request.args.get('name', default='default')
+    dataset = service.get_dataset(project_id=project_id, name=name)
+    return jsonify(jsend.success(list(dataset.groups_)))
+
+
 @view.route('/api/projects/<project_id>/datasets')
 @auth.login_required
 @auth.roles_required(role='admin')
@@ -35,7 +44,9 @@ def get_dataset_names(project_id):
 @auth.roles_required(role='admin')
 def get_dataset(project_id):
     dataset = service.get_dataset(project_id=project_id)
-    data = [[xs, ys] for xs, ys in zip(dataset.X, dataset.y)]
+    dataset.validator = request.args.get('validator', default=dataset.validator)
+    ids = [r.id_str for _, r in dataset.records.items()]
+    data = {i: [xs, ys] for i, xs, ys in zip(ids, dataset.X, dataset.y)}
     return jsonify(jsend.success(data))
 
 

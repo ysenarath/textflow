@@ -1,5 +1,10 @@
 {% extends '_layout.html' %}
 
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="/static/styles/dash.css">
+{% endblock %}
+
 {% macro sidebar() %}
     <aside class="menu pl-3">
         <template v-for="(page, title, index) in pages">
@@ -56,13 +61,25 @@
                 <div class="field is-grouped">
                     <div class="field is-horizontal">
                         <div class="field-label is-normal">
-                            <label for="dataset-select" class="label">Dataset Name</label>
+                            <label for="dataset-select" class="label">Dataset</label>
                         </div>
                     </div>
                     <div class="control">
                         <div class="select is-rounded is-primary">
                             <select id="dataset-select" v-model="selected_dataset">
                                 <option v-for="dataset in datasets">(( dataset ))</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label for="dataset-validator" class="label">Validator</label>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <div class="select is-rounded is-primary">
+                            <select id="dataset-validator" v-model="validator">
+                                <option v-for="group in groups">(( group ))</option>
                             </select>
                         </div>
                     </div>
@@ -80,7 +97,7 @@
                 <div class="field is-grouped">
                     <div class="field is-horizontal">
                         <div class="field-label is-normal">
-                            <label for="model-select" class="label">Model Name</label>
+                            <label for="model-select" class="label">Model</label>
                         </div>
                     </div>
                     <div class="control">
@@ -116,11 +133,11 @@
 
 <!--suppress XmlUnboundNsPrefix -->
 {% block is_full_content %}
-    <div id="app">
+    <section id="app">
         <template v-if="isLoading">
             <div class="loading-page">
                 <div class="container">
-                    <div class="columns">
+                    <div class="columns mt-0">
                         <div class="column is-half is-offset-one-quarter">
                             <progress class="progress is-small is-primary" max="100">Loading</progress>
                         </div>
@@ -129,16 +146,16 @@
             </div>
         </template>
         <template v-else>
-            <div class="columns is-fullheight-with-navbar">
-                <div class="column" style="max-width: 250px;border-right: 2px solid gray;">
+            <div class="columns mt-0" style="height: 100%;">
+                <div class="column sidebar has-background-light has-text-grey">
                     {{ sidebar() }}
                 </div>
-                <div class="column">
+                <div class="column content p-3">
                     {{ content() }}
                 </div>
             </div>
         </template>
-    </div>
+    </section>
 {% endblock %}
 
 {% block scripts %}
@@ -175,10 +192,12 @@
                     active_section: 'annotation',
                     agreement_scores: null,
                     eval_scores: null,
+                    groups: null,
                     datasets: null,
                     models: null,
                     selected_model: null,
                     selected_dataset: null,
+                    validator: 'MAJORITY',
                 }
             },
             methods: {
@@ -196,13 +215,35 @@
                         .then((data) => {
                             this.datasets = data.data;
                             this.selected_dataset = this.datasets[0];
+                            this.update_groups();
+                        }).catch(console.log);
+                },
+                update_groups: function () {
+                    let args = '';
+                    if (this.validator !== '') {
+                        args += 'name=' + this.selected_dataset;
+                    }
+                    if (args !== '') {
+                        args = '?' + args;
+                    }
+                    $.get('/api/projects/{{ project_id }}/groups' + args)
+                        .then((data) => {
+                            this.groups = data.data;
+                            this.validator = 'MAJORITY';
                         }).catch(console.log);
                 },
                 download: function (event) {
-                    $.get('/api/projects/{{ project_id }}/datasets/download')
+                    let args = '';
+                    if (this.validator !== '') {
+                        args += 'validator=' + this.validator;
+                    }
+                    if (args !== '') {
+                        args = '?' + args;
+                    }
+                    $.get('/api/projects/{{ project_id }}/datasets/download' + args)
                         .then((data) => {
                             if (data['status'] === 'success') {
-                                const fn = this.selected_dataset + '.json';
+                                const fn = this.selected_dataset + '_' + this.validator + '.json';
                                 saveAsFile(data.data, fn);
                             }
                         }).catch(console.log);

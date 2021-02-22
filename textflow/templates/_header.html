@@ -5,10 +5,12 @@
     {% set url_path = none %}
 {% endif %}
 
-<nav class="navbar is-fixed-top is-white is-bold pl-6 pr-6" role="navigation" aria-label="main navigation">
+{% set messages = get_flashed_messages(with_categories=True) %}
+
+<nav class="navbar is-fixed-top is-dark pl-6 pr-6" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
         <a class="navbar-item" href="/">
-            <img src="/static/images/logo.png" width="82" height="28">
+            <img src="/static/images/logo.png" height="28">
         </a>
         <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
            data-target="navbarBasic">
@@ -28,7 +30,7 @@
                             </li>
                             {% for pix in url_path %}
                                 <li>
-                                    <a href="/projects/{{ '/'.join(url_path[:loop.index]) }}">
+                                    <a class="has-text-success" href="/projects/{{ '/'.join(url_path[:loop.index]) }}">
                                         <span>{{ pix[0] | upper }}{{ pix[1:] }}</span>
                                     </a>
                                 </li>
@@ -39,11 +41,20 @@
             {% endif %}
         </div>
         <div class="navbar-end">
+            <div class="navbar-item p-1">
+                <div class="field has-addons">
+                    <p class="control">
+                        <button class="button is-rounded is-dark" onclick="$('#notificationsPanel').toggle()">
+                            <i class="fas fa-bell {% if messages %}has-text-danger{% endif %}"></i>
+                        </button>
+                    </p>
+                </div>
+            </div>
             {% if current_user.is_authenticated %}
                 <div class="navbar-item p-1">
                     <div class="field has-addons">
                         <p class="control">
-                            <a class="button is-rounded" href="/logout">
+                            <a class="button is-rounded is-dark" href="/logout">
                                 <span class="is-text mr-2">{{ current_user.username }}</span>
                                 <i class="fas fa-sign-out-alt"></i>
                             </a>
@@ -54,7 +65,7 @@
                 <div class="navbar-item p-1">
                     <div class="field has-addons">
                         <p class="control">
-                            <a class="button is-rounded" href="/login" style="">
+                            <a class="button is-rounded is-dark" href="/login" style="">
                                 <span class="is-text mr-2">Login</span>
                                 <i class="fas fa-sign-in-alt"></i>
                             </a>
@@ -64,4 +75,26 @@
             {% endif %}
         </div>
     </div>
+</nav>
+
+<nav id="notificationsPanel" class="panel"
+     style="display: none; position: absolute; right: 0; top:0; margin-top: 3.25rem; margin-right: 24px; min-width: 350px; z-index: 9999;">
+    <p class="panel-heading"><span class="is-flex is-justify-content-space-between">Notifications <button class="delete" onclick="$('#notificationsPanel').toggle(false)"></button></span></p>
+    {% if messages %}
+        {% for category, message in messages %}
+            <a class="panel-block has-background-white">
+                <span class="panel-icon">
+                  <i class="fas fa-info-circle"></i>
+                </span>
+                {{ message }}
+            </a>
+        {% endfor %}
+    {% else %}
+        <a class="panel-block has-background-white">
+                <span class="panel-icon">
+                  <i class="fas fa-info-circle"></i>
+                </span>
+            You don't have any notifications!
+        </a>
+    {% endif %}
 </nav>
