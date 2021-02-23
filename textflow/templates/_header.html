@@ -7,10 +7,10 @@
 
 {% set messages = get_flashed_messages(with_categories=True) %}
 
-<nav class="navbar is-fixed-top is-dark pl-6 pr-6" role="navigation" aria-label="main navigation">
+<nav class="navbar is-fixed-top pl-6 pr-6 is-themed" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
         <a class="navbar-item" href="/">
-            <img src="/static/images/logo.png" height="28">
+            <img src="/static/images/long_logo.png" height="28">
         </a>
         <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
            data-target="navbarBasic">
@@ -42,9 +42,18 @@
         </div>
         <div class="navbar-end">
             <div class="navbar-item p-1">
-                <div class="field has-addons">
+                <div class="field has-addons has-addons-centered">
                     <p class="control">
-                        <button class="button is-rounded is-dark" onclick="$('#notificationsPanel').toggle()">
+                        <button class="button is-rounded is-themed" onclick="toggleTheme()">
+                            <i class="fas fa-adjust"></i>
+                        </button>
+                    </p>
+                </div>
+            </div>
+            <div class="navbar-item p-1">
+                <div class="field has-addons has-addons-centered">
+                    <p class="control">
+                        <button class="button is-rounded is-themed" onclick="$('#notificationsPanel').toggle()">
                             <i class="fas fa-bell {% if messages %}has-text-danger{% endif %}"></i>
                         </button>
                     </p>
@@ -52,9 +61,9 @@
             </div>
             {% if current_user.is_authenticated %}
                 <div class="navbar-item p-1">
-                    <div class="field has-addons">
+                    <div class="field has-addons has-addons-centered">
                         <p class="control">
-                            <a class="button is-rounded is-dark" href="/logout">
+                            <a class="button is-rounded is-themed" href="/logout">
                                 <span class="is-text mr-2">{{ current_user.username }}</span>
                                 <i class="fas fa-sign-out-alt"></i>
                             </a>
@@ -63,9 +72,9 @@
                 </div>
             {% else %}
                 <div class="navbar-item p-1">
-                    <div class="field has-addons">
+                    <div class="field has-addons has-addons-centered">
                         <p class="control">
-                            <a class="button is-rounded is-dark" href="/login" style="">
+                            <a class="button is-rounded is-themed" href="/login" style="">
                                 <span class="is-text mr-2">Login</span>
                                 <i class="fas fa-sign-in-alt"></i>
                             </a>

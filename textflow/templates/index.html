@@ -7,15 +7,15 @@
 {% endblock %}
 
 {% block is_full_content %}
-    <section class="hero is-fullheight-with-navbar" style="font-family: 'Roboto', sans-serif;">
+    <section class="hero is-fullheight-with-navbar is-themed" style="font-family: 'Roboto', sans-serif;">
         <div class="hero-body">
             <div class="container p-6">
                 <div class="columns">
                     <div class="column has-text-centered">
-                        <h1 class="title is-1">
+                        <h1 class="title is-1 is-themed">
                             TextFlow
                         </h1>
-                        <h2 class="subtitle">
+                        <h2 class="subtitle is-themed">
                             Text Modeling Simplified!
                         </h2>
                     </div>
@@ -28,8 +28,8 @@
                 </div>
                 <div class="columns is-centered">
                     <div class="buttons is-centered">
-                        <a class="button is-info is-outlined" href="https://docs.textflow.app/">Documentation</a>
-                        <a class="button is-danger is-outlined" href="https://github.com/ysenarath/textflow">GitHub Project</a>
+                        <a class="button is-info" href="https://docs.textflow.app/">Documentation</a>
+                        <a class="button is-info" href="https://github.com/ysenarath/textflow">GitHub Project</a>
                     </div>
                 </div>
                 <div class="columns">
@@ -69,19 +69,20 @@
             </div>
         </div>
     </section>
-    <span class="p-6"></span>
-    <section class="section" style="font-family: 'Roboto', sans-serif;">
+    <section class="section is-themed" style="font-family: 'Roboto', sans-serif;">
         <div class="container">
-            <div class="columns pb-6">
+            <!--
+             <div class="columns pb-6">
                 <div class="column">
                     <p class="title has-text-centered">Supported Task Types</p>
                 </div>
             </div>
+             -->
             <div class="columns">
                 <div class="column">
                     <div class="card">
                         <header class="card-header">
-                            <p class="card-header-title">
+                            <p class="card-header-title is-centered">
                                 Document Classification
                             </p>
                         </header>
@@ -95,7 +96,7 @@
                 <div class="column">
                     <div class="card">
                         <header class="card-header">
-                            <p class="card-header-title">
+                            <p class="card-header-title is-centered">
                                 Document Annotation
                             </p>
                         </header>
@@ -109,8 +110,8 @@
                 <div class="column">
                     <div class="card">
                         <header class="card-header">
-                            <p class="card-header-title">
-                                Custom Format<span class="pl-1">?</span>
+                            <p class="card-header-title is-centered">
+                                Custom Formats
                             </p>
                         </header>
                         <div class="card-image">
@@ -123,11 +124,11 @@
             </div>
         </div>
     </section>
-    <footer class="footer">
+    <footer class="footer is-themed">
         <div class="content has-text-centered">
             <p>
-                <strong>TextFlow</strong> by <a href="https://www.ysenarath.com">Yasas Senarath</a>. The source code is
-                licensed
+                <strong class="is-themed">TextFlow</strong> by <a href="https://www.ysenarath.com">Yasas
+                Senarath</a>. The source code is licensed
                 <a href="http://opensource.org/licenses/mit-license.php">MIT</a>. The website content
                 is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
             </p>

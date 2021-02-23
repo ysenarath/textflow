@@ -1,15 +1,15 @@
 {% extends '_layout.html' %}
 
 {% block content %}
-    <div class="box">
+    <div class="box is-themed">
         <div class="block">
             <div class="table-container">
-                <table class="table is-fullwidth">
+                <table class="table is-fullwidth is-themed">
                     <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th>Action</th>
+                        <th class="is-themed">#</th>
+                        <th class="is-themed">Name</th>
+                        <th class="is-themed">Description</th>
+                        <th class="is-themed">Action</th>
                     </tr>
                     {% for p in projects.items %}
                         <tr>

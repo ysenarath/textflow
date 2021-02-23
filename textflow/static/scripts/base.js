@@ -55,3 +55,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+/**
+ * Operations related to theming.
+ *
+ * @reference: https://dev.to/wendell_adriel/working-with-multiple-css-themes-5aej
+ * @type {{set: theme.set, get: (function(): (*|string)), toggle: theme.toggle}}
+ */
+const theme = {
+    get: function () {
+        const htmlTag = document.getElementsByTagName('html')[0]
+        if (htmlTag.hasAttribute('data-theme')) {
+            return htmlTag.getAttribute('data-theme')
+        }
+        return 'dark';
+    },
+    set: function (name) {
+        const htmlTag = document.getElementsByTagName('html')[0]
+        if (htmlTag.hasAttribute('data-theme')) {
+            htmlTag.removeAttribute('data-theme')
+        }
+        htmlTag.setAttribute('data-theme', name)
+    },
+    toggle: function () {
+        if (this.get() === 'light') {
+            this.set('dark');
+        } else {
+            this.set('light');
+        }
+    },
+}
+
+function toggleTheme() {
+    console.log(theme.get());
+    theme.toggle();
+}

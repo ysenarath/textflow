@@ -25,7 +25,7 @@
 
 {% macro content() %}
     <div class="container is-fluid">
-        <div class="box" v-if="active_section === 'annotation'">
+        <div class="box is-themed" v-if="active_section === 'annotation'">
             <p class="title">Annotation Agreement</p>
             <div class="block" v-for="(item, i) in agreement_scores" :key="i">
                 <p class="subtitle">(( item.title ))</p>
@@ -55,7 +55,7 @@
                 </template>
             </div>
         </div>
-        <div class="box" v-if="active_section === 'dataset'">
+        <div class="box is-themed" v-if="active_section === 'dataset'">
             <p class="title">Dataset</p>
             <div class="block">
                 <div class="field is-grouped">
@@ -91,7 +91,7 @@
                 </div>
             </div>
         </div>
-        <div class="box" v-if="active_section === 'modeling'">
+        <div class="box is-themed" v-if="active_section === 'modeling'">
             <p class="title">Evaluate</p>
             <div class="block">
                 <div class="field is-grouped">
@@ -147,7 +147,7 @@
         </template>
         <template v-else>
             <div class="columns mt-0" style="height: 100%;">
-                <div class="column sidebar has-background-light has-text-grey">
+                <div class="column sidebar is-themed is-darker">
                     {{ sidebar() }}
                 </div>
                 <div class="column content p-3">
