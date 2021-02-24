@@ -10,7 +10,9 @@ const theme = {
             return htmlTag.getAttribute('data-theme')
         }
         if (typeof (Storage) !== "undefined") {
-            return localStorage.themeName;
+            if (typeof (localStorage.themeName) !== 'undefined') {
+                return localStorage.themeName;
+            }
         }
         return def;
     },
@@ -31,6 +33,7 @@ const theme = {
     },
     refresh: function () {
         let t = theme.get();
+        console.log(t);
         theme.set(t);
     }
 }
