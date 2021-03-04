@@ -1,7 +1,7 @@
 """ TextFlow """
 import logging
 
-from flask import Flask, url_for
+from flask import Flask
 
 from textflow import auth, view, config, service
 from textflow.auth import login_manager

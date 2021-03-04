@@ -2,7 +2,6 @@
 from flask import render_template, Blueprint, request, redirect, url_for
 
 from textflow import service, auth
-from textflow.utils import Dictionary as Map
 
 view = Blueprint('project_view', __name__)
 

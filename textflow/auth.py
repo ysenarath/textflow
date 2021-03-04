@@ -24,6 +24,11 @@ def roles_required(role):
     :return: decorated function
     """
 
+    if not isinstance(role, set):
+        if isinstance(role, str):
+            role = [role]
+        role = set(role)
+
     def default(func):
         def decorated_func(*args, **kwargs):
             user_id = current_user.id
@@ -37,7 +42,7 @@ def roles_required(role):
             if assignment is None:
                 flash('Invalid user or project identity', 'error')
                 abort(401)
-            elif assignment.role == role:
+            elif assignment.role in role:
                 return func(*args, **kwargs)
             else:
                 flash('You are not authorize to access the resource', 'error')

@@ -29,7 +29,7 @@ textflow document upload -p 1 -i documents.json
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --
 
 # Create project
-python -m textflow project create -t "classification" -n "Sentiment Analysis"
+textflow project create -t "classification" -n "Sentiment Analysis"
 
 # Add labels
 textflow label create -p 2 -l "Negative" -v "CAT_NEGATIVE"
@@ -50,13 +50,13 @@ textflow user create -u guest3 -p guest3@123
 
 # assign user to project 1
 textflow user assign -u admin -p 1 -r admin
-textflow user assign -u guest1 -p 1
+textflow user assign -u guest1 -p 1 -r manager
 textflow user assign -u guest2 -p 1
 textflow user assign -u guest3 -p 1
 
 # assign user to project 2
 textflow user assign -u admin -p 2 -r admin
-textflow user assign -u guest1 -p 2
+textflow user assign -u guest1 -p 2 -r manager
 textflow user assign -u guest2 -p 2
 textflow user assign -u guest3 -p 2
 

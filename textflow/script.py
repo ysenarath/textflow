@@ -8,8 +8,8 @@ import click
 from sqlalchemy.exc import SQLAlchemyError
 
 from textflow import TextFlow, service
-from textflow.service import db
 from textflow.model import *
+from textflow.service import db
 
 logger = logging.getLogger(__name__)
 
@@ -201,6 +201,25 @@ def cli_user_create(ctx, username, password):
             logger.info('Completed successfully.')
         except SQLAlchemyError as e:
             db.session.rollback()
+            logger.error('Error: {}'.format(str(e)))
+
+
+@user_group.command(name='list')
+@click.pass_context
+def cli_user_create(ctx):
+    """Creates user using provided args
+
+    :param ctx: context
+    :return: None
+    """
+    config = ctx.obj['CONFIG']
+    tf = TextFlow(config)
+    with tf.app_context():
+        db.create_all()
+        try:
+            users = service.get_users()
+            logger.info(users)
+        except SQLAlchemyError as e:
             logger.error('Error: {}'.format(str(e)))
 
 

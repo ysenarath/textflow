@@ -1,11 +1,11 @@
 """ Implements model types: `classifiers` and `sequence classifier` """
 
+import sklearn_crfsuite
 from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.preprocessing import MultiLabelBinarizer
-from sklearn.feature_extraction.text import TfidfVectorizer
-import sklearn_crfsuite
 
 from textflow.utils import PluginManager
 

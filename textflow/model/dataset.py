@@ -1,7 +1,8 @@
 """ Base class and in-built dataset types. """
+from types import SimpleNamespace
 
+from textflow.utils import PluginManager
 from textflow.utils.text import Tokenizer
-from textflow.utils import Dictionary as Map, PluginManager
 
 __all__ = [
     'Dataset',
@@ -90,7 +91,7 @@ class SequenceLabelingDataset(Dataset):
             if document.id in records:
                 document = records[document.id]
             else:
-                document = Map(
+                document = SimpleNamespace(
                     id=document.id,
                     id_str=document.id_str,
                     text=document.text,
@@ -204,6 +205,7 @@ class SequenceLabelingDataset(Dataset):
 
         :return: list of labels for each token of each sentence
         """
+        # noinspection PyPep8Naming
         X = [self._format_labels(self.records[r].labels[self.validator]) for r in self.records if
              self.validator in self.records[r].labels]
         return X
@@ -226,7 +228,7 @@ class MultiLabelDataset(Dataset):
             if document.id in records:
                 document = records[document.id]
             else:
-                document = Map(
+                document = SimpleNamespace(
                     id=document.id,
                     id_str=document.id_str,
                     text=document.text,

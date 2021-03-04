@@ -1,8 +1,7 @@
 """ Contains db object """
+from types import SimpleNamespace
 
 from flask_sqlalchemy import BaseQuery, SQLAlchemy
-
-from textflow.utils import Dictionary as Map
 
 __all__ = [
     'database',
@@ -31,7 +30,7 @@ class Service:
         self.fn = fn
 
     def __call__(self, *args, **kwargs):
-        ctx = Map(ignore_user=False)
+        ctx = SimpleNamespace(ignore_user=False)
         return self.fn(ctx, *args, **kwargs)
 
     def ignore_user(self, *args, **kwargs):
@@ -42,7 +41,7 @@ class Service:
         :param args: args for fn
         :param kwargs: kwargs for fn
         """
-        ctx = Map(ignore_user=True)
+        ctx = SimpleNamespace(ignore_user=True)
         return self.fn(ctx, *args, **kwargs)
 
 

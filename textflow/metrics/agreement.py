@@ -3,14 +3,15 @@
 This module implements one class :class:`AgreementScore`
 """
 
-from nltk import AnnotationTask
 import statistics
 
-from textflow.utils import Dictionary as Map
+from nltk import AnnotationTask
 
 __all__ = [
     'AgreementScore'
 ]
+
+from textflow.utils.types import Table
 
 
 class AgreementScore:
@@ -81,8 +82,10 @@ class AgreementScore:
         pairs = self._get_pairs()
         scores = [0 for _ in range(len(pairs))]
         if len(scores) == 0:
-            score_table = Map(header=('pair', 'score', 'support'), rows=list())
-            return Map(avg_score=0.0, weighted_avg_score=0.0, score_table=score_table)
+            header = ('pair', 'score', 'support')
+            rows = [('avg_score', 0.0, 0), ('weighted_avg_score', 0.0, 0), ]
+            score_table = Table(header, rows)
+            return score_table
         for ix, pair in enumerate(pairs):
             scores[ix] = func(*pair, return_support=True)
         sum_of_weights = sum([w for _, w in scores])
@@ -93,8 +96,12 @@ class AgreementScore:
             weighted_avg_score = weighted_sum / sum_of_weights
         avg_score = statistics.mean([score for score, _ in scores])
         scores, support = list(zip(*scores))
-        score_table = Map(header=('pair', 'score', 'support'), rows=list(zip(pairs, scores, support)))
-        return Map(avg_score=avg_score, weighted_avg_score=weighted_avg_score, score_table=score_table)
+        header = ('Pair', 'Score', 'Support')
+        rows = list(zip(pairs, scores, support))
+        rows.append(('Average Score', avg_score, sum(support)))
+        rows.append(('Weighted Average Score', weighted_avg_score, sum(support)))
+        score_table = Table(header, rows)
+        return score_table
 
     def kappa_pairwise(self, c_a, c_b, return_support=True):
         """Gets kappa score for provided pair of coders.

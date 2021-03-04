@@ -5,7 +5,16 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from textflow.model import *
 from textflow.service.base import service, database as db
-from textflow.utils import Dictionary as Map
+
+
+@service
+def get_users(ctx):
+    """Loads user from ID
+
+    :param ctx: context
+    :return: user if exist
+    """
+    return User.query.all()
 
 
 @service
@@ -371,13 +380,13 @@ def generate_status_report(ctx, user_id, project_id=None):
             progress = 100
         else:
             progress = num_completed * 100 / num_assigned
-        return Map(
-            num_annotations=Map({v: (l, c) for v, l, c in num_annotations}),
+        return dict(
+            num_annotations={v: (l, c) for v, l, c in num_annotations},
             num_assigned=num_assigned,
             num_completed=num_completed,
             progress=progress,
         )
-    return Map()
+    return {}
 
 
 @service

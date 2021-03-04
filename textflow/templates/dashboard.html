@@ -25,37 +25,31 @@
 
 {% macro content() %}
     <div class="container is-fluid">
-        <div class="box is-themed" v-if="active_section === 'annotation'">
+        <div class="box" v-if="active_section === 'annotation'">
             <p class="title">Annotation Agreement</p>
-            <div class="block" v-for="(item, i) in agreement_scores" :key="i">
-                <p class="subtitle">(( item.title ))</p>
-                <template v-if="item.type == 'table'">
-                    <div class="table-container">
-                        <table class="table">
-                            <tr>
-                                <th v-for="col in item.data.header">(( col ))</th>
-                            </tr>
-                            <tr v-for="cols in item.data.rows">
-                                <td v-for="col in cols">
-                                    <template v-if="Array.isArray(col)">
-                                        <div class="tags are-small">
-                                            <span class="tag" v-for="item in col">(( item ))</span>
-                                        </div>
-                                    </template>
-                                    <template v-else>
-                                        (( col ))
-                                    </template>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                </template>
-                <template v-else-if="item.type == 'value'">
-                    <p>(( item.data ))</p>
-                </template>
+            <div class="block">
+                <div class="table-container">
+                    <table class="table">
+                        <tr>
+                            <th v-for="col in agreement_scores.header">(( col ))</th>
+                        </tr>
+                        <tr v-for="cols in agreement_scores.rows">
+                            <td v-for="col in cols">
+                                <template v-if="Array.isArray(col)">
+                                    <div class="tags are-small">
+                                        <span class="tag" v-for="item in col">(( item ))</span>
+                                    </div>
+                                </template>
+                                <template v-else>
+                                    (( col ))
+                                </template>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
             </div>
         </div>
-        <div class="box is-themed" v-if="active_section === 'dataset'">
+        <div class="box" v-if="active_section === 'dataset'">
             <p class="title">Dataset</p>
             <div class="block">
                 <div class="field is-grouped">
@@ -91,7 +85,7 @@
                 </div>
             </div>
         </div>
-        <div class="box is-themed" v-if="active_section === 'modeling'">
+        <div class="box" v-if="active_section === 'modeling'">
             <p class="title">Evaluate</p>
             <div class="block">
                 <div class="field is-grouped">
@@ -115,17 +109,26 @@
                 </div>
             </div>
             <!-- Results block -->
-            <div class="block" v-for="(item, i) in eval_scores" :key="i">
-                <p class="subtitle">(( item.title ))</p>
-                <template v-if="item.type == 'table'">
-                    <p>(( item.data ))</p>
-                </template>
-                <template v-else-if="item.type == 'value'">
-                    <p>(( item.data ))</p>
-                </template>
-                <template v-else-if="item.type == 'error'">
-                    <p>(( item.data ))</p>
-                </template>
+            <div class="block" v-if="eval_scores !== null">
+                <div class="table-container">
+                    <table class="table">
+                        <tr>
+                            <th v-for="col in eval_scores.header">(( col ))</th>
+                        </tr>
+                        <tr v-for="cols in eval_scores.rows">
+                            <td v-for="col in cols">
+                                <template v-if="Array.isArray(col)">
+                                    <div class="tags are-small">
+                                        <span class="tag" v-for="item in col">(( item ))</span>
+                                    </div>
+                                </template>
+                                <template v-else>
+                                    (( col ))
+                                </template>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

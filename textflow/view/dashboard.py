@@ -8,13 +8,14 @@ from sklearn.model_selection import train_test_split
 from textflow import service, auth
 from textflow.utils import jsend
 from textflow.metrics.agreement import AgreementScore
+from textflow.utils.types import Table
 
 view = Blueprint('dashboard_view', __name__)
 
 
 @view.route('/projects/<project_id>/dashboard')
 @auth.login_required
-@auth.roles_required(role='admin')
+@auth.roles_required(role=['admin', 'manager'])
 def dashboard(project_id):
     """Get next document for annotation and render that in view
 
@@ -25,7 +26,7 @@ def dashboard(project_id):
 
 @view.route('/api/projects/<project_id>/groups')
 @auth.login_required
-@auth.roles_required(role='admin')
+@auth.roles_required(role=['admin', 'manager'])
 def get_group_names(project_id):
     name = request.args.get('name', default='default')
     dataset = service.get_dataset(project_id=project_id, name=name)
@@ -34,14 +35,14 @@ def get_group_names(project_id):
 
 @view.route('/api/projects/<project_id>/datasets')
 @auth.login_required
-@auth.roles_required(role='admin')
+@auth.roles_required(role=['admin', 'manager'])
 def get_dataset_names(project_id):
     return jsonify(jsend.success(service.list_plugin_names(project_id, 'dataset')))
 
 
 @view.route('/api/projects/<project_id>/datasets/download')
 @auth.login_required
-@auth.roles_required(role='admin')
+@auth.roles_required(role=['admin', 'manager'])
 def get_dataset(project_id):
     dataset = service.get_dataset(project_id=project_id)
     dataset.validator = request.args.get('validator', default=dataset.validator)
@@ -52,7 +53,7 @@ def get_dataset(project_id):
 
 @view.route('/api/projects/<project_id>/agreement')
 @auth.login_required
-@auth.roles_required(role='admin')
+@auth.roles_required(role=['admin', 'manager'])
 def get_agreement(project_id):
     """Gets agreement scores for provided project
 
@@ -63,27 +64,12 @@ def get_agreement(project_id):
     # check agreement
     task = AgreementScore(dataset)
     scores = task.kappa()
-    tile_1 = {
-        'title': 'Kappa Scores',
-        'type': 'table',
-        'data': scores.score_table
-    }
-    tile_2 = {
-        'title': 'Average Kappa Score',
-        'type': 'value',
-        'data': '{:.2f}'.format(scores.avg_score)
-    }
-    tile_3 = {
-        'title': 'Weighted Average Kappa Score',
-        'type': 'value',
-        'data': '{:.2f}'.format(scores.avg_score)
-    }
-    return jsonify(jsend.success([tile_1, tile_2, tile_3]))
+    return jsonify(jsend.success(scores.to_dict()))
 
 
 @view.route('/api/projects/<project_id>/models', methods=['GET', 'POST'])
 @auth.login_required
-@auth.roles_required(role='admin')
+@auth.roles_required(role=['admin', 'manager'])
 def get_models(project_id):
     if request.method == 'POST':
         dataset = service.get_dataset(project_id, request.json['dataset'])
@@ -93,10 +79,6 @@ def get_models(project_id):
             flat_f1 = model.fit(train_X, train_y).score(test_X, test_y)
         except ValueError as err:
             return jsonify(jsend.fail([dict(type='error', title='Error', data=str(err))]))
-        tile_1 = {
-            'title': 'Flat F1 Score',
-            'type': 'value',
-            'data': '{:.2f}'.format(flat_f1)
-        }
-        return jsonify(jsend.success([tile_1]))
+        scores = Table(['Flat F1 Score'], [['{:.2f}'.format(flat_f1)]])
+        return jsonify(jsend.success(scores.to_dict()))
     return jsonify(jsend.success(service.list_plugin_names(project_id, 'model')))
