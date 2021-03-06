@@ -21,6 +21,8 @@ def dashboard(project_id):
 
     :return: rendered template
     """
+    if current_user.role == 'manager':
+        return render_template('dashboard.html', project_id=project_id)
     project = service.get_project(user_id=current_user.id, project_id=project_id)
     labels = service.list_labels(user_id=current_user.id, project_id=project_id)
     assignments = service.list_assignments(project_id=project_id)

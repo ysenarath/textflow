@@ -1,6 +1,6 @@
 """ Login related functions """
 
-from flask import abort, flash
+from flask import abort, flash, g
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 
 from textflow import service
@@ -10,7 +10,6 @@ __all__ = [
     'login_user',
     'login_required',
     'roles_required',
-    'current_user',
     'logout_user',
 ]
 
@@ -43,6 +42,7 @@ def roles_required(role):
                 flash('Invalid user or project identity', 'error')
                 abort(401)
             elif assignment.role in role:
+                g.current_user_role = assignment.role
                 return func(*args, **kwargs)
             else:
                 flash('You are not authorize to access the resource', 'error')

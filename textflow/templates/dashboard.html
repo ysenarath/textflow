@@ -15,24 +15,26 @@
 
 {% macro render_content() %}
     <div class="container is-fluid">
-        <div v-if="active_page === 'general.annotation'">
+        <template v-if="active_page === 'general.annotation'">
             {{ render_annotation() }}
-        </div>
-        <div v-else-if="active_page === 'general.dataset'">
+        </template>
+        <template v-else-if="active_page === 'general.dataset'">
             {{ render_dataset() }}
-        </div>
-        <div v-else-if="active_page === 'general.modeling'">
+        </template>
+        <template v-else-if="active_page === 'general.modeling'">
             {{ render_modeling() }}
-        </div>
-        <div v-else-if="active_page === 'editor.basic'">
-            {{ render_project_form(project_form) }}
-        </div>
-        <div v-else-if="active_page === 'editor.labels'">
-            {{ render_labels_form(labels_form) }}
-        </div>
-        <div v-else-if="active_page === 'editor.users'">
-            {{ render_users_form(users_form) }}
-        </div>
+        </template>
+        {% if current_user.role == 'admin' %}
+            <template v-else-if="active_page === 'editor.basic'">
+                {{ render_project_form(project_form) }}
+            </template>
+            <template v-else-if="active_page === 'editor.labels'">
+                {{ render_labels_form(labels_form) }}
+            </template>
+            <template v-else-if="active_page === 'editor.users'">
+                {{ render_users_form(users_form) }}
+            </template>
+        {% endif %}
     </div>
 {% endmacro %}
 
@@ -92,14 +94,16 @@
                                 {label: 'Modeling', value: 'modeling'},
                             ]
                         },
-                        'Editor': {
-                            value: 'editor',
-                            sections: [
-                                {label: 'Basic', value: 'basic'},
-                                {label: 'Labels', value: 'labels'},
-                                {label: 'Users', value: 'users'},
-                            ]
-                        }
+                        {% if current_user.role == 'admin' %}
+                            'Editor': {
+                                value: 'editor',
+                                sections: [
+                                    {label: 'Basic', value: 'basic'},
+                                    {label: 'Labels', value: 'labels'},
+                                    {label: 'Users', value: 'users'},
+                                ]
+                            }
+                        {% endif %}
                     },
                     active_page: this.getActivePage('general.annotation'),
                     agreement_scores: null,

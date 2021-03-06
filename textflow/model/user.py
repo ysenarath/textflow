@@ -1,5 +1,5 @@
 """ User Entity """
-
+from flask import g
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -47,3 +47,9 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
+
+    @property
+    def role(self):
+        if 'current_user_role' in g:
+            return g.current_user_role
+        return None
