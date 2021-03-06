@@ -1,0 +1,26 @@
+{% macro render_annotation() %}
+    <div class="box">
+        <p class="title">Annotation Agreement</p>
+        <div class="block">
+            <div class="table-container">
+                <table class="table">
+                    <tr>
+                        <th v-for="col in agreement_scores.header">(( col ))</th>
+                    </tr>
+                    <tr v-for="cols in agreement_scores.rows">
+                        <td v-for="col in cols">
+                            <template v-if="Array.isArray(col)">
+                                <div class="tags are-small">
+                                    <span class="tag" v-for="item in col">(( item ))</span>
+                                </div>
+                            </template>
+                            <template v-else>
+                                (( col ))
+                            </template>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endmacro %}

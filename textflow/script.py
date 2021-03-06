@@ -217,7 +217,7 @@ def cli_user_create(ctx):
     with tf.app_context():
         db.create_all()
         try:
-            users = service.get_users()
+            users = service.list_users()
             logger.info(users)
         except SQLAlchemyError as e:
             logger.error('Error: {}'.format(str(e)))

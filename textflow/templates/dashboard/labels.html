@@ -1,0 +1,30 @@
+{% macro render_labels_form(form) %}
+    <form class="box is-themed is-darker" method="POST"
+          action="{{ url_for('dashboard_view.dashboard', project_id=project_id, obj='label') }}">
+        {{ form.csrf_token }}
+        <div class="is-flex is-justify-content-space-between">
+            <p class="title is-themed is-darker">Labels</p>
+            <div>
+                <input class="button is-primary is-outlined" type="submit" value="Delete"
+                       formaction="{{ url_for('dashboard_view.dashboard', project_id=project_id,
+                       obj='label', action='delete') }}"/>
+                <input class="button is-primary is-outlined" type="submit" value="Submit"/>
+            </div>
+        </div>
+        <table class="table is-themed is-darker">
+            <tr>
+                <th class="is-themed is-darker" style="width: 1%;"></th>
+                <th class="is-themed is-darker" style="max-width: 150px;">Label</th>
+                <th class="is-themed is-darker" style="min-width: 150px;">Value</th>
+            </tr>
+            {% for row in form.labels %}
+                {{ row.csrf_token }}
+                <tr>
+                    <td>{{ row['selected'](class_="checkbox") }}</td>
+                    <td>{{ row['label'](class_="input") }}</td>
+                    <td>{{ row['value'](class_="input") }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </form>
+{% endmacro %}

@@ -1,135 +1,37 @@
 {% extends '_layout.html' %}
 
+{% from 'dashboard/labels.html' import render_labels_form with context %}
+{% from 'dashboard/project.html' import render_project_form with context %}
+{% from 'dashboard/users.html' import render_users_form with context %}
+{% from 'dashboard/annotation.html' import render_annotation with context %}
+{% from 'dashboard/dataset.html' import render_dataset with context %}
+{% from 'dashboard/modeling.html' import render_modeling with context %}
+{% from 'dashboard/sidebar.html' import render_sidebar with context %}
+
 {% block styles %}
     {{ super() }}
     <link rel="stylesheet" href="/static/styles/dash.css">
 {% endblock %}
 
-{% macro sidebar() %}
-    <aside class="menu pl-3">
-        <template v-for="(page, title, index) in pages">
-            <a class="menu-label">
-                (( title ))
-            </a>
-            <ul class="menu-list">
-                <li v-for="section in page.sections">
-                    <a v-bind:class="{'is-active': active_page===page.value && active_section===section.value}"
-                       v-on:click="active_page=page.value;active_section=section.value;">
-                        (( section.label ))
-                    </a>
-                </li>
-            </ul>
-        </template>
-    </aside>
-{% endmacro %}
-
-{% macro content() %}
+{% macro render_content() %}
     <div class="container is-fluid">
-        <div class="box" v-if="active_section === 'annotation'">
-            <p class="title">Annotation Agreement</p>
-            <div class="block">
-                <div class="table-container">
-                    <table class="table">
-                        <tr>
-                            <th v-for="col in agreement_scores.header">(( col ))</th>
-                        </tr>
-                        <tr v-for="cols in agreement_scores.rows">
-                            <td v-for="col in cols">
-                                <template v-if="Array.isArray(col)">
-                                    <div class="tags are-small">
-                                        <span class="tag" v-for="item in col">(( item ))</span>
-                                    </div>
-                                </template>
-                                <template v-else>
-                                    (( col ))
-                                </template>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
+        <div v-if="active_page === 'general.annotation'">
+            {{ render_annotation() }}
         </div>
-        <div class="box" v-if="active_section === 'dataset'">
-            <p class="title">Dataset</p>
-            <div class="block">
-                <div class="field is-grouped">
-                    <div class="field is-horizontal">
-                        <div class="field-label is-normal">
-                            <label for="dataset-select" class="label">Dataset</label>
-                        </div>
-                    </div>
-                    <div class="control">
-                        <div class="select is-rounded is-primary">
-                            <select id="dataset-select" v-model="selected_dataset">
-                                <option v-for="dataset in datasets">(( dataset ))</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="field is-horizontal">
-                        <div class="field-label is-normal">
-                            <label for="dataset-validator" class="label">Validator</label>
-                        </div>
-                    </div>
-                    <div class="control">
-                        <div class="select is-rounded is-primary">
-                            <select id="dataset-validator" v-model="validator">
-                                <option v-for="group in groups">(( group ))</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="control">
-                        <button class="button is-primary is-rounded" v-on:click="download">
-                            Download
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <div v-else-if="active_page === 'general.dataset'">
+            {{ render_dataset() }}
         </div>
-        <div class="box" v-if="active_section === 'modeling'">
-            <p class="title">Evaluate</p>
-            <div class="block">
-                <div class="field is-grouped">
-                    <div class="field is-horizontal">
-                        <div class="field-label is-normal">
-                            <label for="model-select" class="label">Model</label>
-                        </div>
-                    </div>
-                    <div class="control">
-                        <div class="select is-rounded is-primary">
-                            <select for="model-select" v-model="selected_dataset">
-                                <option v-for="dataset in datasets">(( dataset ))</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="control">
-                        <button class="button is-primary is-rounded" v-on:click="evaluate">
-                            Submit
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <!-- Results block -->
-            <div class="block" v-if="eval_scores !== null">
-                <div class="table-container">
-                    <table class="table">
-                        <tr>
-                            <th v-for="col in eval_scores.header">(( col ))</th>
-                        </tr>
-                        <tr v-for="cols in eval_scores.rows">
-                            <td v-for="col in cols">
-                                <template v-if="Array.isArray(col)">
-                                    <div class="tags are-small">
-                                        <span class="tag" v-for="item in col">(( item ))</span>
-                                    </div>
-                                </template>
-                                <template v-else>
-                                    (( col ))
-                                </template>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
+        <div v-else-if="active_page === 'general.modeling'">
+            {{ render_modeling() }}
+        </div>
+        <div v-else-if="active_page === 'editor.basic'">
+            {{ render_project_form(project_form) }}
+        </div>
+        <div v-else-if="active_page === 'editor.labels'">
+            {{ render_labels_form(labels_form) }}
+        </div>
+        <div v-else-if="active_page === 'editor.users'">
+            {{ render_users_form(users_form) }}
         </div>
     </div>
 {% endmacro %}
@@ -151,10 +53,10 @@
         <template v-else>
             <div class="columns mt-0" style="height: 100%;">
                 <div class="column sidebar is-themed is-darker">
-                    {{ sidebar() }}
+                    {{ render_sidebar() }}
                 </div>
                 <div class="column content p-3">
-                    {{ content() }}
+                    {{ render_content() }}
                 </div>
             </div>
         </template>
@@ -189,10 +91,17 @@
                                 {label: 'Dataset', value: 'dataset'},
                                 {label: 'Modeling', value: 'modeling'},
                             ]
+                        },
+                        'Editor': {
+                            value: 'editor',
+                            sections: [
+                                {label: 'Basic', value: 'basic'},
+                                {label: 'Labels', value: 'labels'},
+                                {label: 'Users', value: 'users'},
+                            ]
                         }
                     },
-                    active_page: 'general',
-                    active_section: 'annotation',
+                    active_page: this.getActivePage('general.annotation'),
                     agreement_scores: null,
                     eval_scores: null,
                     groups: null,
@@ -204,6 +113,14 @@
                 }
             },
             methods: {
+                getActivePage: function (def) {
+                    if (typeof (Storage) !== "undefined") {
+                        if (typeof (localStorage.activePage) !== 'undefined') {
+                            return localStorage.activePage;
+                        }
+                    }
+                    return def;
+                },
                 initialize: function () {
                     $.get('/api/projects/{{ project_id }}/agreement')
                         .then((data) => {
@@ -272,6 +189,11 @@
             computed: {
                 isLoading: function () {
                     return (this.agreement_scores === null) || (this.datasets === null) || (this.models === null);
+                }
+            },
+            watch: {
+                active_page: function () {
+                    localStorage.setItem('activePage', this.active_page)
                 }
             },
             delimiters: ['((', '))']

@@ -1,0 +1,17 @@
+{% macro render_sidebar() %}
+    <aside class="menu pl-3">
+        <template v-for="(page, title, index) in pages">
+            <a class="menu-label">
+                (( title ))
+            </a>
+            <ul class="menu-list">
+                <li v-for="section in page.sections">
+                    <a v-bind:class="{'is-active': active_page === page.value + '.' + section.value}"
+                       v-on:click="active_page = page.value + '.' + section.value;">
+                        (( section.label ))
+                    </a>
+                </li>
+            </ul>
+        </template>
+    </aside>
+{% endmacro %}

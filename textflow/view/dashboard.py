@@ -1,19 +1,19 @@
 """ project admin view """
 
-import json
-
-from flask import render_template, Blueprint, jsonify, request
+from flask import render_template, Blueprint, jsonify, request, redirect, flash, url_for
+from flask_login import current_user
 from sklearn.model_selection import train_test_split
 
 from textflow import service, auth
-from textflow.utils import jsend
 from textflow.metrics.agreement import AgreementScore
+from textflow.utils import jsend
 from textflow.utils.types import Table
+from textflow.view.forms import UsersForm, LabelsForm, ProjectForm, LabelForm, AssignmentForm
 
 view = Blueprint('dashboard_view', __name__)
 
 
-@view.route('/projects/<project_id>/dashboard')
+@view.route('/projects/<project_id>/dashboard', methods=['GET', 'POST'])
 @auth.login_required
 @auth.roles_required(role=['admin', 'manager'])
 def dashboard(project_id):
@@ -21,7 +21,59 @@ def dashboard(project_id):
 
     :return: rendered template
     """
-    return render_template('dashboard.html', project_id=project_id)
+    project = service.get_project(user_id=current_user.id, project_id=project_id)
+    labels = service.list_labels(user_id=current_user.id, project_id=project_id)
+    assignments = service.list_assignments(project_id=project_id)
+    project_form = ProjectForm(obj=project)
+    labels_form = LabelsForm(labels=labels)
+    add_label_form = LabelForm()
+    users_form = UsersForm(users=assignments)
+    add_user_form = AssignmentForm()
+    obj = request.args.get('obj', None)
+    action = request.args.get('action', None)
+    if request.method == 'POST' and action == 'delete':
+        if labels_form.validate_on_submit() and obj == 'label':
+            none_selected = True
+            for ll in labels_form.labels:
+                if ll.data['selected']:
+                    label_id = ll.data['id']
+                    service.delete_label(label_id)
+                    none_selected = False
+            if none_selected:
+                flash('You have to select labels that need to be removed first.')
+        elif users_form.validate_on_submit() and obj == 'user':
+            none_selected = True
+            for u in users_form.users:
+                if u.data['selected']:
+                    user_id = u.user.data['id']
+                    if current_user.id != user_id:
+                        service.remove_assignment(user_id, project_id)
+                        none_selected = False
+                    else:
+                        flash('You can\'t remove yourself from the project.')
+            if none_selected:
+                flash('You have to select users that need to be removed first.')
+        return redirect(url_for('dashboard_view.dashboard', project_id=project_id))
+    elif request.method == 'POST':
+        if project_form.validate_on_submit() and obj == 'project':
+            project_form.populate_obj(project)
+            service.commit()
+        elif users_form.validate_on_submit() and obj == 'user':
+            for u in users_form.users:
+                assignment = service.get_assignment(u.user.data['id'], project_id)
+                if assignment.role != u.role:
+                    assignment.role = u.role.data
+            service.commit()
+        elif labels_form.validate_on_submit() and obj == 'label':
+            for label_form in labels_form.labels:
+                label_id = label_form.data['id']
+                label = service.get_label(label_id=label_id)
+                label_form.form.populate_obj(label)
+            service.commit()
+        return redirect(url_for('dashboard_view.dashboard', project_id=project_id))
+    return render_template('dashboard.html', project_id=project_id,
+                           project_form=project_form, labels_form=labels_form, users_form=users_form,
+                           add_label_form=add_label_form, add_user_form=add_user_form)
 
 
 @view.route('/api/projects/<project_id>/groups')

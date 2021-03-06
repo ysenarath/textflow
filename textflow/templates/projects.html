@@ -22,7 +22,8 @@
                                 <a href="/projects/{{ p.id }}/annotate" class="button is-primary is-outlined">
                                     <i class="fas fa-tag"></i></a>
                                 {% if p.role in ['admin', 'manager'] %}
-                                    <a href="/projects/{{ p.id }}/dashboard" class="button is-danger is-outlined">
+                                    <a href="{{ url_for('dashboard_view.dashboard', project_id=p.id) }}"
+                                       class="button is-danger is-outlined">
                                         <i class="fas fa-chart-line"></i></a>
                                 {% endif %}
                             </td>

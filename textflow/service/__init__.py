@@ -8,7 +8,7 @@ from textflow.service.base import service, database as db
 
 
 @service
-def get_users(ctx):
+def list_users(ctx):
     """Loads user from ID
 
     :param ctx: context
@@ -210,6 +210,17 @@ def get_annotation_set(ctx, user_id, project_id, document_id):
 
 
 @service
+def get_label(ctx, label_id):
+    """Loads user from ID
+
+    :param ctx: context
+    :param label_id: label id
+    :return: user if exist
+    """
+    return Label.query.get(int(label_id))
+
+
+@service
 def filter_label(ctx, project_id, value):
     """Gets label from value [unique for project]
 
@@ -219,6 +230,33 @@ def filter_label(ctx, project_id, value):
     :return: label
     """
     return Label.query.filter_by(project_id=project_id, value=value).one()
+
+
+@service
+def list_labels(ctx, project_id, user_id):
+    """List all labels
+
+    :param ctx: context
+    :param project_id: project id
+    :return: label
+    """
+    return Label.query.filter_by(project_id=project_id).all()
+
+
+@service
+def delete_label(ctx, label_id):
+    """Delete label
+
+    :param ctx:
+    :param label_id:
+    :return:
+    """
+    obj = get_label(label_id)
+    if obj is None:
+        return False
+    db.session.delete(obj)
+    db.session.commit()
+    return True
 
 
 @service
@@ -272,9 +310,12 @@ def list_projects(ctx, user_id, paginate=None, paginate_kwargs=None):
     :param paginate_kwargs: paginate keyword args
     :return: get user
     """
-    q = Project.query \
-        .join(Assignment, Assignment.project_id == Project.id) \
-        .filter(Assignment.user_id == user_id)
+    if ctx.ignore_user:
+        q = Project.query
+    else:
+        q = Project.query \
+            .join(Assignment, Assignment.project_id == Project.id) \
+            .filter(Assignment.user_id == user_id)
     if paginate is not None:
         return q.paginate(**paginate_kwargs)
     return q.all()
@@ -390,6 +431,17 @@ def generate_status_report(ctx, user_id, project_id=None):
 
 
 @service
+def list_assignments(ctx, project_id):
+    """Gets assignment using provided user and project id.
+
+    :param ctx: context
+    :param project_id: project id
+    :return: Assigment if exist else None
+    """
+    return Assignment.query.filter(Assignment.project_id == project_id).all()
+
+
+@service
 def get_assignment(ctx, user_id, project_id):
     """Gets assignment using provided user and project id.
 
@@ -465,3 +517,7 @@ def get_model(ctx, project_id, name=None):
         p = get_project.ignore_user(user_id=None, project_id=project_id)
         plugin = models.get_plugin(p.type, name)
     return plugin()
+
+
+def commit():
+    return db.session.commit()
