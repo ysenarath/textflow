@@ -6,14 +6,15 @@ from sklearn.model_selection import train_test_split
 
 from textflow import service, auth
 from textflow.metrics.agreement import AgreementScore
+from textflow.model import Assignment, Label
 from textflow.utils import jsend
 from textflow.utils.types import Table
-from textflow.view.forms import UsersForm, LabelsForm, ProjectForm, LabelForm, AssignmentForm
+from textflow.view.forms import *
 
 view = Blueprint('dashboard_view', __name__)
 
 
-@view.route('/projects/<project_id>/dashboard', methods=['GET', 'POST'])
+@view.route('/projects/<project_id>/dashboard', methods=['GET'])
 @auth.login_required
 @auth.roles_required(role=['admin', 'manager'])
 def dashboard(project_id):
@@ -23,17 +24,33 @@ def dashboard(project_id):
     """
     if current_user.role == 'manager':
         return render_template('dashboard.html', project_id=project_id)
-    project = service.get_project(user_id=current_user.id, project_id=project_id)
+    else:
+        p = service.get_project(user_id=current_user.id, project_id=project_id)
+        labels = service.list_labels(user_id=current_user.id, project_id=project_id)
+        assignments = service.list_assignments(project_id=project_id)
+        project_form = ProjectForm(obj=p)
+        labels_form = LabelsForm(labels=labels)
+        add_label_form = LabelForm()
+        users_form = UsersForm(users=assignments)
+        add_user_form = AssignmentForm()
+        return render_template('dashboard.html', project_id=project_id,
+                               project_form=project_form, labels_form=labels_form, users_form=users_form,
+                               add_label_form=add_label_form, add_user_form=add_user_form)
+
+
+@view.route('/projects/<project_id>/dashboard', methods=['POST'])
+@auth.login_required
+@auth.roles_required(role='admin')
+def post_dashboard(project_id):
+    p = service.get_project(user_id=current_user.id, project_id=project_id)
     labels = service.list_labels(user_id=current_user.id, project_id=project_id)
     assignments = service.list_assignments(project_id=project_id)
-    project_form = ProjectForm(obj=project)
+    project_form = ProjectForm(obj=p)
     labels_form = LabelsForm(labels=labels)
-    add_label_form = LabelForm()
     users_form = UsersForm(users=assignments)
-    add_user_form = AssignmentForm()
     obj = request.args.get('obj', None)
     action = request.args.get('action', None)
-    if request.method == 'POST' and action == 'delete':
+    if action == 'delete':
         if labels_form.validate_on_submit() and obj == 'label':
             none_selected = True
             for ll in labels_form.labels:
@@ -56,26 +73,63 @@ def dashboard(project_id):
             if none_selected:
                 flash('You have to select users that need to be removed first.')
         return redirect(url_for('dashboard_view.dashboard', project_id=project_id))
-    elif request.method == 'POST':
+    else:
         if project_form.validate_on_submit() and obj == 'project':
-            project_form.populate_obj(project)
-            service.commit()
+            project_form.populate_obj(p)
+            service.db.session.commit()
         elif users_form.validate_on_submit() and obj == 'user':
             for u in users_form.users:
                 assignment = service.get_assignment(u.user.data['id'], project_id)
                 if assignment.role != u.role:
                     assignment.role = u.role.data
-            service.commit()
+            service.db.session.commit()
         elif labels_form.validate_on_submit() and obj == 'label':
             for label_form in labels_form.labels:
                 label_id = label_form.data['id']
-                label = service.get_label(label_id=label_id)
-                label_form.form.populate_obj(label)
-            service.commit()
-        return redirect(url_for('dashboard_view.dashboard', project_id=project_id))
-    return render_template('dashboard.html', project_id=project_id,
-                           project_form=project_form, labels_form=labels_form, users_form=users_form,
-                           add_label_form=add_label_form, add_user_form=add_user_form)
+                lbl = service.get_label(label_id=label_id)
+                label_form.form.populate_obj(lbl)
+            service.db.session.commit()
+    return redirect(url_for('dashboard_view.dashboard', project_id=project_id))
+
+
+@view.route('/projects/<project_id>/dashboard/label', methods=['POST'])
+@auth.login_required
+@auth.roles_required(role='admin')
+def add_label(project_id):
+    add_label_form = LabelForm()
+    if add_label_form.validate_on_submit():
+        lbl = add_label_form.data['label']
+        val = add_label_form.data['value']
+        if service.filter_label(project_id=project_id, value=val) is None:
+            obj = Label(value=val, label=lbl, project_id=project_id)
+            service.db.session.add(obj)
+            service.db.session.commit()
+        else:
+            flash('Label with value "{}" exists. Please retry with another value.'.format(val))
+    else:
+        flash('Invalid form input. Please check and try again. Error: {}'.format(add_label_form.errors))
+    return redirect(url_for('dashboard_view.dashboard', project_id=project_id))
+
+
+@view.route('/projects/<project_id>/dashboard/user', methods=['POST'])
+@auth.login_required
+@auth.roles_required(role='admin')
+def add_user(project_id):
+    add_user_form = AssignmentForm()
+    if add_user_form.validate_on_submit():
+        role = add_user_form.data['role']
+        username = add_user_form.user.data['username']
+        users = service.filter_users(username=username)
+        if len(users) == 1:
+            user_id = users[0].id
+            a = Assignment(user_id=user_id, project_id=project_id, role=role)
+            service.db.session.add(a)
+            service.db.session.commit()
+        else:
+            flash('Username not found: "{}". Please enter a valid username.'.format(username))
+    else:
+        flash('Invalid form input. Please check and try again. Error: {}'.format(add_user_form.errors))
+    return redirect(url_for('dashboard_view.dashboard', project_id=project_id))
 
 
 @view.route('/api/projects/<project_id>/groups')

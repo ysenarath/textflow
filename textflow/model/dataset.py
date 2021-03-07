@@ -211,7 +211,7 @@ class SequenceLabelingDataset(Dataset):
         return X
 
 
-@datasets.register('classification')
+@datasets.register('document_classification')
 class MultiLabelDataset(Dataset):
     def build_dataset(self, annotation_sets, tokenizer=None):
         """Builds dataset from provided annotation sets
@@ -259,7 +259,7 @@ class MultiLabelDataset(Dataset):
                     label_counts[ll] += 1
             # minimum number of labels needed
             #   to consider for annotation (half of the number of available annotations)
-            min_num = labels // 2 + 1
+            min_num = len(labels) // 2 + 1
             majority_vote = [k for k, v in label_counts.items() if v >= min_num]
             records[i].labels['MAJORITY'] = majority_vote
         return records

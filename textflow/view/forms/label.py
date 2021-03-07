@@ -10,7 +10,7 @@ __all__ = [
 
 class LabelForm(FlaskForm):
     selected = BooleanField('selected')
-    id = StringField('ID', validators=[DataRequired()])
+    id = StringField('ID')
     label = StringField('Label', validators=[DataRequired()])
     value = StringField('Value', validators=[DataRequired()])
 

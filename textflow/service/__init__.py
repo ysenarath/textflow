@@ -229,7 +229,7 @@ def filter_label(ctx, project_id, value):
     :param value: value
     :return: label
     """
-    return Label.query.filter_by(project_id=project_id, value=value).one()
+    return Label.query.filter_by(project_id=project_id, value=value).first()
 
 
 @service
@@ -517,7 +517,3 @@ def get_model(ctx, project_id, name=None):
         p = get_project.ignore_user(user_id=None, project_id=project_id)
         plugin = models.get_plugin(p.type, name)
     return plugin()
-
-
-def commit():
-    return db.session.commit()

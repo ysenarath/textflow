@@ -7,16 +7,22 @@ __all__ = [
     'AssignmentForm'
 ]
 
+project_user_roles = [
+    ('default', 'Default'),
+    ('manager', 'Manager'),
+    ('admin', 'Administer'),
+]
+
 
 class UserForm(FlaskForm):
-    id = StringField('ID', validators=[DataRequired()])
+    id = StringField('ID')
     username = StringField('Username', validators=[DataRequired()])
 
 
 class AssignmentForm(FlaskForm):
     selected = BooleanField('selected')
     user = FormField(UserForm)
-    role = StringField('Role', validators=[DataRequired()])
+    role = SelectField('Role', validators=[DataRequired()], choices=project_user_roles)
 
 
 class UsersForm(FlaskForm):

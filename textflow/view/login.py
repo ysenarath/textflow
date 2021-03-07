@@ -3,10 +3,9 @@
 from urllib.parse import urlparse, urljoin
 
 from flask import redirect, flash, url_for, render_template, abort, request, Blueprint
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, validators
 
 from textflow import service, auth
+from textflow.view.forms import LoginForm
 
 view = Blueprint('login_view', __name__)
 
@@ -42,20 +41,6 @@ def unauthorized():
     return redirect(url_for('login_view.login'))
 
 
-class LoginForm(FlaskForm):
-    """ LoginForm """
-    username = StringField('Username', [validators.DataRequired(), validators.Length(min=4, max=25)])
-    password = PasswordField('Password', [validators.DataRequired(), validators.Length(min=8, max=25)])
-
-
-def login_form():
-    """Creates and returns login form
-
-    :return: New LoginForm
-    """
-    return LoginForm()
-
-
 @view.route('/login', methods=['GET', 'POST'])
 def login():
     """Login operation
@@ -66,7 +51,7 @@ def login():
     # Here we use a class of some kind to represent and validate our
     # client-side form data. For example, WTForms is a library that will
     # handle this for us, and we use a custom LoginForm to validate.
-    form = login_form()
+    form = LoginForm()
     if request.method == 'POST':
         if form.validate_on_submit():
             users = service.filter_users(username=form.username.data)
