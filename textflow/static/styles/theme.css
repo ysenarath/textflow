@@ -3,51 +3,52 @@
     color: #4a4a4a;
 }
 
-.is-themed.navbar > .navbar-menu {
+html.is-themed .navbar > .navbar-menu {
     box-shadow: none;
 }
 
-.is-themed.navbar .navbar-menu.is-active .navbar-item .control,
-.is-themed.navbar .navbar-menu.is-active .navbar-item .control > .button {
+html.is-themed .navbar .navbar-menu.is-active .navbar-item .control,
+html.is-themed .navbar .navbar-menu.is-active .navbar-item .control > .button {
     min-width: 250px;
 }
 
 html[data-theme='light'].is-themed,
-html[data-theme='light'] .is-themed:not(.navbar) {
+html[data-theme='light'].is-themed body,
+html[data-theme='light'].is-themed .title,
+html[data-theme='light'].is-themed .subtitle,
+html[data-theme='light'].is-themed .label,
+html[data-theme='light'].is-themed .table,
+html[data-theme='light'].is-themed .table > tbody > tr > th,
+html[data-theme='light'].is-themed .box {
     background-color: #fff !important;
     color: #363636 !important;
 }
 
 
-html[data-theme='light'].is-themed.is-darker,
-html[data-theme='light'] .is-themed:not(.navbar).is-darker {
-    background-color: #f5f5f5 !important;
-    color: #4a4a4a !important;
-}
-
-
-html[data-theme='light'] .is-themed.navbar,
-html[data-theme='light'] .is-themed.navbar > .navbar-menu {
+html[data-theme='light'].is-themed .navbar,
+html[data-theme='light'].is-themed .navbar *,
+html[data-theme='light'].is-themed .sidebar,
+html[data-theme='light'].is-themed .footer {
     background-color: #f5f5f5 !important;
     color: #4a4a4a !important;
 }
 
 html[data-theme='dark'].is-themed,
-html[data-theme='dark'] .is-themed:not(.navbar) {
+html[data-theme='dark'].is-themed body,
+html[data-theme='dark'].is-themed .title,
+html[data-theme='dark'].is-themed .subtitle,
+html[data-theme='dark'].is-themed .label,
+html[data-theme='dark'].is-themed .table,
+html[data-theme='dark'].is-themed .table > tbody > tr > th,
+html[data-theme='dark'].is-themed .box {
     background-color: #4a4a4a !important;
     color: #f5f5f5 !important;
 }
 
-
-html[data-theme='dark'].is-themed.is-darker,
-html[data-theme='dark'] .is-themed:not(.navbar).is-darker {
-    background-color: #363636 !important;
-    color: #f5f5f5 !important;
-}
-
-
-html[data-theme='dark'] .is-themed.navbar,
-html[data-theme='dark'] .is-themed.navbar > .navbar-menu {
+html[data-theme='dark'].is-themed .navbar,
+html[data-theme='dark'].is-themed .navbar *,
+html[data-theme='dark'].is-themed .sidebar,
+html[data-theme='dark'].is-themed .footer {
     background-color: #363636 !important;
     color: #f5f5f5 !important;
 }

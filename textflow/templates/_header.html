@@ -7,7 +7,7 @@
 
 {% set messages = get_flashed_messages(with_categories=True) %}
 
-<nav class="navbar is-fixed-top pl-6 pr-6 is-themed" role="navigation" aria-label="main navigation">
+<nav class="navbar is-fixed-top pl-6 pr-6" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
         <a class="navbar-item" href="/">
             <img src="/static/images/long_logo.png" height="28">
@@ -44,7 +44,7 @@
             <div class="navbar-item p-1">
                 <div class="field has-addons has-addons-centered">
                     <p class="control">
-                        <button class="button is-rounded is-themed" onclick="theme.toggle()">
+                        <button class="button is-rounded" onclick="theme.toggle()">
                             <i class="fas fa-adjust"></i>
                         </button>
                     </p>
@@ -53,7 +53,7 @@
             <div class="navbar-item p-1">
                 <div class="field has-addons has-addons-centered">
                     <p class="control">
-                        <button class="button is-rounded is-themed" onclick="$('#notificationsPanel').toggle()">
+                        <button class="button is-rounded" onclick="$('#notificationsPanel').toggle()">
                             <i class="fas fa-bell {% if messages %}has-text-danger{% endif %}"></i>
                         </button>
                     </p>
@@ -63,7 +63,7 @@
                 <div class="navbar-item p-1">
                     <div class="field has-addons has-addons-centered">
                         <p class="control">
-                            <a class="button is-rounded is-themed" href="/logout">
+                            <a class="button is-rounded" href="/logout">
                                 <span class="is-text mr-2">{{ current_user.username }}</span>
                                 <i class="fas fa-sign-out-alt"></i>
                             </a>
@@ -74,7 +74,7 @@
                 <div class="navbar-item p-1">
                     <div class="field has-addons has-addons-centered">
                         <p class="control">
-                            <a class="button is-rounded is-themed" href="/login" style="">
+                            <a class="button is-rounded" href="/login" style="">
                                 <span class="is-text mr-2">Login</span>
                                 <i class="fas fa-sign-in-alt"></i>
                             </a>

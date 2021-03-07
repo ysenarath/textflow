@@ -1,21 +1,21 @@
 {% macro render_labels_form(form) %}
-    <form class="box is-themed is-darker" method="POST"
+    <form class="box" method="POST"
           action="{{ url_for('dashboard_view.dashboard', project_id=project_id, obj='label') }}">
         {{ form.csrf_token }}
         <div class="is-flex is-justify-content-space-between">
-            <p class="title is-themed is-darker">Labels</p>
+            <p class="title">Labels</p>
             <div>
-                <input class="button is-primary is-outlined" type="submit" value="Delete"
+                <input class="button is-link" type="submit" value="Submit"/>
+                <input class="button is-link" type="submit" value="Delete"
                        formaction="{{ url_for('dashboard_view.dashboard', project_id=project_id,
                        obj='label', action='delete') }}"/>
-                <input class="button is-primary is-outlined" type="submit" value="Submit"/>
             </div>
         </div>
-        <table class="table is-themed is-darker">
+        <table class="table">
             <tr>
-                <th class="is-themed is-darker" style="width: 1%;"></th>
-                <th class="is-themed is-darker" style="max-width: 150px;">Label</th>
-                <th class="is-themed is-darker" style="min-width: 150px;">Value</th>
+                <th></th>
+                <th>Label</th>
+                <th>Value</th>
             </tr>
             {% for row in form.labels %}
                 {{ row.csrf_token }}
@@ -26,5 +26,32 @@
                 </tr>
             {% endfor %}
         </table>
+    </form>
+{% endmacro %}
+
+{% macro render_add_label_form(form) %}
+    <form class="box" method="POST"
+          action="{{ url_for('dashboard_view.add_label', project_id=project_id, obj='label') }}">
+        {{ form.csrf_token }}
+        <div class="field is-horizontal">
+            <div class="field-body">
+                <div class="field">
+                    <label class="label">{{ form['label'].label }}</label>
+                    <p class="control">
+                        {{ form['label'](class_="input") }}
+                    </p>
+                </div>
+                <div class="field">
+                    <label class="label">{{ form['value'].label }}</label>
+                    <p class="control">
+                        {{ form['value'](class_="input") }}
+                    </p>
+                </div>
+                <div class="field">
+                    <label class="label">Action</label>
+                    <input class="button is-link" type="submit" value="Add"/>
+                </div>
+            </div>
+        </div>
     </form>
 {% endmacro %}

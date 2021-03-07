@@ -1,27 +1,35 @@
 {% macro render_project_form(form) %}
-    <form class="box is-themed is-darker" method="POST"
+    <form class="box" method="POST"
           action="{{ url_for('dashboard_view.dashboard', project_id=project_id, obj='project') }}">
         {{ form.csrf_token }}
         <div class="is-flex is-justify-content-space-between">
-            <p class="title is-themed is-darker">Basic</p>
-            <input class="button is-primary is-outlined" type="submit" value="Submit"/>
+            <p class="title">Settings</p>
+            <input class="button is-link" type="submit" value="Submit"/>
         </div>
         <div class="field">
-            <label class="label is-themed is-darker">{{ form.name.label }}</label>
+            <label class="label">{{ form.name.label }}</label>
             <p class="control">
                 {{ form.name(size=24, class_="input") }}
             </p>
         </div>
         <div class="field">
-            <label class="label is-themed is-darker">{{ form.description.label }}</label>
+            <label class="label">{{ form.description.label }}</label>
             <p class="control">
-                {{ form.description(size=24, class_="input") }}
+                {{ form.description(class_="input") }}
             </p>
         </div>
         <div class="field">
-            <label class="label is-themed is-darker">{{ form.type.label }}</label>
+            <label class="label">{{ form.type.label }}</label>
+            <div class="control">
+                <div class="select">
+                    {{ form.type(class_="input") }}
+                </div>
+            </div>
+        </div>
+        <div class="field">
+            <label class="label">{{ form.redundancy.label }}</label>
             <p class="control">
-                {{ form.type(size=24, class_="input") }}
+                {{ form.redundancy(class_="input", type_=number) }}
             </p>
         </div>
     </form>

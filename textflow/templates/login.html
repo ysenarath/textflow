@@ -2,21 +2,21 @@
 
 {% block content %}
     <div class="is-flex is-justify-content-center">
-        <div class="box is-themed is-darker" style="width: 450px;">
-            <h1 class="title has-text-centered is-themed is-darker">Login</h1>
+        <div class="box" style="width: 450px;">
+            <h1 class="title has-text-centered">Login</h1>
             <form method="POST" action="/login?next={{ next | safe }}">
                 {{ form.csrf_token }}
                 <div class="field">
-                    <label class="label is-small is-themed is-darker">{{ form.username.label }}</label>
+                    <label class="label">{{ form.username.label }}</label>
                     <p class="control has-icons-left has-icons-right">
                         {{ form.username(size=24, class_="input") }}
                         <span class="icon is-small is-left">
-                        <i class="fas fa-envelope"></i>
+                        <i class="fas fa-user"></i>
                     </span>
                     </p>
                 </div>
                 <div class="field">
-                    <label class="label is-small is-themed is-darker">{{ form.password.label }}</label>
+                    <label class="label">{{ form.password.label }}</label>
                     <p class="control has-icons-left">
                         {{ form.password(size=24, class_="input") }}
                         <span class="icon is-small is-left">
@@ -25,7 +25,7 @@
                     </p>
                 </div>
                 <div class="buttons has-addons is-right pt-3">
-                    <input class="button is-primary is-outlined" type="submit" value="Login"/>
+                    <input class="button is-link" type="submit" value="Login"/>
                 </div>
             </form>
         </div>

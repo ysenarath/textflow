@@ -1,11 +1,11 @@
 {% extends '_layout.html' %}
 
 {% block is_full_content %}
-    <section class="section p-3 is-themed">
+    <section class="section p-3">
         <div class="container p-6">
             <!-- Header -->
             <div class="block">
-                <h1 class="title has-text-centered is-themed">{{ project.name }}
+                <h1 class="title has-text-centered">{{ project.name }}
                     <a href="/projects/{{ project.id }}/annotate" class="button is-primary is-outlined">
                         <span class="icon">
                             <i class="fas fa-tag"></i>
@@ -20,25 +20,25 @@
                     <div class="level-item has-text-centered">
                         <div>
                             <p class="heading">Total</p>
-                            <p class="title is-themed">{{ project_status.num_assigned }}</p>
+                            <p class="title">{{ project_status.num_assigned }}</p>
                         </div>
                     </div>
                     <div class="level-item has-text-centered">
                         <div>
                             <p class="heading">Completed</p>
-                            <p class="title is-themed">{{ project_status.num_completed }}</p>
+                            <p class="title">{{ project_status.num_completed }}</p>
                         </div>
                     </div>
                     <div class="level-item has-text-centered">
                         <div>
                             <p class="heading">Remaining</p>
-                            <p class="title is-themed">{{ project_status.num_assigned - project_status.num_completed }}</p>
+                            <p class="title">{{ project_status.num_assigned - project_status.num_completed }}</p>
                         </div>
                     </div>
                     <div class="level-item has-text-centered">
                         <div>
                             <p class="heading">Progress</p>
-                            <p class="title is-themed">{{ '%d' | format(project_status.progress) }}%</p>
+                            <p class="title">{{ '%d' | format(project_status.progress) }}%</p>
                         </div>
                     </div>
                 </nav>
@@ -58,16 +58,16 @@
                 </div>
             </div>
         </div>
-        <div class="container box is-themed">
+        <div class="container box">
             <!-- Annotated documents table -->
             <div class="block">
                 <div class="table-container">
-                    <table class="table is-fullwidth is-themed">
+                    <table class="table is-fullwidth">
                         <thead>
                         <tr>
-                            <th class="is-themed">#</th>
-                            <th class="is-themed">Text</th>
-                            <th class="is-themed">Action</th>
+                            <th>#</th>
+                            <th>Text</th>
+                            <th>Action</th>
                         </tr>
                         </thead>
                         <tbody>

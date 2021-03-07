@@ -28,9 +28,9 @@
         {% endif %}
         <div class="columns">
             <div class="column">
-                <div class="box is-themed">
+                <div class="box">
                     {% if project.type == 'sequence_labeling' %}
-                        <div class="annotator-div is-family-primary is-size-4 is-themed" id="annotationField"></div>
+                        <div class="annotator-div is-family-primary is-size-4" id="annotationField"></div>
                     {% else %}
                         <div class="block">
                             <p class="subtitle">{{ document.text | safe }}</p>
@@ -54,13 +54,13 @@
     {% else %}
         <div class="columns">
             <div class="column is-half is-offset-one-quarter">
-                <div class="box is-themed is-darker">
-                    <h1 class="title is-themed is-darker">Congratulations!</h1>
+                <div class="box">
+                    <h1 class="title">Congratulations!</h1>
                     <div class="block">
                         <p>We do not have any more documents for you to annotate now. We will let you know if we
                             need your help again.</p>
                     </div>
-                    <h2 class="subtitle is-themed is-darker">Thank you for your contribution.</h2>
+                    <h2 class="subtitle">Thank you for your contribution.</h2>
                 </div>
             </div>
         </div>

@@ -1,8 +1,10 @@
 {% extends '_layout.html' %}
 
 {% from 'dashboard/labels.html' import render_labels_form with context %}
+{% from 'dashboard/labels.html' import render_add_label_form with context %}
 {% from 'dashboard/project.html' import render_project_form with context %}
 {% from 'dashboard/users.html' import render_users_form with context %}
+{% from 'dashboard/users.html' import render_add_user_form with context %}
 {% from 'dashboard/annotation.html' import render_annotation with context %}
 {% from 'dashboard/dataset.html' import render_dataset with context %}
 {% from 'dashboard/modeling.html' import render_modeling with context %}
@@ -29,9 +31,11 @@
                 {{ render_project_form(project_form) }}
             </template>
             <template v-else-if="active_page === 'editor.labels'">
+                {{ render_add_label_form(add_label_form) }}
                 {{ render_labels_form(labels_form) }}
             </template>
             <template v-else-if="active_page === 'editor.users'">
+                {{ render_add_user_form(add_user_form) }}
                 {{ render_users_form(users_form) }}
             </template>
         {% endif %}
@@ -54,7 +58,7 @@
         </template>
         <template v-else>
             <div class="columns mt-0" style="height: 100%;">
-                <div class="column sidebar is-themed is-darker">
+                <div class="column sidebar">
                     {{ render_sidebar() }}
                 </div>
                 <div class="column content p-3">

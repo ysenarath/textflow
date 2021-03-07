@@ -27,3 +27,22 @@ body {
         width: 100%;
     }
 }
+
+.sidebar {
+    padding: 1em 0 !important;
+}
+
+.sidebar .menu-label {
+    padding-left: 1em;
+}
+
+.sidebar .menu-list a {
+    border-radius: 0 !important;
+    color: #3273dc;
+    padding: .75em;
+}
+
+.sidebar .menu-list a.is-active {
+    background-color: #3273dc;
+    color: #fff !important;
+}

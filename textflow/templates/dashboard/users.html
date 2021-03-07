@@ -1,21 +1,21 @@
 {% macro render_users_form(form) %}
-    <form class="box is-themed is-darker" method="POST"
+    <form class="box" method="POST"
           action="{{ url_for('dashboard_view.dashboard', project_id=project_id, obj='user') }}">
         {{ form.csrf_token }}
         <div class="is-flex is-justify-content-space-between">
-            <p class="title is-themed is-darker">Users</p>
+            <p class="title">Users</p>
             <div>
-                <input class="button is-primary is-outlined" type="submit" value="Delete"
+                <input class="button is-link" type="submit" value="Submit"/>
+                <input class="button is-link" type="submit" value="Delete"
                        formaction="{{ url_for('dashboard_view.dashboard', project_id=project_id,
                        obj='user', action='delete') }}"/>
-                <input class="button is-primary is-outlined" type="submit" value="Submit"/>
             </div>
         </div>
-        <table class="table is-themed is-darker">
+        <table class="table">
             <tr>
-                <th class="is-themed is-darker" style="width: 1%;"></th>
-                <th class="is-themed is-darker">User</th>
-                <th class="is-themed is-darker" style="min-width: 150px;">Role</th>
+                <th></th>
+                <th>User</th>
+                <th>Role</th>
             </tr>
             {% for row in form.users %}
                 {{ row.csrf_token }}
@@ -23,9 +23,43 @@
                 <tr>
                     <td>{{ row['selected'](class_="checkbox") }}</td>
                     <td>{{ row['user']['username'](class_="input") }}</td>
-                    <td>{{ row['role'](class_="input") }}</td>
+                    <td>
+                        <div class="select">
+                            {{ row['role'](class_="input") }}
+                        </div>
+                    </td>
                 </tr>
             {% endfor %}
         </table>
+    </form>
+{% endmacro %}
+
+{% macro render_add_user_form(form) %}
+    <form class="box" method="POST"
+          action="{{ url_for('dashboard_view.add_user', project_id=project_id, obj='user') }}">
+        {{ form.csrf_token }}
+        {{ form['user'].csrf_token }}
+        <div class="field is-horizontal">
+            <div class="field-body">
+                <div class="field">
+                    <label class="label">{{ form['user']['username'].label }}</label>
+                    <div class="control">
+                        {{ form['user']['username'](class_="input") }}
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">{{ form['role'].label }}</label>
+                    <div class="control">
+                        <div class="select">
+                            {{ form['role'](class_="input") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Action</label>
+                    <input class="button is-link" type="submit" value="Add"/>
+                </div>
+            </div>
+        </div>
     </form>
 {% endmacro %}
