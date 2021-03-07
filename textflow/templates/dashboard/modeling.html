@@ -9,14 +9,14 @@
                     </div>
                 </div>
                 <div class="control">
-                    <div class="select is-rounded is-primary">
+                    <div class="select">
                         <select for="model-select" v-model="selected_dataset">
                             <option v-for="dataset in datasets">(( dataset ))</option>
                         </select>
                     </div>
                 </div>
                 <div class="control">
-                    <button class="button is-primary is-rounded" v-on:click="evaluate">
+                    <button class="button is-info" v-on:click="evaluate">
                         Submit
                     </button>
                 </div>

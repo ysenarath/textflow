@@ -8,7 +8,8 @@
                 <li v-for="section in page.sections">
                     <a v-bind:class="{'is-active': active_page === page.value + '.' + section.value}"
                        v-on:click="active_page = page.value + '.' + section.value;">
-                        (( section.label ))
+                        <i class="fas" v-bind:class="section.icon" aria-hidden="true"></i>
+                        <span class="ml-3">(( section.label ))</span>
                     </a>
                 </li>
             </ul>

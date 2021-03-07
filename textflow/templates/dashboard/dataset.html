@@ -9,7 +9,7 @@
                     </div>
                 </div>
                 <div class="control">
-                    <div class="select is-rounded is-primary">
+                    <div class="select">
                         <select id="dataset-select" v-model="selected_dataset">
                             <option v-for="dataset in datasets">(( dataset ))</option>
                         </select>
@@ -21,14 +21,14 @@
                     </div>
                 </div>
                 <div class="control">
-                    <div class="select is-rounded is-primary">
+                    <div class="select">
                         <select id="dataset-validator" v-model="validator">
                             <option v-for="group in groups">(( group ))</option>
                         </select>
                     </div>
                 </div>
                 <div class="control">
-                    <button class="button is-primary is-rounded" v-on:click="download">
+                    <button class="button is-info" v-on:click="download">
                         Download
                     </button>
                 </div>

@@ -5,7 +5,7 @@
 {% from 'dashboard/project.html' import render_project_form with context %}
 {% from 'dashboard/users.html' import render_users_form with context %}
 {% from 'dashboard/users.html' import render_add_user_form with context %}
-{% from 'dashboard/annotation.html' import render_annotation with context %}
+{% from 'dashboard/agreement.html' import render_agreement with context %}
 {% from 'dashboard/dataset.html' import render_dataset with context %}
 {% from 'dashboard/modeling.html' import render_modeling with context %}
 {% from 'dashboard/sidebar.html' import render_sidebar with context %}
@@ -17,8 +17,8 @@
 
 {% macro render_content() %}
     <div class="container is-fluid">
-        <template v-if="active_page === 'general.annotation'">
-            {{ render_annotation() }}
+        <template v-if="active_page === 'general.agreement'">
+            {{ render_agreement() }}
         </template>
         <template v-else-if="active_page === 'general.dataset'">
             {{ render_dataset() }}
@@ -93,18 +93,18 @@
                         'General': {
                             value: 'general',
                             sections: [
-                                {label: 'Annotations', value: 'annotation'},
-                                {label: 'Dataset', value: 'dataset'},
-                                {label: 'Modeling', value: 'modeling'},
+                                {label: 'Agreement', value: 'agreement', icon: 'fa-chart-bar'},
+                                {label: 'Dataset', value: 'dataset', icon: 'fa-table'},
+                                {label: 'Modeling', value: 'modeling', icon: 'fa-magic'},
                             ]
                         },
                         {% if current_user.role == 'admin' %}
                             'Editor': {
                                 value: 'editor',
                                 sections: [
-                                    {label: 'Basic', value: 'basic'},
-                                    {label: 'Labels', value: 'labels'},
-                                    {label: 'Users', value: 'users'},
+                                    {label: 'Basic', value: 'basic', icon: 'fa-tasks'},
+                                    {label: 'Labels', value: 'labels', icon: 'fa-tags'},
+                                    {label: 'Users', value: 'users', icon: 'fa-users'},
                                 ]
                             }
                         {% endif %}
