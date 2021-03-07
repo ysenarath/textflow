@@ -38,11 +38,16 @@ body {
 
 .sidebar .menu-list a {
     border-radius: 0 !important;
-    color: #3273dc;
+    color: hsl(207, 61%,  53%);
     padding: .75em;
 }
 
 .sidebar .menu-list a.is-active {
-    background-color: #3273dc;
+    background-color: hsl(207, 61%,  53%);
+    color: #fff !important;
+}
+
+.sidebar .menu-list a:hover:not(.is-active) {
+    background-color: hsl(207, 61%,  40%);
     color: #fff !important;
 }
