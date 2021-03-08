@@ -10,7 +10,7 @@ with open('packages.txt') as fh:
 
 setuptools.setup(
     name="textflow",
-    version="0.2.3",
+    version="0.3.0",
     author="Yasas Senarath",
     author_email="ysenarath.93@gmail.com",
     description="Simple and extensible framework for end to end text based natural language understanding.",
