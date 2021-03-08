@@ -4,15 +4,14 @@
     <section class="section p-3">
         <div class="container p-6">
             <!-- Header -->
-            <div class="block">
-                <h1 class="title has-text-centered">{{ project.name }}
-                    <a href="/projects/{{ project.id }}/annotate" class="button is-primary is-outlined">
-                        <span class="icon">
-                            <i class="fas fa-tag"></i>
-                        </span>
-                    </a>
+            <div class="block has-text-centered">
+                <h1 class="title">{{ project.name }}
                 </h1>
                 <h2 class="subtitle has-text-centered">{{ project.description }}</h2>
+                <a href="/projects/{{ project.id }}/annotate" class="button is-info">
+                    <span class="icon mr-1"><i class="fas fa-tag"></i></span>
+                    <span>{% if project_status.num_completed > 0 %}Continue{% else %}Start{% endif %} Annotating</span>
+                </a>
             </div>
             <!-- Information -->
             <div class="block">
@@ -75,7 +74,7 @@
                             <tr>
                                 <th scope="row">{{ d.id }}</th>
                                 <td> {{ d.text | safe }}</td>
-                                <td><a class="button" href="{{ project.id }}/annotate/{{ d.id }}">
+                                <td><a class="button is-info" href="{{ project.id }}/annotate/{{ d.id }}">
                                     <i class="fas fa-tag"></i>
                                 </a></td>
                             </tr>
