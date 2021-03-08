@@ -19,6 +19,8 @@ html[data-theme='light'].is-themed .subtitle,
 html[data-theme='light'].is-themed .label,
 html[data-theme='light'].is-themed .table,
 html[data-theme='light'].is-themed .table > tbody > tr > th,
+html[data-theme='light'].is-themed .table .input,
+html[data-theme='light'].is-themed .table .textarea,
 html[data-theme='light'].is-themed .box {
     background-color: #fff !important;
     color: #363636 !important;
@@ -40,6 +42,8 @@ html[data-theme='dark'].is-themed .subtitle,
 html[data-theme='dark'].is-themed .label,
 html[data-theme='dark'].is-themed .table,
 html[data-theme='dark'].is-themed .table > tbody > tr > th,
+html[data-theme='dark'].is-themed .table .input,
+html[data-theme='dark'].is-themed .table .textarea,
 html[data-theme='dark'].is-themed .box {
     background-color: #4a4a4a !important;
     color: #f5f5f5 !important;
@@ -51,4 +55,18 @@ html[data-theme='dark'].is-themed .sidebar,
 html[data-theme='dark'].is-themed .footer {
     background-color: #363636 !important;
     color: #f5f5f5 !important;
+}
+
+.table .input, .table .textarea {
+    width: auto;
+    box-shadow: none;
+    border-radius: 0;
+    border: 1px solid transparent;
+    padding-left: 4px;
+    margin: 0 4px 0 -4px;
+}
+
+.table .input:focus, .textarea:focus {
+    border-radius: 4px;
+    border: 1px solid #3273dc;
 }

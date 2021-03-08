@@ -145,7 +145,7 @@ def cli_project_update(ctx, project_id, header):
         try:
             a = service.get_project.ignore_user(None, project_id)
             with open(header, encoding='utf-8') as fp:
-                a.header_template = fp.read()
+                a.guideline_template = fp.read()
             db.session.commit()
         except SQLAlchemyError as e:
             db.session.rollback()

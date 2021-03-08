@@ -1,0 +1,34 @@
+{% macro render_upload_docs_form(form) %}
+    <form class="box" method="POST"
+          action="{{ url_for('dashboard_view.upload_documents', project_id=project_id, obj='docs') }}"
+          enctype="multipart/form-data">
+        {{ form.csrf_token }}
+        {{ form.hidden_tag() }}
+        <div class="field is-horizontal">
+            <div class="field-body">
+                <div class="field">
+                    <label class="label">{{ form['file'].label }}</label>
+                    <p class="control">
+                    <div class="file">
+                        <label class="file-label">
+                            {{ form.file(class_='file-input') }}
+                            <span class="file-cta">
+                              <span class="file-icon">
+                                <i class="fas fa-upload"></i>
+                              </span>
+                              <span class="file-label">
+                                Choose a file…
+                              </span>
+                            </span>
+                        </label>
+                    </div>
+                    </p>
+                </div>
+                <div class="field">
+                    <label class="label">Action</label>
+                    <input class="button is-link" type="submit" value="Submit"/>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endmacro %}

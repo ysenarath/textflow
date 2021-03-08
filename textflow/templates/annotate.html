@@ -9,24 +9,21 @@
     {% if document is not none %}
         <div class="columns">
             <div class="column" style="min-height: 64px">
-                <a href="/projects/{{ project.id }}" class="button is-info is-outlined is-pulled-left">
-                    <i class="fas fa-tasks mr-1"></i><span>Project</span>
+                <a href="/projects/{{ project.id }}" class="button is-info is-pulled-left">
+                    <i class="fas fa-tasks mr-1" aria-label="Project"></i>
                 </a>
-                <a id="nextButton" href="javascript:void(0)" class="button is-primary is-outlined is-pulled-right"
-                   onclick="submit(null)">
-                    <span>Next</span><i class="fas fa-arrow-circle-right pl-1"></i></a>
-            </div>
-        </div>
-        {% if project.render_header(document) is not none %}
-            <div class="columns">
-                <div class="column">
-                    <div class="box">
-                        {{ project.render_header(document) | safe }}
-                    </div>
+                <div class="is-pulled-right">
+                    <button class="button is-info" onclick="toggleGuideline()">
+                        <i class="fas fa-book mr-1" aria-label="Guideline"></i>
+                    </button>
+                    <a id="nextButton" href="javascript:void(0)" class="button is-primary"
+                       onclick="submit(null)">
+                        <i class="fas fa-arrow-circle-right mr-1" aria-label="Next"></i>
+                    </a>
                 </div>
             </div>
-        {% endif %}
-        <div class="columns">
+        </div>
+        <div class="columns is-desktop">
             <div class="column">
                 <div class="box">
                     {% if project.type == 'sequence_labeling' %}
@@ -50,6 +47,13 @@
                     {% endif %}
                 </div>
             </div>
+            {% if project.render_guideline() is not none %}
+                <div id="guideline" class="column is-one-third-desktop" style="display: none;">
+                    <div class="box">
+                        {{ project.render_guideline() | safe }}
+                    </div>
+                </div>
+            {% endif %}
         </div>
     {% else %}
         <div class="columns">
@@ -93,6 +97,15 @@
                     nextButton.classList.add('is-loading');
                 } else {
                     nextButton.classList.remove('is-loading');
+                }
+            }
+
+            function toggleGuideline() {
+                let x = document.getElementById("guideline");
+                if (x.style.display === "none") {
+                    x.style.display = "block";
+                } else {
+                    x.style.display = "none";
                 }
             }
 

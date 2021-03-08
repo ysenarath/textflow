@@ -54,7 +54,7 @@
                 <div class="field has-addons has-addons-centered">
                     <p class="control">
                         <button class="button is-rounded" onclick="$('#notificationsPanel').toggle()">
-                            <i class="fas fa-bell {% if messages %}has-text-danger{% endif %}"></i>
+                            <i class="fas fa-bell"></i>
                         </button>
                     </p>
                 </div>
@@ -88,7 +88,11 @@
 
 <nav id="notificationsPanel" class="panel"
      style="display: none; position: absolute; right: 0; top:0; margin-top: 3.25rem; margin-right: 24px; min-width: 350px; z-index: 9999;">
-    <p class="panel-heading"><span class="is-flex is-justify-content-space-between">Notifications <button class="delete" onclick="$('#notificationsPanel').toggle(false)"></button></span></p>
+    <p class="panel-heading">
+        <span class="is-flex is-justify-content-space-between">
+            Notifications<button class="delete" onclick="$('#notificationsPanel').toggle(false)"></button>
+        </span>
+    </p>
     {% if messages %}
         {% for category, message in messages %}
             <a class="panel-block has-background-white">

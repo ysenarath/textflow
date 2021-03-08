@@ -9,6 +9,7 @@
 {% from 'dashboard/dataset.html' import render_dataset with context %}
 {% from 'dashboard/modeling.html' import render_modeling with context %}
 {% from 'dashboard/sidebar.html' import render_sidebar with context %}
+{% from 'dashboard/documents.html' import render_upload_docs_form with context %}
 
 {% block styles %}
     {{ super() }}
@@ -37,6 +38,9 @@
             <template v-else-if="active_page === 'editor.users'">
                 {{ render_add_user_form(add_user_form) }}
                 {{ render_users_form(users_form) }}
+            </template>
+            <template v-else-if="active_page === 'editor.upload_docs'">
+                {{ render_upload_docs_form(upload_docs_form) }}
             </template>
         {% endif %}
     </div>
@@ -105,6 +109,7 @@
                                     {label: 'Basic', value: 'basic', icon: 'fa-tasks'},
                                     {label: 'Labels', value: 'labels', icon: 'fa-tags'},
                                     {label: 'Users', value: 'users', icon: 'fa-users'},
+                                    {label: 'Documents', value: 'upload_docs', icon: 'fa-file-alt'},
                                 ]
                             }
                         {% endif %}

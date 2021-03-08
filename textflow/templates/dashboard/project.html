@@ -14,9 +14,9 @@
         </div>
         <div class="field">
             <label class="label">{{ form.description.label }}</label>
-            <p class="control">
-                {{ form.description(class_="input") }}
-            </p>
+            <div class="control">
+                {{ form.description(class_="textarea") }}
+            </div>
         </div>
         <div class="field">
             <label class="label">{{ form.type.label }}</label>
@@ -29,8 +29,14 @@
         <div class="field">
             <label class="label">{{ form.redundancy.label }}</label>
             <p class="control">
-                {{ form.redundancy(class_="input", type_=number) }}
+                {{ form.redundancy(class_="input", type='number') }}
             </p>
+        </div>
+        <div class="field">
+            <label class="label">{{ form.guideline_template.label }}</label>
+            <div class="control">
+                {{ form.guideline_template(class_="textarea", rows=30) }}
+            </div>
         </div>
     </form>
 {% endmacro %}

@@ -18,20 +18,19 @@ class Project(db.Model):
     description = db.Column(db.Text, default='Description ')
     type = db.Column(db.String(80), nullable=False)
     documents = db.relationship('Document', backref='project')
-    labels = db.relationship('Label', backref='project', lazy=True)
+    labels = db.relationship('Label', backref='project', lazy=True, cascade='all, delete')
     users = db.relationship('Assignment', backref='project', lazy=True)
     redundancy = db.Column(db.Integer, default=3)
-    header_template = db.Column(db.String, nullable=True)
+    guideline_template = db.Column(db.String, nullable=True)
 
-    def render_header(self, document):
+    def render_guideline(self):
         """ Meta renderer used to create header for document when annotating.
 
-        :param document: document to pass when rendering header.
         :return: rendered header template
         """
-        if self.header_template is None:
+        if self.guideline_template is None:
             return None
-        return jinja2.Template(self.header_template).render(document=document)
+        return jinja2.Template(self.guideline_template).render(project=self)
 
     def register(self, type, name='default'):
         """Register plugin for this project.

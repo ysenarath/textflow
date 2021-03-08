@@ -1,4 +1,5 @@
 """ project admin view """
+import json
 
 from flask import render_template, Blueprint, jsonify, request, redirect, flash, url_for
 from flask_login import current_user
@@ -6,7 +7,7 @@ from sklearn.model_selection import train_test_split
 
 from textflow import service, auth
 from textflow.metrics.agreement import AgreementScore
-from textflow.model import Assignment, Label
+from textflow.model import Assignment, Label, Document
 from textflow.utils import jsend
 from textflow.utils.types import Table
 from textflow.view.forms import *
@@ -33,9 +34,11 @@ def dashboard(project_id):
         add_label_form = LabelForm()
         users_form = UsersForm(users=assignments)
         add_user_form = AssignmentForm()
+        upload_docs_form = UploadForm()
         return render_template('dashboard.html', project_id=project_id,
                                project_form=project_form, labels_form=labels_form, users_form=users_form,
-                               add_label_form=add_label_form, add_user_form=add_user_form)
+                               add_label_form=add_label_form, add_user_form=add_user_form,
+                               upload_docs_form=upload_docs_form)
 
 
 @view.route('/projects/<project_id>/dashboard', methods=['POST'])
@@ -129,6 +132,20 @@ def add_user(project_id):
             flash('Username not found: "{}". Please enter a valid username.'.format(username))
     else:
         flash('Invalid form input. Please check and try again. Error: {}'.format(add_user_form.errors))
+    return redirect(url_for('dashboard_view.dashboard', project_id=project_id))
+
+
+@view.route('/projects/<project_id>/dashboard/documents', methods=['POST'])
+@auth.login_required
+@auth.roles_required(role='admin')
+def upload_documents(project_id):
+    upload_docs_form = UploadForm()
+    if upload_docs_form.validate_on_submit():
+        data = request.files[upload_docs_form.file.name].read()
+        for d in json.loads(data):
+            doc = Document(id_str=d['id'], text=d['text'], meta=d['meta'], project_id=project_id)
+            service.db.session.add(doc)
+        service.db.session.commit()
     return redirect(url_for('dashboard_view.dashboard', project_id=project_id))
 
 
