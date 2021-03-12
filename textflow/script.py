@@ -152,6 +152,26 @@ def cli_project_update(ctx, project_id, header):
             logger.error('Error: {}'.format(str(e)))
 
 
+@project_group.command(name='delete')
+@click.option('-p', '--project_id', prompt='Project ID', help='Project ID')
+@click.pass_context
+def cli_project_delete(ctx, project_id):
+    config = ctx.obj['CONFIG']
+    tf = TextFlow(config)
+    with tf.app_context():
+        db.create_all()
+        try:
+            p = service.get_project.ignore_user(None, project_id)
+            if p is not None:
+                db.session.delete(p)
+                db.session.commit()
+            else:
+                logger.error('Error: No such project with ID={}.'.format(project_id))
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logger.error('Error: {}'.format(str(e)))
+
+
 @project_group.command(name='list')
 @click.pass_context
 def cli_project_show(ctx):

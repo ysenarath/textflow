@@ -15,11 +15,11 @@ class Project(db.Model):
     """ Project object contains project information """
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
-    description = db.Column(db.Text, default='Description ')
+    description = db.Column(db.Text, default='No description provided.')
     type = db.Column(db.String(80), nullable=False)
-    documents = db.relationship('Document', backref='project')
+    documents = db.relationship('Document', backref='project', cascade='all, delete')
     labels = db.relationship('Label', backref='project', lazy=True, cascade='all, delete')
-    users = db.relationship('Assignment', backref='project', lazy=True)
+    users = db.relationship('Assignment', backref='project', lazy=True, cascade='all, delete')
     redundancy = db.Column(db.Integer, default=3)
     guideline_template = db.Column(db.String, nullable=True)
 

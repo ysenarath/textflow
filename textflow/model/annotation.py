@@ -43,10 +43,11 @@ class AnnotationSet(db.Model):
     """ AnnotationSet Entity - contains annotations by a user for a document. """
     id = db.Column(db.Integer, primary_key=True)
     document_id = db.Column(db.Integer, db.ForeignKey('document.id'), nullable=False)
-    document = db.relationship('Document', backref=db.backref('annotation_set', lazy=True), uselist=False)
+    document = db.relationship('Document', backref=db.backref('annotation_set', lazy=True, cascade="all,delete"),
+                               uselist=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('annotation_set', lazy=True), uselist=False)
-    annotations = db.relationship('Annotation', backref='annotation_set', lazy=True)
+    annotations = db.relationship('Annotation', backref='annotation_set', lazy=True, cascade='all, delete')
     completed = db.Column(db.Boolean(), nullable=False, default=False)
     created_on = db.Column(db.DateTime, server_default=db.func.now())
     updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
