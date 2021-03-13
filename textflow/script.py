@@ -5,7 +5,8 @@ import logging
 import os
 
 import click
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from tqdm import tqdm
 
 from textflow import TextFlow, service
 from textflow.model import *
@@ -163,10 +164,18 @@ def cli_project_delete(ctx, project_id):
         try:
             p = service.get_project.ignore_user(None, project_id)
             if p is not None:
-                db.session.delete(p)
-                db.session.commit()
+                if len(p.documents) > 0:
+                    logger.error('Error: Unable to delete project with ID={}. '
+                                 'This project is associated with one or more documents.'
+                                 .format(project_id))
+                else:
+                    db.session.delete(p)
+                    db.session.commit()
             else:
                 logger.error('Error: No such project with ID={}.'.format(project_id))
+        except IntegrityError as e:
+            db.session.rollback()
+            logger.error('Error: {}'.format(str(e)))
         except SQLAlchemyError as e:
             db.session.rollback()
             logger.error('Error: {}'.format(str(e)))
@@ -388,9 +397,40 @@ def cli_documents_upload(ctx, project_id, input):
     with tf.app_context():
         db.create_all()
         try:
-            for d in json.load(open(input)):
+            documents = json.load(open(input))
+            progress = tqdm(documents)
+            progress.desc = 'Uploading documents'
+            for d in progress:
                 a = Document(id_str=d['id'], text=d['text'], meta=d['meta'], project_id=project_id)
                 db.session.add(a)
+            db.session.commit()
+            logger.info('Completed successfully.')
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logger.error('Error: {}'.format(str(e)))
+
+
+@document_group.command(name='delete')
+@click.option('-p', '--project_id', prompt='Project id', help='Project ident')
+@click.pass_context
+def cli_documents_delete(ctx, project_id):
+    """Creates user using provided args
+
+    :param ctx: context
+    :param project_id: project id
+    :return: None
+    """
+    config = ctx.obj['CONFIG']
+    tf = TextFlow(config)
+    with tf.app_context():
+        db.create_all()
+        try:
+            p = service.get_project.ignore_user(None, project_id)
+            documents = list(p.documents)
+            progress = tqdm(documents)
+            progress.desc = 'Deleting documents'
+            for d in progress:
+                db.session.delete(d)
             db.session.commit()
             logger.info('Completed successfully.')
         except SQLAlchemyError as e:

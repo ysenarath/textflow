@@ -17,7 +17,7 @@ class Project(db.Model):
     name = db.Column(db.String(80), nullable=False)
     description = db.Column(db.Text, default='No description provided.')
     type = db.Column(db.String(80), nullable=False)
-    documents = db.relationship('Document', backref='project', cascade='all, delete')
+    documents = db.relationship('Document', backref='project')
     labels = db.relationship('Label', backref='project', lazy=True, cascade='all, delete')
     users = db.relationship('Assignment', backref='project', lazy=True, cascade='all, delete')
     redundancy = db.Column(db.Integer, default=3)
