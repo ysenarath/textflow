@@ -426,8 +426,8 @@ def cli_documents_delete(ctx, project_id):
         db.create_all()
         try:
             p = service.get_project.ignore_user(None, project_id)
-            documents = list(p.documents)
-            progress = tqdm(documents)
+            num_documents = len(p.documents)
+            progress = tqdm(p.documents, total=num_documents)
             progress.desc = 'Deleting documents'
             for d in progress:
                 db.session.delete(d)
