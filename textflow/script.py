@@ -6,7 +6,6 @@ import os
 
 import click
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from tqdm import tqdm
 
 from textflow import TextFlow, service
 from textflow.model import *
@@ -397,13 +396,12 @@ def cli_documents_upload(ctx, project_id, input):
     with tf.app_context():
         db.create_all()
         try:
-            documents = json.load(open(input))
-            progress = tqdm(documents)
-            progress.desc = 'Uploading documents'
-            for d in progress:
-                a = Document(id_str=d['id'], text=d['text'], meta=d['meta'], project_id=project_id)
-                db.session.add(a)
-            db.session.commit()
+            with open(input, 'r', encoding='utf-8') as fp:
+                for line in fp:
+                    d = json.loads(line)
+                    a = Document(id_str=d['id'], text=d['text'], meta=d['meta'], project_id=project_id)
+                    db.session.add(a)
+                db.session.commit()
             logger.info('Completed successfully.')
         except SQLAlchemyError as e:
             db.session.rollback()

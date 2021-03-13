@@ -354,16 +354,15 @@ def get_document(ctx, user_id, project_id, document_id):
     :return:
     """
     if ctx.ignore_user:
-        return Document.query \
-            .filter(Document.id == document_id) \
-            .first()
+        query = Document.query \
+            .filter(Document.id == document_id)
     else:
-        return Document.query \
+        query = Document.query \
             .filter(Document.id == document_id, Document.project_id == project_id) \
             .join(Project, Project.id == Document.project_id) \
             .join(Assignment, Assignment.project_id == Project.id) \
-            .filter(Assignment.user_id == user_id) \
-            .first()
+            .filter(Assignment.user_id == user_id)
+    return query.first()
 
 
 @service
@@ -377,17 +376,21 @@ def delete_documents(ctx, user_id, project_id):
     :param project_id: project id
     :return:
     """
-    if ctx.ignore_user:
-        num_rows_deleted = 0
-        try:
+    num_rows_deleted = 0
+    try:
+        if ctx.ignore_user:
             query = Document.query.filter(Document.project_id == project_id)
-            num_rows_deleted = query.delete()
-            db.session.commit()
-        except SQLAlchemyError as e:
-            db.session.rollback()
-        return num_rows_deleted
-    else:
-        pass
+        else:
+            query = Document.query \
+                .filter(Document.project_id == project_id) \
+                .join(Project, Project.id == Document.project_id) \
+                .join(Assignment, Assignment.project_id == Project.id) \
+                .filter(Assignment.user_id == user_id)
+        num_rows_deleted = query.delete()
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+    return num_rows_deleted
 
 
 @service

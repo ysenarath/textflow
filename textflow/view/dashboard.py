@@ -141,10 +141,11 @@ def add_user(project_id):
 def upload_documents(project_id):
     upload_docs_form = UploadForm()
     if upload_docs_form.validate_on_submit():
-        data = request.files[upload_docs_form.file.name].read()
-        for d in json.loads(data):
-            doc = Document(id_str=d['id'], text=d['text'], meta=d['meta'], project_id=project_id)
-            service.db.session.add(doc)
+        fp = request.files[upload_docs_form.file.name].stream
+        for line in fp:
+            d = json.loads(line)
+            a = Document(id_str=d['id'], text=d['text'], meta=d['meta'], project_id=project_id)
+            service.db.session.add(a)
         service.db.session.commit()
     return redirect(url_for('dashboard_view.dashboard', project_id=project_id))
 
