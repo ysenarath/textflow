@@ -424,18 +424,8 @@ def cli_documents_delete(ctx, project_id):
     tf = TextFlow(config)
     with tf.app_context():
         db.create_all()
-        try:
-            p = service.get_project.ignore_user(None, project_id)
-            num_documents = len(p.documents)
-            progress = tqdm(p.documents, total=num_documents)
-            progress.desc = 'Deleting documents'
-            for d in progress:
-                db.session.delete(d)
-            db.session.commit()
-            logger.info('Completed successfully.')
-        except SQLAlchemyError as e:
-            db.session.rollback()
-            logger.error('Error: {}'.format(str(e)))
+        log = service.delete_documents.ignore_user(None, project_id)
+        logger.info('Completed successfully. Deleted {} documents.'.format(log))
 
 
 @annotation_group.command(name='create')

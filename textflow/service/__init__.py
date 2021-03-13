@@ -367,6 +367,30 @@ def get_document(ctx, user_id, project_id, document_id):
 
 
 @service
+def delete_documents(ctx, user_id, project_id):
+    """Get document from document ID
+
+    Admin level access will ignore user_id, project_id parameters.
+
+    :param ctx: context
+    :param user_id: user id (not username)
+    :param project_id: project id
+    :return:
+    """
+    if ctx.ignore_user:
+        num_rows_deleted = 0
+        try:
+            query = Document.query.filter(Document.project_id == project_id)
+            num_rows_deleted = query.delete()
+            db.session.commit()
+        except SQLAlchemyError as e:
+            db.session.rollback()
+        return num_rows_deleted
+    else:
+        pass
+
+
+@service
 def filter_document(ctx, user_id, project_id, id_str):
     """Gets and returns the first document by project id and id str
 
