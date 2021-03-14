@@ -42,7 +42,7 @@ class Annotation(db.Model):
 class AnnotationSet(db.Model):
     """ AnnotationSet Entity - contains annotations by a user for a document. """
     id = db.Column(db.Integer, primary_key=True)
-    document_id = db.Column(db.Integer, db.ForeignKey('document.id'), nullable=False)
+    document_id = db.Column(db.Integer, db.ForeignKey('document.id', ondelete="CASCADE"), nullable=False)
     document = db.relationship('Document', backref=db.backref('annotation_set', lazy=True, cascade="all,delete"),
                                uselist=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

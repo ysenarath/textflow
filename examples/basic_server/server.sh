@@ -24,7 +24,7 @@ textflow label create -p 1 -l "Category C" -v "CAT_C"
 textflow label create -p 1 -l "Category D" -v "CAT_D"
 
 # Add documents
-textflow document upload -p 1 -i documents.json
+# textflow document upload -p 1 -i documents.json
 
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --
 
@@ -37,7 +37,7 @@ textflow label create -p 2 -l "Neutral" -v "CAT_NEUTRAL"
 textflow label create -p 2 -l "Positive" -v "CAT_POSITIVE"
 
 # Add documents
-textflow document upload -p 2 -i documents.json
+# textflow document upload -p 2 -i documents.json
 
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --
 

@@ -2,6 +2,7 @@
 
 from sqlalchemy import or_, func, and_, distinct
 from sqlalchemy.exc import SQLAlchemyError
+from tqdm import tqdm
 
 from textflow.model import *
 from textflow.service.base import service, database as db
@@ -377,19 +378,31 @@ def delete_documents(ctx, user_id, project_id):
     :return:
     """
     num_rows_deleted = 0
-    try:
-        if ctx.ignore_user:
-            query = Document.query.filter(Document.project_id == project_id)
-        else:
-            query = Document.query \
-                .filter(Document.project_id == project_id) \
-                .join(Project, Project.id == Document.project_id) \
-                .join(Assignment, Assignment.project_id == Project.id) \
-                .filter(Assignment.user_id == user_id)
-        num_rows_deleted = query.delete()
-        db.session.commit()
-    except SQLAlchemyError as e:
-        db.session.rollback()
+    if ctx.ignore_user:
+        query = Document.query.filter(Document.project_id == project_id)
+    else:
+        query = Document.query \
+            .filter(Document.project_id == project_id) \
+            .join(Project, Project.id == Document.project_id) \
+            .join(Assignment, Assignment.project_id == Project.id) \
+            .filter(Assignment.user_id == user_id)
+    with tqdm(desc='Deleting documents', total=query.count()) as t:
+        while True:
+            documents = query.limit(1000).all()
+            delta_t = len(documents)
+            if delta_t == 0:
+                break
+            try:
+                for d in documents:
+                    db.session.delete(d)
+                db.session.commit()
+                num_rows_deleted += delta_t
+                if t.total - t.n - delta_t >= 0:
+                    t.update(delta_t)
+                elif t.total - t.n >= 0:
+                    t.update(t.total - t.n)
+            except SQLAlchemyError as e:
+                db.session.rollback()
     return num_rows_deleted
 
 
