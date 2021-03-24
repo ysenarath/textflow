@@ -17,13 +17,13 @@
                             <td>{{ p.name }}</td>
                             <td>{{ p.description }}</td>
                             <td>
-                                <a href="/projects/{{ p.id }}" class="button is-info">
+                                <a href="/projects/{{ p.id }}" class="button is-link">
                                     <i class="fas fa-tasks mr-1"></i></a>
-                                <a href="/projects/{{ p.id }}/annotate" class="button is-info">
+                                <a href="/projects/{{ p.id }}/annotate" class="button is-link">
                                     <i class="fas fa-tag"></i></a>
                                 {% if p.role in ['admin', 'manager'] %}
                                     <a href="{{ url_for('dashboard_view.dashboard', project_id=p.id) }}"
-                                       class="button is-info">
+                                       class="button is-danger">
                                         <i class="fas fa-chart-line"></i></a>
                                 {% endif %}
                             </td>
