@@ -39,6 +39,17 @@ class Annotation(db.Model):
         return self.span.slice()
 
 
+class AnnotationSetLog(db.Model):
+    """ Annotation-Span Entity - contains start and length """
+    id = db.Column(db.Integer, primary_key=True)
+    annotation_id = db.Column(db.Integer, db.ForeignKey('annotation_set.id'), nullable=False)
+    flagged = db.Column(db.Boolean(), nullable=False, default=False)
+    skipped = db.Column(db.Boolean(), nullable=False, default=False)
+    completed = db.Column(db.Boolean(), nullable=False, default=False)
+    created_on = db.Column(db.DateTime, server_default=db.func.now())
+    updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
+
+
 class AnnotationSet(db.Model):
     """ AnnotationSet Entity - contains annotations by a user for a document. """
     id = db.Column(db.Integer, primary_key=True)
@@ -54,15 +65,18 @@ class AnnotationSet(db.Model):
     created_on = db.Column(db.DateTime, server_default=db.func.now())
     updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
 
+    logger = db.relationship('AnnotationSetLog', backref='annotation_set', lazy=True, cascade='all, delete')
+
     __table_args__ = (db.UniqueConstraint('user_id', 'document_id'),)
 
-    # def get_annotation(self, value):
-    #     """ gets annotations with the value from the annotations
-    #
-    #     :param value: value of label to search
-    #     :return: annotation with provided value if exists other wise none
-    #     """
-    #     for a in self.annotations:
-    #         if a.label.value == value:
-    #             return a
-    #     return None
+
+@db.event.listens_for(AnnotationSet, 'after_insert')
+@db.event.listens_for(AnnotationSet, 'after_update')
+def log_update_event(mapper, connection, target):
+    log = AnnotationSetLog(annotation_id=target.id)
+    log.document_id = target.document_id
+    log.user_id = target.user_id
+    log.completed = target.completed
+    log.flagged = target.flagged
+    log.skipped = target.skipped
+    db.session.add(log)

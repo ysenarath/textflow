@@ -21,33 +21,35 @@
                 </a>
             </div>
         </div>
-        <div class="column">
-            <div class="buttons is-pulled-right">
-                <button class="button is-info is-light" onclick="toggleGuideline()">
-                    <span class="icon ml-1"><i class="fas fa-book" aria-label="Guideline"></i></span><span
-                        class="mr-1">Guide</span>
-                </button>
-                <a id="skipButton" href="javascript:void(0)" class="button is-danger is-light"
-                   onclick="submit(null, 'skip')">
-                        <span class="icon ml-1">
-                            <i class="fas fa-forward mr-1" aria-label="Skip"></i>
-                        </span><span class="mr-1">Skip</span>
-                </a>
-                <a id="flagButton" href="javascript:void(0)"
-                   class="button {% if annotation_set.flagged %}is-warning{% else %}is-light{% endif %}"
-                   onclick="submit({'status':'{{ annotation_set.flagged }}' !== 'True'}, 'flag')">
-                        <span class="icon ml-1">
-                            <i class="fas fa-flag mr-1" aria-label="Flag"></i>
-                        </span><span class="mr-1">Flag</span>
-                </a>
-                <a id="nextButton" href="javascript:void(0)" class="button is-success is-light"
-                   onclick="submit(null, 'next')">
-                        <span class="icon ml-1">
-                            <i class="fas fa-play mr-1" aria-label="Next"></i>
-                        </span><span class="mr-1">Next</span>
-                </a>
+        {% if (document is defined) and (document is not none) %}
+            <div class="column">
+                <div class="buttons is-pulled-right">
+                    <button class="button is-info is-light" onclick="toggleGuideline()">
+                        <span class="icon ml-1"><i class="fas fa-book" aria-label="Guideline"></i></span><span
+                            class="mr-1">Guide</span>
+                    </button>
+                    <a id="skipButton" href="javascript:void(0)" class="button is-danger is-light"
+                       onclick="submit(null, 'skip')">
+                            <span class="icon ml-1">
+                                <i class="fas fa-forward mr-1" aria-label="Skip"></i>
+                            </span><span class="mr-1">Skip</span>
+                    </a>
+                    <a id="flagButton" href="javascript:void(0)"
+                       class="button {% if annotation_set.flagged %}is-warning{% else %}is-light{% endif %}"
+                       onclick="submit({'status':'{{ annotation_set.flagged }}' !== 'True'}, 'flag')">
+                            <span class="icon ml-1">
+                                <i class="fas fa-flag mr-1" aria-label="Flag"></i>
+                            </span><span class="mr-1">Flag</span>
+                    </a>
+                    <a id="nextButton" href="javascript:void(0)" class="button is-success is-light"
+                       onclick="submit(null, 'next')">
+                            <span class="icon ml-1">
+                                <i class="fas fa-play mr-1" aria-label="Next"></i>
+                            </span><span class="mr-1">Next</span>
+                    </a>
+                </div>
             </div>
-        </div>
+        {% endif %}
     </div>
 {% endblock %}
 
