@@ -39,12 +39,13 @@
                     </nav>
                 </div>
             {% endif %}
+            {% block header_actions %}{% endblock %}
         </div>
         <div class="navbar-end">
             <div class="navbar-item p-1">
                 <div class="field has-addons has-addons-centered">
                     <p class="control">
-                        <button class="button is-rounded" onclick="theme.toggle()">
+                        <button class="button is-rounded" onclick="theme.toggle(); updateTheme();">
                             <i class="fas fa-adjust"></i>
                         </button>
                     </p>

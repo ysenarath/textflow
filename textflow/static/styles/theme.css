@@ -18,7 +18,7 @@ html[data-theme='light'].is-themed .title,
 html[data-theme='light'].is-themed .subtitle,
 html[data-theme='light'].is-themed .label,
 html[data-theme='light'].is-themed .table,
-html[data-theme='light'].is-themed .table > tbody > tr > th,
+html[data-theme='light'].is-themed .table tr > th,
 html[data-theme='light'].is-themed .table .input,
 html[data-theme='light'].is-themed .table .textarea,
 html[data-theme='light'].is-themed .box {
@@ -41,7 +41,7 @@ html[data-theme='dark'].is-themed .title,
 html[data-theme='dark'].is-themed .subtitle,
 html[data-theme='dark'].is-themed .label,
 html[data-theme='dark'].is-themed .table,
-html[data-theme='dark'].is-themed .table > tbody > tr > th,
+html[data-theme='dark'].is-themed .table tr > th,
 html[data-theme='dark'].is-themed .table .input,
 html[data-theme='dark'].is-themed .table .textarea,
 html[data-theme='dark'].is-themed .box {
@@ -69,4 +69,17 @@ html[data-theme='dark'].is-themed .footer {
 .table .input:focus, .textarea:focus {
     border-radius: 4px;
     border: 1px solid #3273dc;
+}
+
+.button.is-transparent {
+    background-color: transparent;
+    border-color: transparent;
+}
+
+html[data-theme='light'].is-themed .button.is-transparent {
+    color: #4a4a4a;
+}
+
+html[data-theme='dark'].is-themed .button.is-transparent {
+    color: #f5f5f5;
 }

@@ -1,91 +1,66 @@
 {% extends '_layout.html' %}
 
-{% block is_full_content %}
-    <section class="section p-3">
-        <div class="container p-6">
-            <!-- Header -->
-            <div class="block has-text-centered">
-                <h1 class="title">{{ project.name }}
-                </h1>
-                <h2 class="subtitle has-text-centered">{{ project.description }}</h2>
-                <a href="/projects/{{ project.id }}/annotate" class="button is-info">
-                    <span class="icon mr-1"><i class="fas fa-tag"></i></span>
-                    <span>{% if project_status.num_completed > 0 %}Continue{% else %}Start{% endif %} Annotating</span>
+{% block content_header %}
+    <div class="columns pt-5 pl-6 pr-6">
+        <div class="column">
+            <div class="buttons">
+                <a href="/projects/{{ project.id }}" class="button is-link is-light">
+                    <span class="icon"><i class="fas fa-tasks" aria-label="Project"></i></span><span>Project</span>
+                </a>
+                <a href="/projects/{{ project.id }}/history" class="button is-transparent">
+                    <span class="icon"><i class="fas fa-history"></i></span><span>History</span>
+                </a>
+                <a href="/projects/{{ project.id }}/annotate" class="button is-transparent">
+                    <span class="icon"><i class="fas fa-tag"></i></span><span>Annotate</span>
                 </a>
             </div>
-            <!-- Information -->
-            <div class="block">
-                <nav class="level">
-                    <div class="level-item has-text-centered">
-                        <div>
-                            <p class="heading">Total</p>
-                            <p class="title">{{ project_status.num_assigned }}</p>
-                        </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="container p-6">
+        <!-- Header -->
+        <div class="block has-text-centered m-6">
+            <h1 class="title">{{ project.name }}</h1>
+            <h2 class="subtitle has-text-centered">{{ project.description }}</h2>
+        </div>
+        <!-- Information -->
+        <div class="block p-6 pt-0 m-6 mt-0">
+            <nav class="level">
+                <div class="level-item has-text-centered">
+                    <div>
+                        <p class="heading">Total</p>
+                        <p class="title">{{ project_status.num_assigned }}</p>
                     </div>
-                    <div class="level-item has-text-centered">
-                        <div>
-                            <p class="heading">Completed</p>
-                            <p class="title">{{ project_status.num_completed }}</p>
-                        </div>
-                    </div>
-                    <div class="level-item has-text-centered">
-                        <div>
-                            <p class="heading">Remaining</p>
-                            <p class="title">{{ project_status.num_assigned - project_status.num_completed }}</p>
-                        </div>
-                    </div>
-                    <div class="level-item has-text-centered">
-                        <div>
-                            <p class="heading">Progress</p>
-                            <p class="title">{{ '%d' | format(project_status.progress) }}%</p>
-                        </div>
-                    </div>
-                </nav>
-            </div>
-            <!-- Progress <div class="block">
-                <progress class="progress is-dark" value="{{ project_status.progress }}"
-                          max="100">{{ project_status.progress }}%
-                </progress>
-            </div> -->
-            <!-- Label items -->
-            <div class="block">
-                <div class="is-flex flex-wrap is-justify-content-center">
-                    {% for k, v in project_status.num_annotations.items() %}
-                        <p class="heading pr-3">{{ v[0] }}-{{ v[1] }}</p>
-                        {% if not loop.last %}<p class="heading pr-3">/</p>{% endif %}
-                    {% endfor %}
                 </div>
+                <div class="level-item has-text-centered">
+                    <div>
+                        <p class="heading">Completed</p>
+                        <p class="title">{{ project_status.num_completed }}</p>
+                    </div>
+                </div>
+                <div class="level-item has-text-centered">
+                    <div>
+                        <p class="heading">Remaining</p>
+                        <p class="title">{{ project_status.num_assigned - project_status.num_completed }}</p>
+                    </div>
+                </div>
+                <div class="level-item has-text-centered">
+                    <div>
+                        <p class="heading">Progress</p>
+                        <p class="title">{{ '%d' | format(project_status.progress) }}%</p>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        <div class="block">
+            <div class="is-flex flex-wrap is-justify-content-center">
+                {% for k, v in project_status.num_annotations.items() %}
+                    <p class="heading pr-3">{{ v[0] }}-{{ v[1] }}</p>
+                    {% if not loop.last %}<p class="heading pr-3">/</p>{% endif %}
+                {% endfor %}
             </div>
         </div>
-        <div class="container box">
-            <!-- Annotated documents table -->
-            <div class="block">
-                <div class="table-container">
-                    <table class="table is-fullwidth">
-                        <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Text</th>
-                            <th>Action</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for d in documents.items %}
-                            <tr>
-                                <th scope="row">{{ d.id }}</th>
-                                <td> {{ d.text | safe }}</td>
-                                <td><a class="button is-info" href="{{ project.id }}/annotate/{{ d.id }}">
-                                    <i class="fas fa-tag"></i>
-                                </a></td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                <div class="d-flex justify-content-center">
-                    {{ render_pagination(documents, 'project_view.view_project') }}
-                </div>
-            </div>
-        </div>
-    </section>
+    </div>
 {% endblock %}

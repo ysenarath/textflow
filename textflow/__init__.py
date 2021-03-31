@@ -3,9 +3,9 @@ import logging
 
 from flask import Flask
 
-from textflow import auth, view, config, service
+from textflow import auth, view, config, services
 from textflow.auth import login_manager
-from textflow.service.base import database as db
+from textflow.services.base import database as db
 
 logger = logging.getLogger(__name__)
 

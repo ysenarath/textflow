@@ -5,7 +5,7 @@ from flask import render_template, Blueprint, jsonify, request, redirect, flash,
 from flask_login import current_user
 from sklearn.model_selection import train_test_split
 
-from textflow import service, auth
+from textflow import services, auth
 from textflow.metrics.agreement import AgreementScore
 from textflow.model import Assignment, Label, Document
 from textflow.utils import jsend
@@ -26,9 +26,9 @@ def dashboard(project_id):
     if current_user.role == 'manager':
         return render_template('dashboard.html', project_id=project_id)
     else:
-        p = service.get_project(user_id=current_user.id, project_id=project_id)
-        labels = service.list_labels(user_id=current_user.id, project_id=project_id)
-        assignments = service.list_assignments(project_id=project_id)
+        p = services.get_project(user_id=current_user.id, project_id=project_id)
+        labels = services.list_labels(user_id=current_user.id, project_id=project_id)
+        assignments = services.list_assignments(project_id=project_id)
         project_form = ProjectForm(obj=p)
         labels_form = LabelsForm(labels=labels)
         add_label_form = LabelForm()
@@ -45,9 +45,9 @@ def dashboard(project_id):
 @auth.login_required
 @auth.roles_required(role='admin')
 def post_dashboard(project_id):
-    p = service.get_project(user_id=current_user.id, project_id=project_id)
-    labels = service.list_labels(user_id=current_user.id, project_id=project_id)
-    assignments = service.list_assignments(project_id=project_id)
+    p = services.get_project(user_id=current_user.id, project_id=project_id)
+    labels = services.list_labels(user_id=current_user.id, project_id=project_id)
+    assignments = services.list_assignments(project_id=project_id)
     project_form = ProjectForm(obj=p)
     labels_form = LabelsForm(labels=labels)
     users_form = UsersForm(users=assignments)
@@ -59,7 +59,7 @@ def post_dashboard(project_id):
             for ll in labels_form.labels:
                 if ll.data['selected']:
                     label_id = ll.data['id']
-                    service.delete_label(label_id)
+                    services.delete_label(label_id)
                     none_selected = False
             if none_selected:
                 flash('You have to select labels that need to be removed first.')
@@ -69,7 +69,7 @@ def post_dashboard(project_id):
                 if u.data['selected']:
                     user_id = u.user.data['id']
                     if current_user.id != user_id:
-                        service.remove_assignment(user_id, project_id)
+                        services.remove_assignment(user_id, project_id)
                         none_selected = False
                     else:
                         flash('You can\'t remove yourself from the project.')
@@ -79,19 +79,19 @@ def post_dashboard(project_id):
     else:
         if project_form.validate_on_submit() and obj == 'project':
             project_form.populate_obj(p)
-            service.db.session.commit()
+            services.db.session.commit()
         elif users_form.validate_on_submit() and obj == 'user':
             for u in users_form.users:
-                assignment = service.get_assignment(u.user.data['id'], project_id)
+                assignment = services.get_assignment(u.user.data['id'], project_id)
                 if assignment.role != u.role:
                     assignment.role = u.role.data
-            service.db.session.commit()
+            services.db.session.commit()
         elif labels_form.validate_on_submit() and obj == 'label':
             for label_form in labels_form.labels:
                 label_id = label_form.data['id']
-                lbl = service.get_label(label_id=label_id)
+                lbl = services.get_label(label_id=label_id)
                 label_form.form.populate_obj(lbl)
-            service.db.session.commit()
+            services.db.session.commit()
     return redirect(url_for('dashboard_view.dashboard', project_id=project_id))
 
 
@@ -103,10 +103,10 @@ def add_label(project_id):
     if add_label_form.validate_on_submit():
         lbl = add_label_form.data['label']
         val = add_label_form.data['value']
-        if service.filter_label(project_id=project_id, value=val) is None:
+        if services.filter_label(project_id=project_id, value=val) is None:
             obj = Label(value=val, label=lbl, project_id=project_id)
-            service.db.session.add(obj)
-            service.db.session.commit()
+            services.db.session.add(obj)
+            services.db.session.commit()
         else:
             flash('Label with value "{}" exists. Please retry with another value.'.format(val))
     else:
@@ -122,12 +122,12 @@ def add_user(project_id):
     if add_user_form.validate_on_submit():
         role = add_user_form.data['role']
         username = add_user_form.user.data['username']
-        users = service.filter_users(username=username)
+        users = services.filter_users(username=username)
         if len(users) == 1:
             user_id = users[0].id
             a = Assignment(user_id=user_id, project_id=project_id, role=role)
-            service.db.session.add(a)
-            service.db.session.commit()
+            services.db.session.add(a)
+            services.db.session.commit()
         else:
             flash('Username not found: "{}". Please enter a valid username.'.format(username))
     else:
@@ -145,8 +145,8 @@ def upload_documents(project_id):
         for line in fp:
             d = json.loads(line)
             a = Document(id_str=d['id'], text=d['text'], meta=d['meta'], project_id=project_id)
-            service.db.session.add(a)
-        service.db.session.commit()
+            services.db.session.add(a)
+        services.db.session.commit()
     return redirect(url_for('dashboard_view.dashboard', project_id=project_id))
 
 
@@ -155,7 +155,7 @@ def upload_documents(project_id):
 @auth.roles_required(role=['admin', 'manager'])
 def get_group_names(project_id):
     name = request.args.get('name', default='default')
-    dataset = service.get_dataset(project_id=project_id, name=name)
+    dataset = services.get_dataset(project_id=project_id, name=name)
     return jsonify(jsend.success(list(dataset.groups_)))
 
 
@@ -163,14 +163,14 @@ def get_group_names(project_id):
 @auth.login_required
 @auth.roles_required(role=['admin', 'manager'])
 def get_dataset_names(project_id):
-    return jsonify(jsend.success(service.list_plugin_names(project_id, 'dataset')))
+    return jsonify(jsend.success(services.list_plugin_names(project_id, 'dataset')))
 
 
 @view.route('/api/projects/<project_id>/datasets/download')
 @auth.login_required
 @auth.roles_required(role=['admin', 'manager'])
 def get_dataset(project_id):
-    dataset = service.get_dataset(project_id=project_id)
+    dataset = services.get_dataset(project_id=project_id)
     dataset.validator = request.args.get('validator', default=dataset.validator)
     ids = [r.id_str for _, r in dataset.records.items()]
     data = {i: [xs, ys] for i, xs, ys in zip(ids, dataset.X, dataset.y)}
@@ -186,7 +186,7 @@ def get_agreement(project_id):
     :param project_id: ident of project
     :return: multiple types of score values
     """
-    dataset = service.get_dataset(project_id=project_id)
+    dataset = services.get_dataset(project_id=project_id)
     # check agreement
     task = AgreementScore(dataset)
     scores = task.kappa()
@@ -198,8 +198,8 @@ def get_agreement(project_id):
 @auth.roles_required(role=['admin', 'manager'])
 def get_models(project_id):
     if request.method == 'POST':
-        dataset = service.get_dataset(project_id, request.json['dataset'])
-        model = service.get_model(project_id, request.json['model'])
+        dataset = services.get_dataset(project_id, request.json['dataset'])
+        model = services.get_model(project_id, request.json['model'])
         try:
             train_X, test_X, train_y, test_y = train_test_split(dataset.X, dataset.y)
             flat_f1 = model.fit(train_X, train_y).score(test_X, test_y)
@@ -207,4 +207,4 @@ def get_models(project_id):
             return jsonify(jsend.fail([dict(type='error', title='Error', data=str(err))]))
         scores = Table(['Flat F1 Score'], [['{:.2f}'.format(flat_f1)]])
         return jsonify(jsend.success(scores.to_dict()))
-    return jsonify(jsend.success(service.list_plugin_names(project_id, 'model')))
+    return jsonify(jsend.success(services.list_plugin_names(project_id, 'model')))

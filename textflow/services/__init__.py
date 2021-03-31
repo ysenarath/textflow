@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from tqdm import tqdm
 
 from textflow.model import *
-from textflow.service.base import service, database as db
+from textflow.services.base import service, database as db
 
 
 @service
@@ -44,22 +44,25 @@ def filter_users(ctx, **kwargs):
 
 
 @service
-def list_documents(ctx, project_id, user_id, paginate=None, paginate_kwargs=None):
+def list_documents(ctx, project_id, user_id, flagged=False, paginate=None, paginate_kwargs=None):
     """Gets documents completed by provided user.
 
     :param ctx: context
     :param project_id: project id
     :param user_id: id of user for getting completed documents
+    :param flagged: whether to filter in only flagged items
     :param paginate: whether to paginate output
     :param paginate_kwargs: paginate keyword args
     :return: completed documents
     """
-    q = Document.query \
+    q = db.session.query(Document, AnnotationSet) \
         .join(AnnotationSet, AnnotationSet.document_id == Document.id) \
         .filter(Document.project_id == project_id, AnnotationSet.user_id == user_id,
                 AnnotationSet.completed.is_(True)) \
         .order_by(AnnotationSet.updated_on.desc()) \
         .distinct()
+    if flagged is not None:
+        q = q.filter(AnnotationSet.flagged.is_(flagged))
     if paginate is not None:
         return q.paginate(**paginate_kwargs)
     return q.all()
@@ -90,7 +93,8 @@ def next_document(ctx, user_id, project_id):
         .filter(Document.project_id == project_id) \
         .filter(Assignment.user_id == user_id) \
         .filter(or_(subquery.c.frequency.is_(None), Project.redundancy > subquery.c.frequency)) \
-        .filter(or_(AnnotationSet.completed.is_(None), AnnotationSet.completed.is_(False)))
+        .filter(or_(AnnotationSet.completed.is_(None), AnnotationSet.completed.is_(False))) \
+        .filter(or_(AnnotationSet.skipped.is_(None), AnnotationSet.skipped.is_(False)))
     return q.first()
 
 
@@ -338,6 +342,10 @@ def update_annotation_set(ctx, user_id, document_id, **params):
         return False
     if 'completed' in params:
         annotation_set.completed = params['completed']
+    if 'skipped' in params:
+        annotation_set.skipped = params['skipped']
+    if 'flagged' in params:
+        annotation_set.flagged = params['flagged']
     db.session.commit()
     return True
 

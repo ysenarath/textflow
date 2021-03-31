@@ -4,7 +4,7 @@ from urllib.parse import urlparse, urljoin
 
 from flask import redirect, flash, url_for, render_template, abort, request, Blueprint
 
-from textflow import service, auth
+from textflow import services, auth
 from textflow.view.forms import LoginForm
 
 view = Blueprint('login_view', __name__)
@@ -28,7 +28,7 @@ def load_user(user_id):
     :param user_id: user_id
     :return: rendered template
     """
-    return service.get_user(int(user_id))
+    return services.get_user(int(user_id))
 
 
 @auth.login_manager.unauthorized_handler
@@ -54,7 +54,7 @@ def login():
     form = LoginForm()
     if request.method == 'POST':
         if form.validate_on_submit():
-            users = service.filter_users(username=form.username.data)
+            users = services.filter_users(username=form.username.data)
             if (len(users) <= 0) or (users[0] is None) or not users[0].verify_password(form.password.data):
                 flash('Invalid login credentials', 'error')
             else:

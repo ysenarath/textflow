@@ -15,15 +15,38 @@
     {% endblock %}
     <link rel="favicon icon" href="{{ url_for('static', filename='favicon.svg') }}">
     <script src="/static/scripts/theme.js"></script>
+    <!--suppress JSUnresolvedVariable -->
     <script>
+        {% if current_user.is_authenticated %}
+            theme.set('{{ current_user.profile.theme }}');
+        {% endif %}
+
         theme.refresh();
+
+        function updateTheme() {
+            let data = {
+                'profile': {'theme': theme.get()}
+            }
+            $.ajax({
+                type: 'POST',
+                url: '{{ url_for('user_view.update_user') }}',
+                dataType: 'json',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({data}),
+                success: function (data) {
+                    console.log(data);
+                },
+            });
+        }
     </script>
 </head>
 <body>
 {% block header %}{% include '_header.html' %}{% endblock %}
 {% block is_full_content %}
-    <section class="section p-6">
+    <section class="section p-0">
+        {% block content_header %}{% endblock %}
         <div class="container">{% block content %}{% endblock %}</div>
+        {% block content_footer %}{% endblock %}
     </section>
 {% endblock %}
 {% block scripts %}

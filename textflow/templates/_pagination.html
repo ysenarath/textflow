@@ -9,7 +9,7 @@
             <a href="{{ url_for(endpoint, project_id=project_id, page=current_page - 1, per_page=per_page) }}"
                class="pagination-previous">Previous</a>
         {% else %}
-            <button class="pagination-next" disabled>Previous</button>
+            <button class="pagination-previous" disabled>Previous</button>
         {% endif %}
         {% if pagination.has_next %}
             <a href="{{ url_for(endpoint, project_id=project_id, page=current_page + 1, per_page=per_page) }}"

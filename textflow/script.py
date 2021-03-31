@@ -7,9 +7,9 @@ import os
 import click
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
-from textflow import TextFlow, service
+from textflow import TextFlow, services
 from textflow.model import *
-from textflow.service import db
+from textflow.services import db
 
 logger = logging.getLogger(__name__)
 
@@ -143,7 +143,7 @@ def cli_project_update(ctx, project_id, header):
     with tf.app_context():
         db.create_all()
         try:
-            a = service.get_project.ignore_user(None, project_id)
+            a = services.get_project.ignore_user(None, project_id)
             with open(header, encoding='utf-8') as fp:
                 a.guideline_template = fp.read()
             db.session.commit()
@@ -161,7 +161,7 @@ def cli_project_delete(ctx, project_id):
     with tf.app_context():
         db.create_all()
         try:
-            p = service.get_project.ignore_user(None, project_id)
+            p = services.get_project.ignore_user(None, project_id)
             if p is not None:
                 if len(p.documents) > 0:
                     logger.error('Error: Unable to delete project with ID={}. '
@@ -245,7 +245,7 @@ def cli_user_create(ctx):
     with tf.app_context():
         db.create_all()
         try:
-            users = service.list_users()
+            users = services.list_users()
             logger.info(users)
         except SQLAlchemyError as e:
             logger.error('Error: {}'.format(str(e)))
@@ -268,7 +268,7 @@ def cli_user_update(ctx, username, password):
     with tf.app_context():
         db.create_all()
         try:
-            users = service.filter_users(username=username)
+            users = services.filter_users(username=username)
             if len(users) == 1:
                 user = users[0]
                 user.set_password(password)
@@ -299,9 +299,9 @@ def cli_user_assign(ctx, username, project_id, role):
     with tf.app_context():
         db.create_all()
         try:
-            u = service.filter_users(username=username)
+            u = services.filter_users(username=username)
             if len(u) == 1:
-                r = service.get_assignment(user_id=u[0].id, project_id=project_id)
+                r = services.get_assignment(user_id=u[0].id, project_id=project_id)
                 if r is None:
                     if role is not None:
                         a = Assignment(user_id=u[0].id, project_id=project_id, role=role)
@@ -340,8 +340,8 @@ def cli_user_unassign(ctx, username, project_id):
     with tf.app_context():
         db.create_all()
         try:
-            u = service.filter_users(username=username)
-            status = service.remove_assignment(user_id=u[0].id, project_id=project_id)
+            u = services.filter_users(username=username)
+            status = services.remove_assignment(user_id=u[0].id, project_id=project_id)
             if status:
                 logger.info('Completed successfully.')
             else:
@@ -422,7 +422,7 @@ def cli_documents_delete(ctx, project_id):
     tf = TextFlow(config)
     with tf.app_context():
         db.create_all()
-        log = service.delete_documents.ignore_user(None, project_id)
+        log = services.delete_documents.ignore_user(None, project_id)
         logger.info('Completed successfully. Deleted {} documents.'.format(log))
 
 
@@ -450,9 +450,9 @@ def cli_annotation_create(ctx, project_id, document_id, user_id, label, span):
     with tf.app_context():
         db.create_all()
         try:
-            doc = service.filter_document.ignore_user(None, project_id=int(project_id), id_str=document_id)
+            doc = services.filter_document.ignore_user(None, project_id=int(project_id), id_str=document_id)
             data = {'label': {'value': label}, 'span': {'start': span[0], 'length': span[1] - span[0]}}
-            service.add_annotation(project_id, user_id, doc.id, data)
+            services.add_annotation(project_id, user_id, doc.id, data)
             logger.info('Completed successfully.')
         except SQLAlchemyError as err:
             db.session.rollback()

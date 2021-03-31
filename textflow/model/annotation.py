@@ -1,6 +1,6 @@
 """ Annotation Entity """
 
-from textflow.service.base import database as db
+from textflow.services.base import database as db
 
 
 class AnnotationSpan(db.Model):
@@ -49,18 +49,20 @@ class AnnotationSet(db.Model):
     user = db.relationship('User', backref=db.backref('annotation_set', lazy=True), uselist=False)
     annotations = db.relationship('Annotation', backref='annotation_set', lazy=True, cascade='all, delete')
     completed = db.Column(db.Boolean(), nullable=False, default=False)
+    flagged = db.Column(db.Boolean(), nullable=False, default=False)
+    skipped = db.Column(db.Boolean(), nullable=False, default=False)
     created_on = db.Column(db.DateTime, server_default=db.func.now())
     updated_on = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
 
     __table_args__ = (db.UniqueConstraint('user_id', 'document_id'),)
 
-    def get_annotation(self, value):
-        """ gets annotations with the value from the annotations
-
-        :param value: value of label to search
-        :return: annotation with provided value if exists other wise none
-        """
-        for a in self.annotations:
-            if a.label.value == value:
-                return a
-        return None
+    # def get_annotation(self, value):
+    #     """ gets annotations with the value from the annotations
+    #
+    #     :param value: value of label to search
+    #     :return: annotation with provided value if exists other wise none
+    #     """
+    #     for a in self.annotations:
+    #         if a.label.value == value:
+    #             return a
+    #     return None

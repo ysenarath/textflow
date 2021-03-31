@@ -33,7 +33,6 @@ const theme = {
     },
     refresh: function () {
         let t = theme.get();
-        console.log(t);
         theme.set(t);
     }
 }

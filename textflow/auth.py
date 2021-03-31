@@ -3,7 +3,7 @@
 from flask import abort, flash, g
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 
-from textflow import service
+from textflow import services
 
 __all__ = [
     'login_manager',
@@ -37,7 +37,7 @@ def roles_required(role):
                 project_id = args[0]
             else:
                 raise ValueError('Project ID argument not found to determine identity of project')
-            assignment = service.get_assignment(user_id, project_id)
+            assignment = services.get_assignment(user_id, project_id)
             if assignment is None:
                 flash('Invalid user or project identity', 'error')
                 abort(401)

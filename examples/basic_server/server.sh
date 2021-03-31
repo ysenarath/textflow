@@ -29,7 +29,7 @@ textflow label create -p 1 -l "Category D" -v "CAT_D"
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --
 
 # Create project
-textflow project create -t "classification" -n "Sentiment Analysis"
+textflow project create -t "document_classification" -n "Sentiment Analysis"
 
 # Add labels
 textflow label create -p 2 -l "Negative" -v "CAT_NEGATIVE"
@@ -61,4 +61,4 @@ textflow user assign -u guest2 -p 2
 textflow user assign -u guest3 -p 2
 
 # now run the project using __main__.sh
-python app.py
+# python app.py
