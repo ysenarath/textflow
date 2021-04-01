@@ -1,91 +1,96 @@
 {% extends '_layout.html' %}
 
 {% block content_header %}
-    <div class="columns pt-5 pl-6 pr-6">
-        <div class="column">
-            <div class="buttons">
-                <a href="/projects/{{ project.id }}" class="button is-transparent">
-                    <span class="icon"><i class="fas fa-tasks" aria-label="Project"></i></span><span>Project</span>
-                </a>
-                <a href="/projects/{{ project.id }}/history" class="button is-link is-light">
-                    <span class="icon"><i class="fas fa-history"></i></span><span>History</span>
-                </a>
-                <a href="/projects/{{ project.id }}/annotate" class="button is-transparent">
-                    <span class="icon"><i class="fas fa-tag"></i></span><span>Annotate</span>
-                </a>
+    <div class="container pt-3">
+        <div class="columns">
+            <div class="column">
+                <div class="buttons">
+                    <a href="/projects/{{ project.id }}" class="button is-highlight">
+                        <span class="icon"><i class="fas fa-tasks" aria-label="Project"></i></span><span>Project</span>
+                    </a>
+                    <a href="/projects/{{ project.id }}/history" class="button is-highlight has-text-link is-static">
+                        <span class="icon"><i class="fas fa-history"></i></span><span>History</span>
+                    </a>
+                    <a href="/projects/{{ project.id }}/annotate" class="button is-highlight">
+                        <span class="icon"><i class="fas fa-tag"></i></span><span>Annotate</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 {% endblock %}
 
 {% block content %}
-    <div class="container box">
-        <!-- Annotated documents table -->
-        <div class="block">
-            <div class="table-container">
-                <table class="table is-fullwidth">
-                    <thead>
-                    <tr>
-                        <th>#</th>
-                        <th style="width: 100%;">Text</th>
-                        <th style="min-width: 100px;">
-                            {% if request.args.get('flagged') == 'True' %}
-                                <a href="{{ url_for('project_view.view_project_history',project_id=project.id,flagged=false) }}">
+    <div class="columns">
+        <div class="column">
+            <div class="container box">
+                <div class="block">
+                    <div class="table-container">
+                        <table class="table is-fullwidth">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th style="width: 100%;">Text</th>
+                                <th style="min-width: 100px;">
+                                    {% if request.args.get('flagged') == 'True' %}
+                                        <a href="{{ url_for('project_view.view_project_history',project_id=project.id,flagged=false) }}">
                                          <span class="icon">
                                             <i class="fas fa-flag"></i>
                                         </span>
-                                    <span class="icon">
+                                            <span class="icon">
                                           (<i class="fas fa-check"></i>)
                                         </span>
-                                </a>
-                            {% elif request.args.get('flagged') == 'False' %}
-                                <a href="{{ url_for('project_view.view_project_history',project_id=project.id) }}">
+                                        </a>
+                                    {% elif request.args.get('flagged') == 'False' %}
+                                        <a href="{{ url_for('project_view.view_project_history',project_id=project.id) }}">
                                         <span class="icon">
                                             <i class="fas fa-flag"></i>
                                         </span>
-                                    <span class="icon">
+                                            <span class="icon">
                                             (<i class="fas fa-times"></i>)
                                         </span>
-                                </a>
-                            {% else %}
-                                <a href="{{ url_for('project_view.view_project_history',project_id=project.id,flagged=true) }}">
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ url_for('project_view.view_project_history',project_id=project.id,flagged=true) }}">
                                         <span class="icon">
                                             <i class="fas fa-flag"></i>
                                         </span>
-                                    <span class="icon">
+                                            <span class="icon">
                                         <i class="fa fa-flag" style="opacity:0;"></i>
                                     </span>
-                                </a>
-                            {% endif %}
-                        </th>
-                        <th>Action</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for doc, aset in documents.items %}
-                        <tr>
-                            <th scope="row">{{ doc.id }}</th>
-                            <td> {{ doc.text | safe }}</td>
-                            <td>
-                                {% if aset.flagged %}
-                                    <i class="fas fa-check"></i>
-                                {% else %}
-                                    <i class="fas fa-times"></i>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <a class="button is-link is-light"
-                                   href="{{ url_for('annotate_view.annotate', project_id=project.id, document_id=doc.id) }}">
-                                    <i class="fas fa-tag"></i>
-                                </a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="d-flex justify-content-center">
-                {{ render_pagination(documents, 'project_view.view_project_history') }}
+                                        </a>
+                                    {% endif %}
+                                </th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for doc, aset in documents.items %}
+                                <tr>
+                                    <th scope="row">{{ doc.id }}</th>
+                                    <td> {{ doc.text | safe }}</td>
+                                    <td>
+                                        {% if aset.flagged %}
+                                            <i class="fas fa-check"></i>
+                                        {% else %}
+                                            <i class="fas fa-times"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a class="button is-link is-light"
+                                           href="{{ url_for('annotate_view.annotate', project_id=project.id, document_id=doc.id) }}">
+                                            <i class="fas fa-tag"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        {{ render_pagination(documents, 'project_view.view_project_history') }}
+                    </div>
+                </div>
             </div>
         </div>
     </div>

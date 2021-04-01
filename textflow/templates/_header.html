@@ -5,12 +5,10 @@
     {% set url_path = none %}
 {% endif %}
 
-{% set messages = get_flashed_messages(with_categories=True) %}
-
 <nav class="navbar is-fixed-top pl-6 pr-6" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
         <a class="navbar-item" href="/">
-            <img src="/static/images/long_logo.png" height="28">
+            <img src="{{ url_for('static', filename='images/long-logo.png') }}" height="28" alt="TextFlow Logo">
         </a>
         <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
            data-target="navbarBasic">
@@ -88,7 +86,7 @@
 </nav>
 
 <nav id="notificationsPanel" class="panel"
-     style="display: none; position: absolute; right: 0; top:0; margin-top: 3.25rem; margin-right: 24px; min-width: 350px; z-index: 9999;">
+     style="display: none; position: absolute; right: 0; top:0; margin-top: 4rem; margin-right: 24px; min-width: 350px; z-index: 9999;">
     <p class="panel-heading">
         <span class="is-flex is-justify-content-space-between">
             Notifications<button class="delete" onclick="$('#notificationsPanel').toggle(false)"></button>

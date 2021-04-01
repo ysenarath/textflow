@@ -1,32 +1,34 @@
 {% extends '_layout.html' %}
 
 {% block content_header %}
-    <div class="columns pt-5 pl-6 pr-6">
-        <div class="column">
-            <div class="buttons">
-                <a href="/projects/{{ project.id }}" class="button is-link is-light">
-                    <span class="icon"><i class="fas fa-tasks" aria-label="Project"></i></span><span>Project</span>
-                </a>
-                <a href="/projects/{{ project.id }}/history" class="button is-transparent">
-                    <span class="icon"><i class="fas fa-history"></i></span><span>History</span>
-                </a>
-                <a href="/projects/{{ project.id }}/annotate" class="button is-transparent">
-                    <span class="icon"><i class="fas fa-tag"></i></span><span>Annotate</span>
-                </a>
+    <div class="container pt-3">
+        <div class="columns">
+            <div class="column">
+                <div class="buttons">
+                    <a href="/projects/{{ project.id }}" class="button is-highlight has-text-link is-static">
+                        <span class="icon"><i class="fas fa-tasks" aria-label="Project"></i></span><span>Project</span>
+                    </a>
+                    <a href="/projects/{{ project.id }}/history" class="button is-highlight">
+                        <span class="icon"><i class="fas fa-history"></i></span><span>History</span>
+                    </a>
+                    <a href="/projects/{{ project.id }}/annotate" class="button is-highlight">
+                        <span class="icon"><i class="fas fa-tag"></i></span><span>Annotate</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 {% endblock %}
 
 {% block content %}
-    <div class="container p-6">
+    <div class="section">
         <!-- Header -->
-        <div class="block has-text-centered m-6">
+        <div class="block has-text-centered">
             <h1 class="title">{{ project.name }}</h1>
-            <h2 class="subtitle has-text-centered">{{ project.description }}</h2>
+            <h2 class="subtitle">{{ project.description }}</h2>
         </div>
         <!-- Information -->
-        <div class="block p-6 pt-0 m-6 mt-0">
+        <div class="block p-6">
             <nav class="level">
                 <div class="level-item has-text-centered">
                     <div>
@@ -55,11 +57,17 @@
             </nav>
         </div>
         <div class="block">
-            <div class="is-flex flex-wrap is-justify-content-center">
-                {% for k, v in project_status.num_annotations.items() %}
-                    <p class="heading pr-3">{{ v[0] }}-{{ v[1] }}</p>
-                    {% if not loop.last %}<p class="heading pr-3">/</p>{% endif %}
-                {% endfor %}
+            <div class="columns is-mobile is-centered">
+                <div class="field is-grouped is-grouped-multiline">
+                    {% for k, v in project_status.num_annotations.items() %}
+                        <div class="control">
+                            <div class="tags has-addons are-medium">
+                                <span class="tag is-highlight">{{ v[0] }}</span>
+                                <span class="tag is-info">{{ v[1] }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>

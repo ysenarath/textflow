@@ -2,6 +2,8 @@
 
 {% from "_pagination.html" import render_pagination with context %}
 
+{% set messages = get_flashed_messages(with_categories=True) %}
+
 <!DOCTYPE html>
 <html class="has-navbar-fixed-top is-themed" lang="en">
 <head>
@@ -9,12 +11,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>{% block title %}{{ title }}{% endblock %}</title>
     {% block styles %}
-        <link rel="stylesheet" href="/static/styles/bulma.min.css">
-        <link rel="stylesheet" href="/static/styles/base.css">
-        <link rel="stylesheet" href="/static/styles/theme.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/bulma.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/base.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/theme.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/toastr.min.css') }}">
     {% endblock %}
     <link rel="favicon icon" href="{{ url_for('static', filename='favicon.svg') }}">
-    <script src="/static/scripts/theme.js"></script>
+    <script src="{{ url_for('static', filename='scripts/theme.js') }}"></script>
     <!--suppress JSUnresolvedVariable -->
     <script>
         {% if current_user.is_authenticated %}
@@ -50,9 +53,21 @@
     </section>
 {% endblock %}
 {% block scripts %}
-    <script src="/static/scripts/jquery-3.5.1.min.js"></script>
-    <script src="/static/scripts/fontawesome.all.js"></script>
-    <script src="/static/scripts/base.js"></script>
+    <script src="{{ url_for('static', filename='scripts/jquery-3.5.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/fontawesome.all.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/base.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/toastr.min.js') }}"></script>
+    <!--suppress JSUnresolvedVariable -->
+    <script>
+        toastr.options.positionClass = 'toast-bottom-full-width';
+        toastr.options.closeHtml = '<button class="delete"></button>';
+        toastr.options.closeButton = true;
+        {% if messages %}
+            {% for category, message in messages %}
+                toastr.info('{{ message }}');
+            {% endfor %}
+        {% endif %}
+    </script>
 {% endblock %}
 </body>
 </html>
