@@ -59,14 +59,17 @@
     <script src="{{ url_for('static', filename='scripts/toastr.min.js') }}"></script>
     <!--suppress JSUnresolvedVariable -->
     <script>
-        toastr.options.positionClass = 'toast-bottom-full-width';
-        toastr.options.closeHtml = '<button class="delete"></button>';
-        toastr.options.closeButton = true;
-        {% if messages %}
-            {% for category, message in messages %}
-                toastr.info('{{ message }}');
-            {% endfor %}
-        {% endif %}
+        $(document).ready(function () {
+            toastr.options.positionClass = 'toast-bottom-full-width';
+            toastr.options.closeHtml = '<button class="delete"></button>';
+            toastr.options.toastClass = 'notification is-info';
+            toastr.options.closeButton = true;
+            {% if messages %}
+                {% for category, message in messages %}
+                    toastr.info('{{ message }}');
+                {% endfor %}
+            {% endif %}
+        });
     </script>
 {% endblock %}
 </body>
