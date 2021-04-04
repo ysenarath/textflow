@@ -45,9 +45,9 @@ def cli(ctx, debug, mode, config_path, database_url):
         if 'SQLALCHEMY_TRACK_MODIFICATIONS' not in config:
             config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
         if 'SECRET_KEY' not in config:
-            config['SECRET_KEY'] = str(os.urandom(32))
+            config['SECRET_KEY'] = os.urandom(32).decode('latin1')
         if 'WTF_CSRF_SECRET_KEY' not in config:
-            config['WTF_CSRF_SECRET_KEY'] = str(os.urandom(32))
+            config['WTF_CSRF_SECRET_KEY'] = os.urandom(32).decode('latin1')
         ctx.obj['CONFIG'] = config
         with open(config_path, 'w') as fp:
             json.dump(config, fp)

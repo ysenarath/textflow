@@ -1,7 +1,7 @@
 """ annotation view """
 import json
 
-from flask import redirect, url_for, render_template, request, jsonify, Blueprint
+from flask import redirect, url_for, render_template, request, jsonify, Blueprint, render_template_string, current_app
 
 from textflow import services, auth
 from textflow.utils import jsend
@@ -45,6 +45,15 @@ def annotate(project_id, document_id):
         return redirect(url_for('annotate_view.annotate_next', project_id=project_id))
     options = json.dumps([{'value': label.value, 'label': label.label} for label in project.labels])
     annotation_set = services.get_annotation_set(current_user.id, project_id, document_id)
+    templates = current_app.config.get('templates', None)
+    if templates is not None:
+        project_template_path = 'projects/{}/annotate.html'.format(project_id)
+        if project_template_path in templates:
+            template = templates[project_template_path]
+            return render_template_string(
+                template, project=project, document=document,
+                annotation_set=annotation_set, options=options
+            )
     return render_template('annotate.html', project=project, document=document, annotation_set=annotation_set,
                            options=options)
 
