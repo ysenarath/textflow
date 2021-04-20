@@ -234,7 +234,7 @@ def cli_user_create(ctx, username, password):
 
 @user_group.command(name='list')
 @click.pass_context
-def cli_user_create(ctx):
+def cli_user_list(ctx):
     """Creates user using provided args
 
     :param ctx: context
