@@ -1,9 +1,10 @@
 """ project admin view """
 import json
 
-from flask import render_template, Blueprint, jsonify, request, redirect, flash, url_for
+from flask import Blueprint, jsonify, request, redirect, flash, url_for
 from flask_login import current_user
 from sklearn.model_selection import train_test_split
+from textflow.view.base import render_template
 
 from textflow import services, auth
 from textflow.metrics.agreement import AgreementScore
@@ -103,8 +104,9 @@ def add_label(project_id):
     if add_label_form.validate_on_submit():
         lbl = add_label_form.data['label']
         val = add_label_form.data['value']
+        order = add_label_form.data['order']
         if services.filter_label(project_id=project_id, value=val) is None:
-            obj = Label(value=val, label=lbl, project_id=project_id)
+            obj = Label(value=val, label=lbl, order=order, project_id=project_id)
             services.db.session.add(obj)
             services.db.session.commit()
         else:

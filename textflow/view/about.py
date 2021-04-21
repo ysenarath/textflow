@@ -1,6 +1,8 @@
 """ About Page """
 
-from flask import render_template, Blueprint
+from flask import Blueprint
+
+from textflow.view.base import render_template
 
 view = Blueprint('about_view', __name__)
 

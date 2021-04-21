@@ -16,6 +16,7 @@
                 <th></th>
                 <th>Label</th>
                 <th>Value</th>
+                <th>Order</th>
             </tr>
             {% for row in form.labels %}
                 {{ row.csrf_token }}
@@ -23,6 +24,7 @@
                     <td>{{ row['selected'](class_="checkbox") }}</td>
                     <td>{{ row['label'](class_="input") }}</td>
                     <td>{{ row['value'](class_="input") }}</td>
+                    <td>{{ row['order'](class_="input", type='number') }}</td>
                 </tr>
             {% endfor %}
         </table>
@@ -45,6 +47,12 @@
                     <label class="label">{{ form['value'].label }}</label>
                     <p class="control">
                         {{ form['value'](class_="input") }}
+                    </p>
+                </div>
+                <div class="field">
+                    <label class="label">{{ form['order'].label }}</label>
+                    <p class="control">
+                        {{ form['order'](class_="input", type='number') }}
                     </p>
                 </div>
                 <div class="field">

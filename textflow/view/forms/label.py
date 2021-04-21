@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, FormField, FieldList, BooleanField
+from wtforms import StringField, FormField, FieldList, BooleanField, IntegerField
 from wtforms.validators import DataRequired
 
 __all__ = [
@@ -13,6 +13,7 @@ class LabelForm(FlaskForm):
     id = StringField('ID')
     label = StringField('Label', validators=[DataRequired()])
     value = StringField('Value', validators=[DataRequired()])
+    order = IntegerField('Order', validators=[DataRequired()])
 
 
 class LabelsForm(FlaskForm):

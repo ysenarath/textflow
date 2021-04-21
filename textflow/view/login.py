@@ -2,10 +2,11 @@
 
 from urllib.parse import urlparse, urljoin
 
-from flask import redirect, flash, url_for, render_template, abort, request, Blueprint
+from flask import redirect, flash, url_for, abort, request, Blueprint
 
 from textflow import services, auth
 from textflow.view.forms import LoginForm
+from textflow.view.base import render_template
 
 view = Blueprint('login_view', __name__)
 

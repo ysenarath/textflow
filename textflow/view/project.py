@@ -1,6 +1,7 @@
 """ Project view """
-from flask import render_template, Blueprint, request, redirect, url_for
+from flask import Blueprint, request, redirect, url_for
 
+from textflow.view.base import render_template
 from textflow import services, auth
 
 view = Blueprint('project_view', __name__)

@@ -1,8 +1,9 @@
 """ Index view """
 
-from flask import render_template, Blueprint, redirect, url_for
+from flask import Blueprint, redirect, url_for
 
 from textflow import auth
+from textflow.view.base import render_template
 
 view = Blueprint('index_view', __name__)
 
@@ -17,4 +18,5 @@ def index():
         # automatically login to project list page
         return redirect(url_for('project_view.list_projects'))
     else:
+
         return render_template('index.html')

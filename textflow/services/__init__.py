@@ -245,7 +245,7 @@ def list_labels(ctx, project_id, user_id):
     :param project_id: project id
     :return: label
     """
-    return Label.query.filter_by(project_id=project_id).all()
+    return Label.query.filter_by(project_id=project_id).order_by(Label.order).all()
 
 
 @service
@@ -461,6 +461,7 @@ def generate_status_report(ctx, user_id, project_id=None):
             .outerjoin(AnnotationSet, AnnotationSet.id == Annotation.annotation_set_id) \
             .filter(or_(AnnotationSet.user_id == user_id, AnnotationSet.user_id.is_(None))) \
             .group_by(Label.label) \
+            .order_by(Label.order) \
             .all()
         num_assigned = Document.query \
             .filter(Document.project_id == project_id) \

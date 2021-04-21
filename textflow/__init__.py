@@ -31,8 +31,12 @@ class TextFlow:
         for bp in view.get_blueprints():
             server.register_blueprint(bp)
         # Add configs to app
+        server.config['templates'] = {}
         for k, v in self.local_config.items():
-            server.config[k] = v
+            if (k in server.config) and (server.config[k] is not None):
+                server.config[k].update(v)
+            else:
+                server.config[k] = v
         return server
 
     def __init_app(self):

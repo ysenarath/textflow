@@ -29,18 +29,12 @@
                             <span class="icon ml-1"><i class="fas fa-book" aria-label="Guideline"></i></span><span
                                 class="mr-1">Guide</span>
                         </button>
-                        <a id="skipButton" href="javascript:void(0)" class="button is-danger is-light"
-                           onclick="submit(null, 'skip')">
-                            <span class="icon ml-1">
-                                <i class="fas fa-forward mr-1" aria-label="Skip"></i>
-                            </span><span class="mr-1">Skip</span>
-                        </a>
                         <a id="flagButton" href="javascript:void(0)"
                            class="button {% if annotation_set.flagged %}is-warning{% else %}is-light{% endif %}"
                            onclick="submit({'status':'{{ annotation_set.flagged }}' !== 'True'}, 'flag')">
                             <span class="icon ml-1">
-                                <i class="fas fa-flag mr-1" aria-label="Flag"></i>
-                            </span><span class="mr-1">Flag</span>
+                                <i class="fas fa-question mr-1" aria-label="Flag"></i>
+                            </span><span class="mr-1">Complex</span>
                         </a>
                         <a id="nextButton" href="javascript:void(0)" class="button is-success is-light"
                            onclick="submit(null, 'next')">
