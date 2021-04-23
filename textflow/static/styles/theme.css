@@ -23,6 +23,7 @@ html[data-theme='light'].is-themed .table .input,
 html[data-theme='light'].is-themed .table .textarea,
 html[data-theme='light'].is-themed .card,
 html[data-theme='light'].is-themed .card .card-content,
+html[data-theme='light'].is-themed .panel-block,
 html[data-theme='light'].is-themed .box {
     background-color: #fff !important;
     color: #363636 !important;
@@ -31,8 +32,10 @@ html[data-theme='light'].is-themed .box {
 
 html[data-theme='light'].is-themed .navbar,
 html[data-theme='light'].is-themed .navbar *,
+html[data-theme='dark'].is-themed .navbar-burger > span,
 html[data-theme='light'].is-themed .sidebar,
-html[data-theme='light'].is-themed .footer {
+html[data-theme='light'].is-themed .footer ,
+html[data-theme='light'].is-themed .panel-heading {
     background-color: #f5f5f5 !important;
     color: #4a4a4a !important;
 }
@@ -48,6 +51,7 @@ html[data-theme='dark'].is-themed .table .input,
 html[data-theme='dark'].is-themed .table .textarea,
 html[data-theme='dark'].is-themed .card,
 html[data-theme='dark'].is-themed .card .card-content,
+html[data-theme='dark'].is-themed .panel-block,
 html[data-theme='dark'].is-themed .box {
     background-color: #4a4a4a !important;
     color: #f5f5f5 !important;
@@ -55,8 +59,10 @@ html[data-theme='dark'].is-themed .box {
 
 html[data-theme='dark'].is-themed .navbar,
 html[data-theme='dark'].is-themed .navbar *,
+html[data-theme='light'].is-themed .navbar-burger > span,
 html[data-theme='dark'].is-themed .sidebar,
-html[data-theme='dark'].is-themed .footer {
+html[data-theme='dark'].is-themed .footer,
+html[data-theme='dark'].is-themed .panel-heading {
     background-color: #363636 !important;
     color: #f5f5f5 !important;
 }

@@ -1,26 +1,21 @@
 {% extends '_layout.html' %}
 
-{% block content_header %}
-    <div class="container pt-3">
-        <div class="columns">
-            <div class="column">
-                <div class="buttons">
-                    <a href="/projects/{{ project.id }}" class="button is-highlight">
-                        <span class="icon"><i class="fas fa-tasks" aria-label="Project"></i></span><span>Project</span>
-                    </a>
-                    <a href="/projects/{{ project.id }}/history" class="button is-highlight has-text-link is-static">
-                        <span class="icon"><i class="fas fa-history"></i></span><span>History</span>
-                    </a>
-                    <a href="/projects/{{ project.id }}/annotate" class="button is-highlight">
-                        <span class="icon"><i class="fas fa-tag"></i></span><span>Annotate</span>
-                    </a>
-                </div>
+{% block content %}
+    <div class="columns">
+        <div class="column">
+            <div class="buttons">
+                <a href="/projects/{{ project.id }}" class="button is-highlight">
+                    <span class="icon"><i class="fas fa-tasks" aria-label="Project"></i></span><span>Project</span>
+                </a>
+                <a href="/projects/{{ project.id }}/history" class="button is-highlight has-text-link is-static">
+                    <span class="icon"><i class="fas fa-history"></i></span><span>History</span>
+                </a>
+                <a href="/projects/{{ project.id }}/annotate" class="button is-highlight">
+                    <span class="icon"><i class="fas fa-tag"></i></span><span>Annotate</span>
+                </a>
             </div>
         </div>
     </div>
-{% endblock %}
-
-{% block content %}
     <div class="columns">
         <div class="column">
             <div class="container box">
