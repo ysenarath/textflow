@@ -1,4 +1,4 @@
-{% extends '_layout.html' %}
+{% extends '_layouts/default.html' %}
 
 {% block styles %}
     {{ super() }}
@@ -129,8 +129,8 @@
         <script>
             // collection of URL endpoints
             const url_for = {
-                annotations_api: '{{ url_for('annotate_view.get_annotations', project_id = project.id, document_id = document.id) }}',
-                annotate_next: '{{ url_for('annotate_view.annotate_next', project_id = project.id) }}',
+                annotations_api: '{{ url_for('annotate.get_annotations', project_id = project.id, document_id = document.id) }}',
+                annotate_next: '{{ url_for('annotate.annotate_next', project_id = project.id) }}',
             };
 
             const documentText = '{{ document.text | safe }}';

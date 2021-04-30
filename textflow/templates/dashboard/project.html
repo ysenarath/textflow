@@ -1,9 +1,10 @@
-{% macro render_project_form(form) %}
-    <form class="box" method="POST"
-          action="{{ url_for('dashboard_view.dashboard', project_id=project_id, obj='project') }}">
+{% set form = forms.update_project %}
+
+<script id="project-section-template" type="text/x-handlebars-template">
+    <form class="box" method="POST" action="{{ url_for('dashboard.post_project', project_id=project_id) }}">
         {{ form.csrf_token }}
         <div class="is-flex is-justify-content-space-between">
-            <p class="title">Settings</p>
+            <p class="title"></p>
             <input class="button is-link" type="submit" value="Submit"/>
         </div>
         <div class="field">
@@ -39,4 +40,21 @@
             </div>
         </div>
     </form>
-{% endmacro %}
+</script>
+
+<!--suppress JSUnresolvedVariable -->
+<script>
+    templates.add('project', function () {
+        let source = document.getElementById("project-section-template").innerHTML;
+
+        let template = Handlebars.compile(source);
+
+        let data = {};
+
+        function render(id) {
+            document.getElementById(id).innerHTML = template({data})
+        }
+
+        return {render}
+    })
+</script>

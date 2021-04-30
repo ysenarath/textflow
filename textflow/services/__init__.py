@@ -440,46 +440,6 @@ def filter_document(ctx, user_id, project_id, id_str):
 
 
 @service
-def generate_status_report(ctx, user_id, project_id=None):
-    """Generates and returns status report
-
-    :param ctx: context
-    :param user_id: user id (not username)
-    :param project_id: project id
-    :return: status report
-    """
-    if project_id is not None:
-        num_completed = Document.query \
-            .join(AnnotationSet, AnnotationSet.document_id == Document.id) \
-            .join(Project, Project.id == Document.project_id) \
-            .filter(AnnotationSet.user_id == user_id, Document.project_id == project_id,
-                    AnnotationSet.completed.is_(True)) \
-            .count()
-        num_annotations = db.session.query(Label.value, Label.label, func.count(distinct(Annotation.id))) \
-            .outerjoin(Annotation, Annotation.label_id == Label.id) \
-            .filter(Label.project_id == project_id) \
-            .outerjoin(AnnotationSet, AnnotationSet.id == Annotation.annotation_set_id) \
-            .filter(or_(AnnotationSet.user_id == user_id, AnnotationSet.user_id.is_(None))) \
-            .group_by(Label.label) \
-            .order_by(Label.order) \
-            .all()
-        num_assigned = Document.query \
-            .filter(Document.project_id == project_id) \
-            .count()
-        if num_assigned == 0:
-            progress = 100
-        else:
-            progress = num_completed * 100 / num_assigned
-        return dict(
-            num_annotations={v: (l, c) for v, l, c in num_annotations},
-            num_assigned=num_assigned,
-            num_completed=num_completed,
-            progress=progress,
-        )
-    return {}
-
-
-@service
 def list_assignments(ctx, project_id):
     """Gets assignment using provided user and project id.
 
@@ -521,15 +481,19 @@ def remove_assignment(ctx, user_id, project_id):
 
 
 @service
-def list_plugin_names(ctx, project_id, type):
-    if type == 'dataset':
+def list_plugin_names(ctx, project_id, plugin_type):
+    if plugin_type == 'dataset':
         p = get_project.ignore_user(user_id=None, project_id=project_id)
-        return list(set(datasets.list_names(project_id) + datasets.list_names(p.type)))
-    elif type == 'model':
+        project_spec_datasets = datasets.list_names(project_id)
+        project_type_datasets = datasets.list_names(p.type)
+        return list(set(project_spec_datasets + project_type_datasets))
+    elif plugin_type == 'estimator':
         p = get_project.ignore_user(user_id=None, project_id=project_id)
-        return list(set(models.list_names(project_id) + models.list_names(p.type)))
+        project_spec_estimators = estimators.list_names(project_id)
+        project_type_estimators = estimators.list_names(p.type)
+        return list(set(project_spec_estimators + project_type_estimators))
     else:
-        return []
+        return None
 
 
 @service
@@ -553,7 +517,7 @@ def get_dataset(ctx, project_id, name=None):
 
 
 @service
-def get_model(ctx, project_id, name=None):
+def get_estimator(ctx, project_id, name=None):
     """Gets (non trained) model from project ID.
 
     :param ctx: context
@@ -561,8 +525,81 @@ def get_model(ctx, project_id, name=None):
     :param name: model name (gets `default` if None)
     :return: model
     """
-    plugin = models.get_plugin(project_id, name)
+    plugin = estimators.get_plugin(project_id, name)
     if plugin is None:
         p = get_project.ignore_user(user_id=None, project_id=project_id)
-        plugin = models.get_plugin(p.type, name)
+        plugin = estimators.get_plugin(p.type, name)
     return plugin()
+
+
+@service
+def generate_status_report(ctx, user_id, project_id=None):
+    """Generates and returns status report
+
+    :param ctx: context
+    :param user_id: user id (not username)
+    :param project_id: project id
+    :return: status report
+    """
+    if project_id is not None:
+        num_completed = Document.query \
+            .join(AnnotationSet, AnnotationSet.document_id == Document.id) \
+            .join(Project, Project.id == Document.project_id) \
+            .filter(AnnotationSet.user_id == user_id, Document.project_id == project_id,
+                    AnnotationSet.completed.is_(True)) \
+            .count()
+        num_annotations = db.session.query(Label.value, Label.label, func.count(distinct(Annotation.id))) \
+            .outerjoin(Annotation, Annotation.label_id == Label.id) \
+            .filter(Label.project_id == project_id) \
+            .outerjoin(AnnotationSet, AnnotationSet.id == Annotation.annotation_set_id) \
+            .filter(or_(AnnotationSet.user_id == user_id, AnnotationSet.user_id.is_(None))) \
+            .group_by(Label.label) \
+            .order_by(Label.order) \
+            .all()
+        num_assigned = Document.query \
+            .filter(Document.project_id == project_id) \
+            .outerjoin(AnnotationSet, and_(AnnotationSet.document_id == Document.id,
+                                           AnnotationSet.user_id == user_id)) \
+            .filter(or_(AnnotationSet.skipped.is_(None), AnnotationSet.skipped.is_(False))) \
+            .count()
+        if num_assigned == 0:
+            progress = 100
+        else:
+            progress = num_completed * 100 / num_assigned
+        return dict(
+            num_annotations={v: (l, c) for v, l, c in num_annotations},
+            num_assigned=num_assigned,
+            num_completed=num_completed,
+            progress=progress,
+        )
+    return {}
+
+
+@service
+def get_status(ctx, project_id):
+    subquery = db.session.query(AnnotationSet.document_id, func.count(AnnotationSet.user_id).label('frequency')) \
+        .filter(AnnotationSet.completed.is_(True)) \
+        .group_by(AnnotationSet.document_id) \
+        .subquery()
+    num_completed = Document.query \
+        .join(Project, Project.id == Document.project_id) \
+        .join(Assignment, Assignment.project_id == Project.id) \
+        .outerjoin(subquery, Document.id == subquery.c.document_id) \
+        .outerjoin(AnnotationSet,
+                   and_(AnnotationSet.document_id == Document.id, AnnotationSet.user_id == Assignment.user_id)) \
+        .filter(Document.project_id == project_id) \
+        .filter(Project.redundancy <= subquery.c.frequency) \
+        .filter(AnnotationSet.completed.is_(True)) \
+        .filter(AnnotationSet.skipped.is_(False)) \
+        .distinct(Document.id) \
+        .count()
+    num_documents = Document.query \
+        .filter(Document.project_id == project_id) \
+        .distinct(Document.id) \
+        .count()
+    return {
+        'num_completed': num_completed,
+        'num_documents': num_documents,
+        'num_remaining': num_documents - num_completed,
+        'percentage': int(num_completed / num_documents) * 100,
+    }

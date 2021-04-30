@@ -17,7 +17,7 @@ IB_TAGS = ['I', 'B']
 
 
 class Dataset:
-    def __init__(self, annotation_sets, tokenizer=None, validator='MAJORITY'):
+    def __init__(self, annotation_sets, tokenizer=None, validator='sys.majority'):
         self.records = self.build_dataset(annotation_sets, tokenizer=tokenizer)
         self.validator = validator
 
@@ -152,7 +152,7 @@ class SequenceLabelingDataset(Dataset):
                     maj_tag, maj_lbl = '?', None
                 prv_label = (maj_tag, maj_lbl)
                 majority_vote.append(prv_label)
-            records[i].labels['MAJORITY'] = majority_vote
+            records[i].labels['sys.majority'] = majority_vote
         return records
 
     def build_item_tuples(self):
@@ -238,14 +238,14 @@ class MultiLabelDataset(Dataset):
             # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
             # set labels
             user = annotation_set.user
-            if '__{}__'.format(user.username) in document.labels:
-                labels = document.labels['__{}__'.format(user.username)]
+            if 'users.{}'.format(user.username) in document.labels:
+                labels = document.labels['users.{}'.format(user.username)]
             else:
                 labels = []
             for annotation in annotation_set.annotations:
                 label_value = annotation.label.value
                 labels.append(label_value)
-            document.labels['__{}__'.format(user.username)] = labels
+            document.labels['users.{}'.format(user.username)] = labels
             # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
             records[document.id] = document
         for i in records:
@@ -261,7 +261,7 @@ class MultiLabelDataset(Dataset):
             #   to consider for annotation (half of the number of available annotations)
             min_num = len(labels) // 2 + 1
             majority_vote = [k for k, v in label_counts.items() if v >= min_num]
-            records[i].labels['MAJORITY'] = majority_vote
+            records[i].labels['sys.majority'] = majority_vote
         return records
 
     def build_item_tuples(self):

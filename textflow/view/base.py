@@ -18,3 +18,18 @@ def render_template(path, **kwargs):
             else:
                 return flask_render_template(value, **kwargs)
     return flask_render_template(path, **kwargs)
+
+
+class FakeBlueprint:
+    def __init__(self):
+        self.routes = []
+
+    def route(self, *args, **kwargs):
+        def route_fn(fn):
+            self.routes.append((args, kwargs, fn))
+
+        return route_fn
+
+    def register(self, bp):
+        for args, kwargs, fn in self.routes:
+            bp.route(*args, **kwargs)(fn)

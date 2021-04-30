@@ -1,0 +1,75 @@
+{% extends '_layouts/default.html' %}
+
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/dash.css') }}">
+{% endblock %}
+
+{% block is_full_content %}
+    <div class="columns mt-0" style="height: 100%;">
+        <div class="column sidebar">
+            {% for title, sections in sidebar %}
+                <ul class="menu-list pl-3">
+                    <li><p class="menu-label pt-1">{{ title }}</p></li>
+                    {% for section in sections %}
+                        <li>
+                            <a href="javascript:viewSection('{{ section.value }}')">
+                                <i class="fas {{ section.icon }}" aria-hidden="true"></i>
+                                <span class="ml-3">{{ section.label }}</span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endfor %}
+        </div>
+        <div class="column content p-3">
+            <div id="content-body" class="container is-fluid"></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='scripts/handlebars.js') }}"></script>
+    <script>
+        let templates = function() {
+            let _templates = {}
+
+            function add(name, value) {
+                _templates[name] = value;
+            }
+            function get(name) {
+                return _templates[name]();
+            }
+
+            return {add, get}
+        }()
+
+        let activeSection = '{{ section }}';
+
+        function viewSection(section) {
+            templates.get(section).render('content-body');
+            activeSection = section;
+        }
+
+        /**
+         * Initialize document turn to current page
+         */
+        function initialize() {
+            viewSection(activeSection);
+        }
+
+        /**
+         * Initialize when document is ready
+         */
+        $(document).ready(initialize);
+    </script>
+    {% include 'dashboard/status.html' %}
+    {% include 'dashboard/agreement.html' %}
+    {% include 'dashboard/dataset.html' %}
+    {% include 'dashboard/models.html' %}
+    {% include 'dashboard/project.html' %}
+    {% include 'dashboard/labels.html' %}
+    {% include 'dashboard/users.html' %}
+    {% include 'dashboard/documents.html' %}
+{% endblock %}

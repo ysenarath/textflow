@@ -7,7 +7,7 @@ from textflow import services, auth
 from textflow.view.base import render_template
 from textflow.utils import jsend
 
-view = Blueprint('annotate_view', __name__)
+view = Blueprint('annotate', __name__)
 
 
 @view.route('/projects/<project_id>/annotate')
@@ -20,11 +20,11 @@ def annotate_next(project_id):
     current_user = auth.current_user
     project = services.get_project(current_user.id, project_id)
     if project is None:
-        return redirect(url_for('project_view.list_projects'))
+        return redirect(url_for('project.list_projects'))
     document = services.next_document(current_user.id, project_id)
     if document is None:
         return render_template('annotate.html', project=project)
-    return redirect(url_for('annotate_view.annotate', project_id=project_id, document_id=document.id))
+    return redirect(url_for('annotate.annotate', project_id=project_id, document_id=document.id))
 
 
 @view.route('/projects/<project_id>/annotate/<document_id>')
@@ -40,10 +40,10 @@ def annotate(project_id, document_id):
     document_id = str(document_id)
     project = services.get_project(current_user.id, project_id)
     if project is None:
-        return redirect(url_for('project_view.list_projects'))
+        return redirect(url_for('project.list_projects'))
     document = services.get_document(current_user.id, project_id, document_id)
     if document is None:
-        return redirect(url_for('annotate_view.annotate_next', project_id=project_id))
+        return redirect(url_for('annotate.annotate_next', project_id=project_id))
     options = json.dumps([{'value': label.value, 'label': label.label} for label in project.labels])
     annotation_set = services.get_annotation_set(current_user.id, project_id, document_id)
     return render_template('annotate.html', project=project, document=document, annotation_set=annotation_set,
@@ -56,7 +56,7 @@ def get_annotations(project_id, document_id):
     current_user = auth.current_user
     project = services.get_project(current_user.id, project_id)
     if project is None:
-        return redirect(url_for('project_view.list_projects'))
+        return redirect(url_for('project.list_projects'))
     annotations = []
     annotation_set = services.get_annotation_set(current_user.id, project_id, document_id)
     if annotation_set is not None and project.type == 'sequence_labeling':

@@ -1,14 +1,40 @@
-{% macro render_users_form(form) %}
-    <form class="box" method="POST"
-          action="{{ url_for('dashboard_view.dashboard', project_id=project_id, obj='user') }}">
-        {{ form.csrf_token }}
+<script id="users-section-template" type="text/x-handlebars-template">
+    <form class="box" method="POST" action="{{ url_for('dashboard.create_user', project_id=project_id) }}">
+        {% set create_user_form = forms.create_user %}
+        {{ create_user_form.csrf_token }}
+        {{ create_user_form['user'].csrf_token }}
+        <div class="field is-horizontal">
+            <div class="field-body">
+                <div class="field">
+                    <label class="label">{{ create_user_form['user']['username'].label }}</label>
+                    <div class="control">
+                        {{ create_user_form['user']['username'](class_="input") }}
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">{{ create_user_form['role'].label }}</label>
+                    <div class="control">
+                        <div class="select w-100">
+                            {{ create_user_form['role'](class_="input") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="field" style="width: 0">
+                    <label class="label">Action</label>
+                    <input class="button is-link" type="submit" value="Add"/>
+                </div>
+            </div>
+        </div>
+    </form>
+    <form class="box" method="POST" action="{{ url_for('dashboard.update_users', project_id=project_id) }}">
+        {% set update_user_form = forms.update_users %}
+        {{ update_user_form.csrf_token }}
         <div class="is-flex is-justify-content-space-between">
-            <p class="title">Users</p>
+            <p class="title"></p>
             <div>
                 <input class="button is-link" type="submit" value="Submit"/>
                 <input class="button is-link" type="submit" value="Delete"
-                       formaction="{{ url_for('dashboard_view.dashboard', project_id=project_id,
-                       obj='user', action='delete') }}"/>
+                       formaction="{{ url_for('dashboard.delete_users', project_id=project_id) }}"/>
             </div>
         </div>
         <table class="table">
@@ -17,7 +43,7 @@
                 <th>User</th>
                 <th>Role</th>
             </tr>
-            {% for row in form.users %}
+            {% for row in update_user_form.users %}
                 {{ row.csrf_token }}
                 {{ row['user'].csrf_token }}
                 <tr>
@@ -32,34 +58,21 @@
             {% endfor %}
         </table>
     </form>
-{% endmacro %}
+</script>
 
-{% macro render_add_user_form(form) %}
-    <form class="box" method="POST"
-          action="{{ url_for('dashboard_view.add_user', project_id=project_id, obj='user') }}">
-        {{ form.csrf_token }}
-        {{ form['user'].csrf_token }}
-        <div class="field is-horizontal">
-            <div class="field-body">
-                <div class="field">
-                    <label class="label">{{ form['user']['username'].label }}</label>
-                    <div class="control">
-                        {{ form['user']['username'](class_="input") }}
-                    </div>
-                </div>
-                <div class="field">
-                    <label class="label">{{ form['role'].label }}</label>
-                    <div class="control">
-                        <div class="select w-100">
-                            {{ form['role'](class_="input") }}
-                        </div>
-                    </div>
-                </div>
-                <div class="field" style="width: 0">
-                    <label class="label">Action</label>
-                    <input class="button is-link" type="submit" value="Add"/>
-                </div>
-            </div>
-        </div>
-    </form>
-{% endmacro %}
+<!--suppress JSUnresolvedVariable -->
+<script>
+    templates.add('users', function () {
+        let source = document.getElementById('users-section-template').innerHTML;
+
+        let template = Handlebars.compile(source);
+
+        let data = {};
+
+        function render(id) {
+            document.getElementById(id).innerHTML = template({data})
+        }
+
+        return {render}
+    })
+</script>

@@ -11,7 +11,7 @@
             <img src="{{ url_for('static', filename='images/long-logo.png') }}" height="28" alt="TextFlow Logo">
         </a>
         <div role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
-           data-target="navbarBasic">
+             data-target="navbarBasic">
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
@@ -73,7 +73,7 @@
                 <div class="navbar-item p-1">
                     <div class="field has-addons has-addons-centered">
                         <p class="control">
-                            <a class="button is-rounded" href="/login" style="">
+                            <a class="button is-rounded" href="{{ url_for('login.login') }}" style="">
                                 <span class="is-text mr-2">Login</span>
                                 <i class="fas fa-sign-in-alt"></i>
                             </a>

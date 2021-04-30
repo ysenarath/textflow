@@ -1,14 +1,43 @@
-{% macro render_labels_form(form) %}
-    <form class="box" method="POST"
-          action="{{ url_for('dashboard_view.dashboard', project_id=project_id, obj='label') }}">
-        {{ form.csrf_token }}
+<script id="labels-section-template" type="text/x-handlebars-template">
+    <form class="box" method="POST" action="{{ url_for('dashboard.create_label', project_id=project_id) }}">
+        {% set create_label_form = forms.create_label %}
+        {{ create_label_form.csrf_token }}
+        <div class="field is-horizontal">
+            <div class="field-body">
+                <div class="field">
+                    <label class="label">{{ create_label_form['label'].label }}</label>
+                    <p class="control">
+                        {{ create_label_form['label'](class_="input") }}
+                    </p>
+                </div>
+                <div class="field">
+                    <label class="label">{{ create_label_form['value'].label }}</label>
+                    <p class="control">
+                        {{ create_label_form['value'](class_="input") }}
+                    </p>
+                </div>
+                <div class="field">
+                    <label class="label">{{ create_label_form['order'].label }}</label>
+                    <p class="control">
+                        {{ create_label_form['order'](class_="input", type='number') }}
+                    </p>
+                </div>
+                <div class="field">
+                    <label class="label">Action</label>
+                    <input class="button is-link" type="submit" value="Add"/>
+                </div>
+            </div>
+        </div>
+    </form>
+    <form class="box" method="POST" action="{{ url_for('dashboard.update_labels', project_id=project_id) }}">
+        {% set update_labels_form = forms.update_labels %}
+        {{ update_labels_form.csrf_token }}
         <div class="is-flex is-justify-content-space-between">
-            <p class="title">Labels</p>
+            <p class="title"></p>
             <div>
                 <input class="button is-link" type="submit" value="Submit"/>
                 <input class="button is-link" type="submit" value="Delete"
-                       formaction="{{ url_for('dashboard_view.dashboard', project_id=project_id,
-                       obj='label', action='delete') }}"/>
+                       formaction="{{ url_for('dashboard.delete_labels', project_id=project_id) }}"/>
             </div>
         </div>
         <table class="table">
@@ -18,7 +47,7 @@
                 <th>Value</th>
                 <th>Order</th>
             </tr>
-            {% for row in form.labels %}
+            {% for row in update_labels_form.labels %}
                 {{ row.csrf_token }}
                 <tr>
                     <td>{{ row['selected'](class_="checkbox") }}</td>
@@ -29,37 +58,19 @@
             {% endfor %}
         </table>
     </form>
-{% endmacro %}
+</script>
 
-{% macro render_add_label_form(form) %}
-    <form class="box" method="POST"
-          action="{{ url_for('dashboard_view.add_label', project_id=project_id, obj='label') }}">
-        {{ form.csrf_token }}
-        <div class="field is-horizontal">
-            <div class="field-body">
-                <div class="field">
-                    <label class="label">{{ form['label'].label }}</label>
-                    <p class="control">
-                        {{ form['label'](class_="input") }}
-                    </p>
-                </div>
-                <div class="field">
-                    <label class="label">{{ form['value'].label }}</label>
-                    <p class="control">
-                        {{ form['value'](class_="input") }}
-                    </p>
-                </div>
-                <div class="field">
-                    <label class="label">{{ form['order'].label }}</label>
-                    <p class="control">
-                        {{ form['order'](class_="input", type='number') }}
-                    </p>
-                </div>
-                <div class="field">
-                    <label class="label">Action</label>
-                    <input class="button is-link" type="submit" value="Add"/>
-                </div>
-            </div>
-        </div>
-    </form>
-{% endmacro %}
+<!--suppress JSUnresolvedVariable -->
+<script>
+    templates.add('labels', function () {
+        let source = document.getElementById('labels-section-template').innerHTML;
+        let template = Handlebars.compile(source);
+        let data = {};
+
+        function render(id) {
+            document.getElementById(id).innerHTML = template({data})
+        }
+
+        return {render}
+    })
+</script>

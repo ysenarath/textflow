@@ -1,4 +1,4 @@
-{% extends '_layout.html' %}
+{% extends '_layouts/default.html' %}
 
 {% block content %}
     <div class="columns">
@@ -24,7 +24,7 @@
                                         <a href="/projects/{{ p.id }}/annotate" class="button is-link is-light">
                                             <i class="fas fa-tag"></i></a>
                                         {% if p.role in ['admin', 'manager'] %}
-                                            <a href="{{ url_for('dashboard_view.dashboard', project_id=p.id) }}"
+                                            <a href="{{ url_for('dashboard.index', project_id=p.id) }}"
                                                class="button is-danger is-light">
                                                 <i class="fas fa-chart-line"></i></a>
                                         {% endif %}
@@ -34,7 +34,7 @@
                         </table>
                     </div>
                     <div class="d-flex justify-content-center">
-                        {{ render_pagination(projects, 'project_view.list_projects') }}
+                        {{ render_pagination(projects, 'project.list_projects') }}
                     </div>
                 </div>
             </div>

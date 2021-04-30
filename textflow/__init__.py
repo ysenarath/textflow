@@ -1,5 +1,6 @@
 """ TextFlow """
 import logging
+from os.path import expanduser
 
 from flask import Flask
 
@@ -22,7 +23,7 @@ class TextFlow:
         self.app = self.__create_app()
         self.__init_app()
 
-    def __create_app(self):
+    def __create_app(self, **kwargs):
         """ Create App
 
         :return: create flask server
@@ -31,6 +32,8 @@ class TextFlow:
         for bp in view.get_blueprints():
             server.register_blueprint(bp)
         # Add configs to app
+        # place to keep project specific resources like images/ models
+        server.config['resources_folder'] = expanduser('~/.textflow/')
         server.config['templates'] = {}
         for k, v in self.local_config.items():
             if (k in server.config) and (server.config[k] is not None):

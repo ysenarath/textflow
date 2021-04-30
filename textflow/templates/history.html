@@ -1,4 +1,4 @@
-{% extends '_layout.html' %}
+{% extends '_layouts/default.html' %}
 
 {% block content %}
     <div class="columns">
@@ -28,7 +28,7 @@
                                 <th style="width: 100%;">Text</th>
                                 <th style="min-width: 100px;">
                                     {% if request.args.get('flagged') == 'True' %}
-                                        <a href="{{ url_for('project_view.view_project_history',project_id=project.id,flagged=false) }}">
+                                        <a href="{{ url_for('project.view_project_history',project_id=project.id,flagged=false) }}">
                                          <span class="icon">
                                             <i class="fas fa-flag"></i>
                                         </span>
@@ -37,7 +37,7 @@
                                         </span>
                                         </a>
                                     {% elif request.args.get('flagged') == 'False' %}
-                                        <a href="{{ url_for('project_view.view_project_history',project_id=project.id) }}">
+                                        <a href="{{ url_for('project.view_project_history',project_id=project.id) }}">
                                         <span class="icon">
                                             <i class="fas fa-flag"></i>
                                         </span>
@@ -46,7 +46,7 @@
                                         </span>
                                         </a>
                                     {% else %}
-                                        <a href="{{ url_for('project_view.view_project_history',project_id=project.id,flagged=true) }}">
+                                        <a href="{{ url_for('project.view_project_history',project_id=project.id,flagged=true) }}">
                                         <span class="icon">
                                             <i class="fas fa-flag"></i>
                                         </span>
@@ -73,7 +73,7 @@
                                     </td>
                                     <td>
                                         <a class="button is-link is-light"
-                                           href="{{ url_for('annotate_view.annotate', project_id=project.id, document_id=doc.id) }}">
+                                           href="{{ url_for('annotate.annotate', project_id=project.id, document_id=doc.id) }}">
                                             <i class="fas fa-tag"></i>
                                         </a>
                                     </td>
@@ -83,7 +83,7 @@
                         </table>
                     </div>
                     <div class="d-flex justify-content-center">
-                        {{ render_pagination(documents, 'project_view.view_project_history') }}
+                        {{ render_pagination(documents, 'project.view_project_history') }}
                     </div>
                 </div>
             </div>

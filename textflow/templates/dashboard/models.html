@@ -1,0 +1,96 @@
+{% raw %}
+<script id="models-section-template" type="text/x-handlebars-template">
+    <div class="box">
+        <div class="block">
+            <p class="title"></p>
+            <div class="block">
+                <div class="field is-grouped">
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label for="dataset-select" class="label">Dataset</label>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <div class="select">
+                            <select id="dataset-select">
+                                {{#each data.datasets}}
+                                <option>{{ this }}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label for="estimator-select" class="label">Estimator</label>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <div class="select">
+                            <select id="estimator-select">
+                                {{#each data.estimators}}
+                                <option>{{ this }}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <button id="train-estimator-button" class="button is-link">Train</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</script>
+{% endraw %}
+
+<!--suppress JSUnresolvedVariable -->
+<script>
+    templates.add('models', function () {
+        let source = document.getElementById("models-section-template").innerHTML;
+        let template = Handlebars.compile(source);
+        let data = {};
+
+        let methods = {
+            train: function () {
+                $.post({
+                    type: "POST",
+                    url: '{{ url_for('dashboard.estimator_fit', project_id=project_id) }}',
+                    data: JSON.stringify({
+                        dataset: data.selectedDataset,
+                        estimator: data.selectedEstimator,
+                    }),
+                    contentType: 'application/json;charset=UTF-8',
+                }).then((payload) => {
+                    console.log(payload)
+                });
+            },
+        }
+
+        function render(id) {
+            $.get('{{ url_for('dashboard.get_dataset_names', project_id=project_id) }}').then((payload) => {
+                data.datasets = payload.data;
+                data.selectedDataset = payload.data[0];
+                $.get('{{ url_for('dashboard.get_estimator_names', project_id=project_id) }}').then((payload) => {
+                    data.estimators = payload.data;
+                    data.selectedEstimator = payload.data[0];
+                    document.getElementById(id).innerHTML = template({data})
+                    let datasetSelect = document.getElementById('dataset-select');
+                    datasetSelect.addEventListener('change', () => {
+                        data.selectedDataset = datasetSelect.value;
+                    });
+                    let estimatorSelect = document.getElementById('estimator-select');
+                    estimatorSelect.addEventListener('change', () => {
+                        data.selectedEstimator = estimatorSelect.value;
+                    });
+                    let trainModelButton = document.getElementById('train-estimator-button')
+                    trainModelButton.addEventListener('click', () => {
+                        methods.train();
+                    });
+                });
+            });
+        }
+
+        return {render}
+    })
+</script>

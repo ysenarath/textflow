@@ -5,7 +5,7 @@ import logging
 import jinja2
 
 from textflow.model.dataset import datasets
-from textflow.model.model import models
+from textflow.model.estimator import estimators
 from textflow.services.base import database as db
 
 logger = logging.getLogger(__name__)
@@ -42,6 +42,6 @@ class Project(db.Model):
         if type == 'dataset':
             return datasets.register(self.id, name=name)
         elif type == 'model':
-            return models.register(self.id, name=name)
+            return estimators.register(self.id, name=name)
         else:
             return None

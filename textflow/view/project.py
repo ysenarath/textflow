@@ -4,7 +4,7 @@ from flask import Blueprint, request, redirect, url_for
 from textflow.view.base import render_template
 from textflow import services, auth
 
-view = Blueprint('project_view', __name__)
+view = Blueprint('project', __name__)
 
 
 def paginate_kwargs():
@@ -45,7 +45,7 @@ def view_project(project_id):
     """
     project = services.get_project(auth.current_user.id, project_id)
     if project is None:
-        return redirect(url_for('project_view.list_projects'))
+        return redirect(url_for('project.list_projects'))
     pag = paginate_kwargs()
     flagged = request.args.get('flagged', default=None)
     if flagged is not None:
@@ -64,7 +64,7 @@ def view_project_history(project_id):
     """
     project = services.get_project(auth.current_user.id, project_id)
     if project is None:
-        return redirect(url_for('project_view.list_projects'))
+        return redirect(url_for('project.list_projects'))
     pag = paginate_kwargs()
     flagged = request.args.get('flagged', default=None)
     if flagged is not None:

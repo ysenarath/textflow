@@ -1,6 +1,7 @@
-{% macro render_upload_docs_form(form) %}
+<script id="documents-section-template" type="text/x-handlebars-template">
+    {% set form = forms.upload_documents %}
     <form class="box" method="POST"
-          action="{{ url_for('dashboard_view.upload_documents', project_id=project_id, obj='docs') }}"
+          action="{{ url_for('dashboard.upload_documents', project_id=project_id, obj='docs') }}"
           enctype="multipart/form-data">
         {{ form.csrf_token }}
         {{ form.hidden_tag() }}
@@ -29,4 +30,19 @@
             </div>
         </div>
     </form>
-{% endmacro %}
+</script>
+
+<!--suppress JSUnresolvedVariable -->
+<script>
+    templates.add('documents', function () {
+        let source = document.getElementById("documents-section-template").innerHTML;
+        let template = Handlebars.compile(source);
+        let data = {};
+
+        function render(id) {
+            document.getElementById(id).innerHTML = template(data)
+        }
+
+        return {render}
+    })
+</script>

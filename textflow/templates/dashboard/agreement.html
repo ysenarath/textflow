@@ -1,26 +1,45 @@
-{% macro render_agreement() %}
+{% raw %}
+<script id="agreement-section-template" type="text/x-handlebars-template">
     <div class="box">
-        <p class="title">Agreement</p>
         <div class="block">
             <div class="table-container">
                 <table class="table">
                     <tr>
-                        <th v-for="col in agreement_scores.header">(( col ))</th>
+                        {{#each data.header}}
+                        <th>{{ this }}</th>
+                        {{/each}}
                     </tr>
-                    <tr v-for="cols in agreement_scores.rows">
-                        <td v-for="col in cols">
-                            <template v-if="Array.isArray(col)">
-                                <div class="tags are-small">
-                                    <span class="tag" v-for="item in col">(( item ))</span>
-                                </div>
-                            </template>
-                            <template v-else>
-                                (( col ))
-                            </template>
+                    {{#each data.rows}}
+                    <tr>
+                        {{#each this}}
+                        <td>
+                            <div class="tags are-small">
+                                <span class="tag">{{ this }}</span>
+                            </div>
                         </td>
+                        {{/each}}
                     </tr>
+                    {{/each}}
                 </table>
             </div>
         </div>
     </div>
-{% endmacro %}
+</script>
+{% endraw %}
+
+<!--suppress JSUnresolvedVariable -->
+<script>
+    templates.add('agreement', function () {
+        let source = document.getElementById("agreement-section-template").innerHTML;
+        let template = Handlebars.compile(source);
+
+        function render(id) {
+            $.get('{{ url_for('dashboard.get_agreement', project_id=project_id) }}')
+                .then((data) => {
+                    document.getElementById(id).innerHTML = template(data)
+                }).catch(console.log);
+        }
+
+        return {render}
+    })
+</script>

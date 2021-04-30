@@ -1,38 +1,110 @@
-{% macro render_dataset() %}
+{% raw %}
+<script id="dataset-section-template" type="text/x-handlebars-template">
     <div class="box">
-        <p class="title">Dataset</p>
         <div class="block">
-            <div class="field is-grouped">
-                <div class="field is-horizontal">
-                    <div class="field-label is-normal">
-                        <label for="dataset-select" class="label">Dataset</label>
+            <p class="title"></p>
+            <div class="block">
+                <div class="field is-grouped">
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label for="dataset-select" class="label">Dataset</label>
+                        </div>
                     </div>
-                </div>
-                <div class="control">
-                    <div class="select">
-                        <select id="dataset-select" v-model="selected_dataset">
-                            <option v-for="dataset in datasets">(( dataset ))</option>
-                        </select>
+                    <div class="control">
+                        <div class="select">
+                            <select id="dataset-select">
+                                {{#each data.datasets}}
+                                <option>{{ this }}</option>
+                                {{/each}}
+                            </select>
+                        </div>
                     </div>
-                </div>
-                <div class="field is-horizontal">
-                    <div class="field-label is-normal">
-                        <label for="dataset-validator" class="label">Validator</label>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label for="validator-select" class="label">Validator</label>
+                        </div>
                     </div>
-                </div>
-                <div class="control">
-                    <div class="select">
-                        <select id="dataset-validator" v-model="validator">
-                            <option v-for="group in groups">(( group ))</option>
-                        </select>
+                    <div class="control">
+                        <div class="select">
+                            <select id="validator-select">
+                                {{#each data.groups}}
+                                <option>{{ this }}</option>
+                                {{/each}}
+                            </select>
+                        </div>
                     </div>
-                </div>
-                <div class="control">
-                    <button class="button is-link" v-on:click="download">
-                        Download
-                    </button>
+                    <div class="control">
+                        <button id="download-dataset-button" class="button is-link">Download</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-{% endmacro %}
+</script>
+{% endraw %}
+
+<!--suppress JSUnresolvedVariable -->
+<script>
+    templates.add('dataset', function () {
+        let source = document.getElementById("dataset-section-template").innerHTML;
+
+        let template = Handlebars.compile(source);
+
+        let data = {};
+
+        let methods = {
+            saveAs: function (content, filename) {
+                const blob = new Blob([JSON.stringify(content, null, 2)], {type: 'application/json'})
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.download = filename;
+                a.href = url;
+                a.click();
+            },
+            download: function (event) {
+                let args = '';
+                if (data.validator !== '') args += 'validator=' + data.validator;
+                if (args !== '') args = '?' + args;
+                $.get('/api/projects/{{ project_id }}/datasets/download' + args)
+                    .then((payload) => {
+                        if (payload['status'] === 'success') {
+                            const fn = data.selectedDataset + '_' + data.validator + '.json';
+                            this.saveAs(payload.data, fn);
+                        }
+                    });
+            },
+        }
+
+        function render(id) {
+            $.get('{{ url_for('dashboard.get_dataset_names', project_id=project_id) }}').then((payload) => {
+                    data.datasets = payload.data;
+                    data.selectedDataset = payload.data[0];
+                    let args = '';
+                    if (this.validator !== '') args += 'name=' + data.selectedDataset;
+                    if (args !== '') args = '?' + args;
+                    $.get('{{ url_for('dashboard.get_group_names', project_id=project_id) }}' + args)
+                        .then((payload) => {
+                            data.groups = payload.data;
+                            data.validator = 'sys.majority';
+                            let container = document.getElementById(id);
+                            container.innerHTML = template({data})
+                            let downloadButton = document.getElementById('download-dataset-button')
+                            downloadButton.addEventListener('click', () => {
+                                methods.download();
+                            });
+                            let datasetSelect = document.getElementById('dataset-select');
+                            datasetSelect.addEventListener('change', () => {
+                                data.selectedDataset = datasetSelect.value;
+                            });
+                            let validatorSelect = document.getElementById('validator-select');
+                            validatorSelect.addEventListener('change', () => {
+                                data.validator = validatorSelect.value;
+                            });
+                        })
+                }
+            );
+        }
+
+        return {render}
+    })
+</script>

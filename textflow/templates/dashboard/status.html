@@ -1,0 +1,44 @@
+{% raw %}
+<script id="status-section-template" type="text/x-handlebars-template">
+    <div class="box">
+        <nav class="level">
+            <div class="level-item has-text-centered">
+                <div>
+                    <p class="heading">Total</p>
+                    <p class="title">{{ data.num_documents }}</p>
+                </div>
+            </div>
+            <div class="level-item has-text-centered">
+                <div>
+                    <p class="heading">Completed</p>
+                    <p class="title">{{ data.num_completed }}</p>
+                </div>
+            </div>
+            <div class="level-item has-text-centered">
+                <div>
+                    <p class="heading">Remaining</p>
+                    <p class="title">{{ data.num_remaining}}</p>
+                </div>
+            </div>
+        </nav>
+        <progress class="progress" value="{{ data.percentage }}" max="100">15%</progress>
+    </div>
+</script>
+{% endraw %}
+
+<!--suppress JSUnresolvedVariable -->
+<script>
+    templates.add('status', function () {
+        let source = document.getElementById("status-section-template").innerHTML;
+        let template = Handlebars.compile(source);
+
+        function render(id) {
+            $.get('{{ url_for('dashboard.get_status', project_id=project_id) }}')
+                .then((data) => {
+                    document.getElementById(id).innerHTML = template(data)
+                }).catch(console.log);
+        }
+
+        return {render}
+    })
+</script>

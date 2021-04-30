@@ -26,10 +26,10 @@ class PluginManager:
         :param name: name of project
         :return: plugin object
         """
-        name = 'default' if name is None else name
+        name = 'Default' if name is None else name
         if category is not None and category in self._plugins:
             if name in self._plugins[category]:
-                name = 'default'
+                name = 'Default'
             if name in self._plugins[category]:
                 return self._plugins[category][name]
             else:
@@ -43,7 +43,7 @@ class PluginManager:
         :param name: name of plugin under category.
         :return: decorator
         """
-        name = 'default' if name is None else name
+        name = 'Default' if name is None else name
 
         def decorator(cls):
             if category is not None:

@@ -1,6 +1,6 @@
 {% set title="TextFlow" %}
 
-{% from "_pagination.html" import render_pagination with context %}
+{% from "_includes/pagination.html" import render_pagination with context %}
 
 {% set messages = get_flashed_messages(with_categories=True) %}
 
@@ -44,7 +44,7 @@
     </script>
 </head>
 <body>
-{% block header %}{% include '_header.html' %}{% endblock %}
+{% block header %}{% include '_includes/header.html' %}{% endblock %}
 {% block is_full_content %}
     <section class="section p-0 m-3">
         <div class="container">

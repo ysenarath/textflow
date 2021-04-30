@@ -4,11 +4,11 @@ from flask import Blueprint
 
 from textflow.view.base import render_template
 
-view = Blueprint('about_view', __name__)
+view = Blueprint('about', __name__)
 
 
 @view.route('/about')
-def about():
+def index():
     """About page
 
     :return: rendered about page

@@ -5,10 +5,22 @@ from urllib.parse import urlparse, urljoin
 from flask import redirect, flash, url_for, abort, request, Blueprint
 
 from textflow import services, auth
-from textflow.view.forms import LoginForm
 from textflow.view.base import render_template
 
-view = Blueprint('login_view', __name__)
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, validators
+
+__all__ = [
+    'LoginForm'
+]
+
+view = Blueprint('login', __name__)
+
+
+class LoginForm(FlaskForm):
+    """Login form."""
+    username = StringField('Username', [validators.DataRequired(), validators.Length(min=4, max=25)])
+    password = PasswordField('Password', [validators.DataRequired(), validators.Length(min=8, max=25)])
 
 
 def is_safe_url(target):
@@ -68,7 +80,7 @@ def login():
                 # check whether it is safe to redirect to provide next
                 if not is_safe_url(target):
                     return abort(400)
-                return redirect(target or url_for('index_view.index'))
+                return redirect(target or url_for('index.index'))
         else:
             flash('Invalid login credentials', 'error')
     return render_template('login.html', next=target, form=form)

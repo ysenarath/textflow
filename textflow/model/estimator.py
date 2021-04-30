@@ -11,10 +11,10 @@ from textflow.utils import PluginManager
 
 __all__ = [
     'SequenceClassifier',
-    'models',
+    'estimators',
 ]
 
-models = PluginManager()
+estimators = PluginManager()
 
 
 class SequenceClassifierMixin:
@@ -36,7 +36,8 @@ class SequenceClassifierMixin:
         return flat_f1_score(y, self.predict(X), average='weighted', labels=labels)
 
 
-@models.register('sequence_labeling')
+@estimators.register('sequence_labeling', 'ConditionalRandomField')
+@estimators.register('sequence_labeling', 'Default')
 class SequenceClassifier(BaseEstimator, SequenceClassifierMixin):
     """ A CRF model with basic features for sequence classification in NLP.
     This is a wrapper around the python-crfsuite wrapper with interface similar to scikit-learn.
@@ -129,14 +130,15 @@ class SequenceClassifier(BaseEstimator, SequenceClassifierMixin):
         return features
 
 
-@models.register('classification')
+@estimators.register('document_classification', 'Default')
+@estimators.register('document_classification', 'LogisticRegression')
 class MultiLabelClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self):
         pass
 
     # noinspection PyAttributeOutsideInit
     def fit(self, X, y, **kwargs):
-        """
+        """Builds the model by training on the input data.
 
         :param X: iterable of documents
         :param y: labels
@@ -152,7 +154,7 @@ class MultiLabelClassifier(BaseEstimator, ClassifierMixin):
         self.model_.fit(X, y)
 
     def predict(self, X):
-        """Predict labels for provided iterable of documents
+        """Predict labels for provided iterable of documents.
 
         :param X: iterable of documents
         :return: labels
