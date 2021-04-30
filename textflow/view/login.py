@@ -51,7 +51,7 @@ def unauthorized():
     :return: rendered unauthorized
     """
     flash('You are not authorized to continue. Please login first.')
-    return redirect(url_for('login_view.login'))
+    return redirect(url_for('login.login'))
 
 
 @view.route('/login', methods=['GET', 'POST'])
