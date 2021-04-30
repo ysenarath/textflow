@@ -15,7 +15,7 @@ from textflow.view.dashboard.documents import UploadForm
 from textflow.view.dashboard.labels import LabelsForm, LabelForm
 from textflow.view.dashboard.project import ProjectForm
 from textflow.view.dashboard.users import UsersForm, AssignmentForm
-from textflow.view.dashboard import agreement, status, dataset, project, labels, models
+from textflow.view.dashboard import agreement, status, dataset, project, labels, users, models
 
 __all__ = [
     'view'
