@@ -601,5 +601,5 @@ def get_status(ctx, project_id):
         'num_completed': num_completed,
         'num_documents': num_documents,
         'num_remaining': num_documents - num_completed,
-        'percentage': int(num_completed / num_documents) * 100,
+        'percentage': int(num_completed / num_documents) * 100 if num_documents > 0 else 0,
     }
