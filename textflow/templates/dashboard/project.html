@@ -1,30 +1,36 @@
 {% set form = forms.update_project %}
 
 <script id="project-section-template" type="text/x-handlebars-template">
-    <form class="box" method="POST" action="{{ url_for('dashboard.post_project', project_id=project_id) }}">
+    <form method="POST" action="{{ url_for('dashboard.post_project', project_id=project_id) }}">
         {{ form.csrf_token }}
-        <div class="is-flex is-justify-content-space-between">
-            <p class="title"></p>
-            <input class="button is-link" type="submit" value="Submit"/>
-        </div>
-        <div class="field">
-            <label class="label">{{ form.name.label }}</label>
-            <p class="control">
-                {{ form.name(size=24, class_="input") }}
-            </p>
+        <div class="field is-horizontal">
+            <div class="field-body">
+                <div class="field w-100">
+                    <label class="label">{{ form.name.label }}</label>
+                    <p class="control">
+                        {{ form.name(size=24, class_="input") }}
+                    </p>
+                </div>
+                <div class="field w-100">
+                    <label class="label">{{ form.type.label }}</label>
+                    <div class="control">
+                        <div class="select w-100">
+                            {{ form.type(class_="input") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">⠀</label>
+                    <div class="control is-flex is-justify-content-flex-end">
+                        <input class="button is-link ml-1" style="min-width: 8em;" type="submit" value="Update"/>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="field">
             <label class="label">{{ form.description.label }}</label>
             <div class="control">
                 {{ form.description(class_="textarea") }}
-            </div>
-        </div>
-        <div class="field">
-            <label class="label">{{ form.type.label }}</label>
-            <div class="control">
-                <div class="select">
-                    {{ form.type(class_="input") }}
-                </div>
             </div>
         </div>
         <div class="field">

@@ -1,28 +1,26 @@
 {% raw %}
 <script id="status-section-template" type="text/x-handlebars-template">
-    <div class="box">
-        <nav class="level">
-            <div class="level-item has-text-centered">
-                <div>
-                    <p class="heading">Total</p>
-                    <p class="title">{{ data.num_documents }}</p>
-                </div>
+    <nav class="level">
+        <div class="level-item has-text-centered">
+            <div>
+                <p class="heading">Total</p>
+                <p class="title">{{ data.num_documents }}</p>
             </div>
-            <div class="level-item has-text-centered">
-                <div>
-                    <p class="heading">Completed</p>
-                    <p class="title">{{ data.num_completed }}</p>
-                </div>
+        </div>
+        <div class="level-item has-text-centered">
+            <div>
+                <p class="heading">Completed</p>
+                <p class="title">{{ data.num_completed }}</p>
             </div>
-            <div class="level-item has-text-centered">
-                <div>
-                    <p class="heading">Remaining</p>
-                    <p class="title">{{ data.num_remaining}}</p>
-                </div>
+        </div>
+        <div class="level-item has-text-centered">
+            <div>
+                <p class="heading">Remaining</p>
+                <p class="title">{{ data.num_remaining}}</p>
             </div>
-        </nav>
-        <progress class="progress" value="{{ data.percentage }}" max="100">15%</progress>
-    </div>
+        </div>
+    </nav>
+    <progress class="progress" value="{{ data.percentage }}" max="100">15%</progress>
 </script>
 {% endraw %}
 

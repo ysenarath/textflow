@@ -1,42 +1,49 @@
 <script id="labels-section-template" type="text/x-handlebars-template">
-    <form class="box" method="POST" action="{{ url_for('dashboard.create_label', project_id=project_id) }}">
+    <form method="POST" action="{{ url_for('dashboard.create_label', project_id=project_id) }}">
         {% set create_label_form = forms.create_label %}
         {{ create_label_form.csrf_token }}
         <div class="field is-horizontal">
             <div class="field-body">
-                <div class="field">
+                <div class="field w-100">
                     <label class="label">{{ create_label_form['label'].label }}</label>
                     <p class="control">
                         {{ create_label_form['label'](class_="input") }}
                     </p>
                 </div>
-                <div class="field">
+                <div class="field w-100">
                     <label class="label">{{ create_label_form['value'].label }}</label>
                     <p class="control">
                         {{ create_label_form['value'](class_="input") }}
                     </p>
                 </div>
-                <div class="field">
+                <div class="field w-100">
                     <label class="label">{{ create_label_form['order'].label }}</label>
                     <p class="control">
                         {{ create_label_form['order'](class_="input", type='number') }}
                     </p>
                 </div>
                 <div class="field">
-                    <label class="label">Action</label>
-                    <input class="button is-link" type="submit" value="Add"/>
+                    <label class="label">⠀</label>
+                    <div class="control is-flex is-justify-content-flex-end">
+                        <input class="button is-link ml-1" style="min-width: 6em;" tabindex="0" type="submit"
+                               value="Add"/>
+                        <label class="button is-link ml-1" style="min-width: 6em;" tabindex="1"
+                               for="submit-update-labels">Update</label>
+                        <label class="button is-link ml-1" style="min-width: 6em;" tabindex="2"
+                               for="submit-delete-labels">Delete</label>
+                    </div>
                 </div>
             </div>
         </div>
     </form>
-    <form class="box" method="POST" action="{{ url_for('dashboard.update_labels', project_id=project_id) }}">
+    <form method="POST" action="{{ url_for('dashboard.update_labels', project_id=project_id) }}">
         {% set update_labels_form = forms.update_labels %}
         {{ update_labels_form.csrf_token }}
         <div class="is-flex is-justify-content-space-between">
             <p class="title"></p>
             <div>
-                <input class="button is-link" type="submit" value="Submit"/>
-                <input class="button is-link" type="submit" value="Delete"
+                <input id="submit-update-labels" class="is-hidden" type="submit" value="Submit"/>
+                <input id="submit-delete-labels" class="is-hidden" type="submit" value="Delete"
                        formaction="{{ url_for('dashboard.delete_labels', project_id=project_id) }}"/>
             </div>
         </div>

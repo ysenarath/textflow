@@ -36,4 +36,4 @@ def post_project(project_id):
     project_form = ProjectForm(obj=p)
     project_form.populate_obj(p)
     services.db.session.commit()
-    return redirect(url_for('dashboard.index', project_id=project_id, section='project'))
+    return redirect(url_for('dashboard.index', project_id=project_id))

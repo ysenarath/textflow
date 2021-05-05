@@ -1,45 +1,38 @@
 {% raw %}
 <script id="models-section-template" type="text/x-handlebars-template">
-    <div class="box">
-        <div class="block">
-            <p class="title"></p>
-            <div class="block">
-                <div class="field is-grouped">
-                    <div class="field is-horizontal">
-                        <div class="field-label is-normal">
-                            <label for="dataset-select" class="label">Dataset</label>
-                        </div>
-                    </div>
-                    <div class="control">
-                        <div class="select">
-                            <select id="dataset-select">
-                                {{#each data.datasets}}
-                                <option>{{ this }}</option>
-                                {{/each}}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="field is-horizontal">
-                        <div class="field-label is-normal">
-                            <label for="estimator-select" class="label">Estimator</label>
-                        </div>
-                    </div>
-                    <div class="control">
-                        <div class="select">
-                            <select id="estimator-select">
-                                {{#each data.estimators}}
-                                <option>{{ this }}</option>
-                                {{/each}}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="control">
-                        <button id="train-estimator-button" class="button is-link">Train</button>
+    <div class="field is-horizontal">
+        <div class="field-body">
+            <div class="field w-100">
+                <label for="dataset-select" class="label">Dataset</label>
+                <div class="control">
+                    <div class="select w-100">
+                        <select class="input" id="dataset-select">
+                            {{#each data.datasets}}
+                            <option>{{ this }}</option>
+                            {{/each}}
+                        </select>
                     </div>
                 </div>
             </div>
+            <div class="field w-100">
+                <label for="validator-select" class="label">Estimator</label>
+                <div class="control">
+                    <div class="select w-100">
+                        <select class="input" id="estimator-select">
+                            {{#each data.estimators}}
+                            <option>{{ this }}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label class="label">⠀</label>
+                <div class="control is-flex is-justify-content-flex-end">
+                    <button id="train-estimator-button" class="button is-link" style="min-width: 8em;">Train</button>
+                </div>
+            </div>
         </div>
-    </div>
     </div>
 </script>
 {% endraw %}

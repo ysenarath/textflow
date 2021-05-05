@@ -6,10 +6,12 @@
 
 from collections import namedtuple
 
-from flask import Blueprint, request
+import flask
+from flask import Blueprint, session, jsonify
 from flask_login import current_user
 
 from textflow import services, auth
+from textflow.utils import jsend
 from textflow.view.base import render_template
 from textflow.view.dashboard.documents import UploadForm
 from textflow.view.dashboard.labels import LabelsForm, LabelForm
@@ -48,7 +50,9 @@ def index(project_id):
             Section('Documents', 'documents', 'fa-file-alt'),
         ])
     ]
-    current_section = request.args.get('section', 'status')
+    current_section = 'status'
+    if ('dash.section' in session) and (project_id in session['dash.section']):
+        current_section = session['dash.section'][project_id]
     if current_user.role == 'manager':
         kwargs = dict(project_id=project_id, sidebar=sidebar, section=current_section)
         return render_template('dashboard/index.html', **kwargs)
@@ -66,6 +70,21 @@ def index(project_id):
         )
         kwargs = dict(project_id=project_id, sidebar=sidebar, forms=forms, section=current_section)
         return render_template('dashboard/index.html', **kwargs)
+
+
+@view.route('/api/projects/<project_id>/dashboard/sections', methods=['GET'])
+@auth.login_required
+@auth.roles_required(role=['admin', 'manager'])
+def update_section(project_id):
+    if 'value' not in flask.request.args:
+        return jsonify(jsend.fail({'message': 'Argument section \'value\' not defined.'}))
+    section = flask.request.args['value']
+    if 'dash.section' not in session:
+        session['dash.section'] = dict()
+    session_var = {k: v for k, v in session['dash.section'].items()}
+    session_var[project_id] = section
+    session['dash.section'] = session_var
+    return jsonify(jsend.success(section))
 
 
 agreement.view.register(view)

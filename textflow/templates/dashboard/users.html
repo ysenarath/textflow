@@ -1,17 +1,17 @@
 <script id="users-section-template" type="text/x-handlebars-template">
-    <form class="box" method="POST" action="{{ url_for('dashboard.create_user', project_id=project_id) }}">
+    <form method="POST" action="{{ url_for('dashboard.create_user', project_id=project_id) }}">
         {% set create_user_form = forms.create_user %}
         {{ create_user_form.csrf_token }}
         {{ create_user_form['user'].csrf_token }}
         <div class="field is-horizontal">
             <div class="field-body">
-                <div class="field">
+                <div class="field w-100">
                     <label class="label">{{ create_user_form['user']['username'].label }}</label>
                     <div class="control">
                         {{ create_user_form['user']['username'](class_="input") }}
                     </div>
                 </div>
-                <div class="field">
+                <div class="field w-100">
                     <label class="label">{{ create_user_form['role'].label }}</label>
                     <div class="control">
                         <div class="select w-100">
@@ -19,21 +19,28 @@
                         </div>
                     </div>
                 </div>
-                <div class="field" style="width: 0">
-                    <label class="label">Action</label>
-                    <input class="button is-link" type="submit" value="Add"/>
+                <div class="field">
+                    <label class="label">⠀</label>
+                    <div class="control is-flex is-justify-content-flex-end">
+                        <input class="button is-link ml-1" tabindex="0" style="min-width: 6em;" type="submit"
+                               value="Add"/>
+                        <label class="button is-link ml-1" tabindex="1" style="min-width: 6em;"
+                               for="submit-update-users">Update</label>
+                        <label class="button is-link ml-1" tabindex="2" style="min-width: 6em;"
+                               for="submit-delete-users">Delete</label>
+                    </div>
                 </div>
             </div>
         </div>
     </form>
-    <form class="box" method="POST" action="{{ url_for('dashboard.update_users', project_id=project_id) }}">
+    <form method="POST" action="{{ url_for('dashboard.update_users', project_id=project_id) }}">
         {% set update_user_form = forms.update_users %}
         {{ update_user_form.csrf_token }}
         <div class="is-flex is-justify-content-space-between">
             <p class="title"></p>
             <div>
-                <input class="button is-link" type="submit" value="Submit"/>
-                <input class="button is-link" type="submit" value="Delete"
+                <input id="submit-update-users" class="is-hidden" type="submit" value="Update"/>
+                <input id="submit-delete-users" class="is-hidden" type="submit" value="Delete"
                        formaction="{{ url_for('dashboard.delete_users', project_id=project_id) }}"/>
             </div>
         </div>

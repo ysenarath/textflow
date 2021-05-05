@@ -46,7 +46,7 @@ def create_label(project_id):
             flash('Label with value "{}" exists. Please retry with another value.'.format(val))
     else:
         flash('Invalid form input. Please check and try again. Error: {}'.format(add_label_form.errors))
-    return redirect(url_for('dashboard.index', project_id=project_id, section='labels'))
+    return redirect(url_for('dashboard.index', project_id=project_id))
 
 
 @view.route('/projects/<project_id>/dashboard/labels/update', methods=['POST'])
@@ -60,7 +60,7 @@ def update_labels(project_id):
         lbl = services.get_label(label_id=label_id)
         label_form.form.populate_obj(lbl)
     services.db.session.commit()
-    return redirect(url_for('dashboard.index', project_id=project_id, section='labels'))
+    return redirect(url_for('dashboard.index', project_id=project_id))
 
 
 @view.route('/projects/<project_id>/dashboard/labels/delete', methods=['POST'])
@@ -77,4 +77,4 @@ def delete_labels(project_id):
             none_selected = False
     if none_selected:
         flash('You have to select labels that need to be removed first.')
-    return redirect(url_for('dashboard.index', project_id=project_id, section='labels'))
+    return redirect(url_for('dashboard.index', project_id=project_id))

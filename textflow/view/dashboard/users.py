@@ -56,7 +56,7 @@ def create_user(project_id):
             flash('Username not found: "{}". Please enter a valid username.'.format(username))
     else:
         flash('Invalid form input. Please check and try again. Error: {}'.format(update_user_form.errors))
-    return redirect(url_for('dashboard.index', project_id=project_id, section='users'))
+    return redirect(url_for('dashboard.index', project_id=project_id))
 
 
 @view.route('/projects/<project_id>/dashboard/users/update', methods=['POST'])
@@ -70,7 +70,7 @@ def update_users(project_id):
         if assignment.role != u.role:
             assignment.role = u.role.data
     services.db.session.commit()
-    return redirect(url_for('dashboard.index', project_id=project_id, section='users'))
+    return redirect(url_for('dashboard.index', project_id=project_id))
 
 
 @view.route('/projects/<project_id>/dashboard/users/delete', methods=['POST'])
@@ -90,4 +90,4 @@ def delete_users(project_id):
                 flash('You can\'t remove yourself from the project.')
     if none_selected:
         flash('You have to select users that need to be removed first.')
-    return redirect(url_for('dashboard.index', project_id=project_id, section='users'))
+    return redirect(url_for('dashboard.index', project_id=project_id))

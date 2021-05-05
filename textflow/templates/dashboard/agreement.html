@@ -1,28 +1,24 @@
 {% raw %}
 <script id="agreement-section-template" type="text/x-handlebars-template">
-    <div class="box">
-        <div class="block">
-            <div class="table-container">
-                <table class="table">
-                    <tr>
-                        {{#each data.header}}
-                        <th>{{ this }}</th>
-                        {{/each}}
-                    </tr>
-                    {{#each data.rows}}
-                    <tr>
-                        {{#each this}}
-                        <td>
-                            <div class="tags are-small">
-                                <span class="tag">{{ this }}</span>
-                            </div>
-                        </td>
-                        {{/each}}
-                    </tr>
-                    {{/each}}
-                </table>
-            </div>
-        </div>
+    <div class="table-container">
+        <table class="table">
+            <tr>
+                {{#each data.header}}
+                <th>{{ this }}</th>
+                {{/each}}
+            </tr>
+            {{#each data.rows}}
+            <tr>
+                {{#each this}}
+                <td>
+                    <div class="tags are-small">
+                        <span class="tag">{{ this }}</span>
+                    </div>
+                </td>
+                {{/each}}
+            </tr>
+            {{/each}}
+        </table>
     </div>
 </script>
 {% endraw %}

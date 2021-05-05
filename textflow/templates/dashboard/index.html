@@ -22,8 +22,8 @@
                 </ul>
             {% endfor %}
         </div>
-        <div class="column content p-3">
-            <div id="content-body" class="container is-fluid"></div>
+        <div class="column content">
+            <div id="content-body" class="container p-5"></div>
         </div>
     </div>
 {% endblock %}
@@ -32,12 +32,13 @@
     {{ super() }}
     <script src="{{ url_for('static', filename='scripts/handlebars.js') }}"></script>
     <script>
-        let templates = function() {
+        let templates = function () {
             let _templates = {}
 
             function add(name, value) {
                 _templates[name] = value;
             }
+
             function get(name) {
                 return _templates[name]();
             }
@@ -48,8 +49,18 @@
         let activeSection = '{{ section }}';
 
         function viewSection(section) {
-            templates.get(section).render('content-body');
-            activeSection = section;
+            let url = '{{ url_for('dashboard.update_section', project_id=project_id) }}?value=' + section;
+            $.get(url).then((payload) => {
+                let value = payload.data;
+                activeSection = value;
+                templates.get(value).render('content-body');
+            }).catch(e => {
+                console.error('Unable to reach server. Please check your internet connection.');
+                console.warn('Your session page won\'t be saved.');
+                console.log(e);
+                activeSection = section;
+                templates.get(section).render('content-body');
+            });
         }
 
         /**

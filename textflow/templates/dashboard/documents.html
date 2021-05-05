@@ -1,6 +1,6 @@
 <script id="documents-section-template" type="text/x-handlebars-template">
     {% set form = forms.upload_documents %}
-    <form class="box" method="POST"
+    <form method="POST"
           action="{{ url_for('dashboard.upload_documents', project_id=project_id, obj='docs') }}"
           enctype="multipart/form-data">
         {{ form.csrf_token }}
@@ -24,7 +24,7 @@
                     </div>
                 </div>
                 <div class="field w-100">
-                    <label class="label">Action</label>
+                    <label class="label">⠀</label>
                     <input class="button is-link" type="submit" value="Submit"/>
                 </div>
             </div>

@@ -32,4 +32,4 @@ def upload_documents(project_id):
             a = Document(id_str=d['id'], text=d['text'], meta=d['meta'], project_id=project_id)
             services.db.session.add(a)
         services.db.session.commit()
-    return redirect(url_for('dashboard.index', project_id=project_id, section='documents'))
+    return redirect(url_for('dashboard.index', project_id=project_id))
