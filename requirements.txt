@@ -11,3 +11,4 @@ tqdm~=4.55.0
 requests~=2.25.1
 beautifulsoup4~=4.9.3
 click~=7.1.2
+pandas~=1.2.4
