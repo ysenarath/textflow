@@ -1,25 +1,26 @@
 {% raw %}
 <script id="agreement-section-template" type="text/x-handlebars-template">
+    {{#each data}}
     <div class="table-container">
+        <p>{{ this.label }}</p>
         <table class="table">
             <tr>
-                {{#each data.header}}
+                {{#each this.table.columns}}
                 <th>{{ this }}</th>
                 {{/each}}
             </tr>
-            {{#each data.rows}}
+            {{#each this.table.data}}
             <tr>
                 {{#each this}}
                 <td>
-                    <div class="tags are-small">
-                        <span class="tag">{{ this }}</span>
-                    </div>
+                    {{ this }}
                 </td>
                 {{/each}}
             </tr>
             {{/each}}
         </table>
     </div>
+    {{/each}}
 </script>
 {% endraw %}
 
@@ -32,7 +33,7 @@
         function render(id) {
             $.get('{{ url_for('dashboard.get_agreement', project_id=project_id) }}')
                 .then((data) => {
-                    document.getElementById(id).innerHTML = template(data)
+                    document.getElementById(id).innerHTML = template(data);
                 }).catch(console.log);
         }
 

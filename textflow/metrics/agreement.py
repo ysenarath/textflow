@@ -7,16 +7,19 @@ import statistics
 
 from nltk import AnnotationTask
 
+import pandas as pd
+
 __all__ = [
     'AgreementScore'
 ]
 
-from textflow.utils.types import Table
-
 
 class AgreementScore:
     def __init__(self, dataset):
-        self.data = dataset.build_item_tuples()
+        if hasattr(dataset, 'build_item_tuples'):
+            self.data = dataset.build_item_tuples()
+        else:
+            self.data = dataset
 
     def _get_coders(self):
         """Gets coders in dataset
@@ -82,9 +85,9 @@ class AgreementScore:
         pairs = self._get_pairs()
         scores = [0 for _ in range(len(pairs))]
         if len(scores) == 0:
-            header = ('pair', 'score', 'support')
+            columns = ('pair', 'score', 'support')
             rows = [('avg_score', 0.0, 0), ('weighted_avg_score', 0.0, 0), ]
-            score_table = Table(header, rows)
+            score_table = pd.DataFrame(rows, columns=columns)
             return score_table
         for ix, pair in enumerate(pairs):
             scores[ix] = func(*pair, return_support=True)
@@ -96,11 +99,11 @@ class AgreementScore:
             weighted_avg_score = weighted_sum / sum_of_weights
         avg_score = statistics.mean([score for score, _ in scores])
         scores, support = list(zip(*scores))
-        header = ('Pair', 'Score', 'Support')
+        columns = ('Pair', 'Score', 'Support')
         rows = list(zip(pairs, scores, support))
         rows.append(('Average Score', avg_score, sum(support)))
         rows.append(('Weighted Average Score', weighted_avg_score, sum(support)))
-        score_table = Table(header, rows)
+        score_table = pd.DataFrame(rows, columns=columns)
         return score_table
 
     def kappa_pairwise(self, c_a, c_b, return_support=True):
@@ -113,15 +116,15 @@ class AgreementScore:
         """
         data = self._filter_data((c_a, c_b), return_support=True)
         if data is None:
-            score, sup = 0, 0
+            score, support = 0, 0
         else:
             t = AnnotationTask(data[0])
-            sup = data[1]
+            support = data[1]
             try:
                 score = t.kappa()
             except ZeroDivisionError:
                 score = 0
-        return (score, sup) if return_support else score
+        return (score, support) if return_support else score
 
     def kappa(self):
         """Cohen 1960 - Averages naively over kappas for each coder pair.
@@ -129,3 +132,19 @@ class AgreementScore:
         :return: average kappa score and table of pairwise kappa scores (optional)
         """
         return self._pairwise_average(self.kappa_pairwise)
+
+    def percentage_pairwise(self, c_a, c_b, return_support=True):
+        data = self._filter_data((c_a, c_b), return_support=True)
+        if data is None:
+            score, support = 0, 0
+        else:
+            table, support = data
+            df = pd.DataFrame(table, columns=['coder', 'item', 'label'])
+            table = pd.pivot_table(df, values='label', index=['item'],
+                                   columns=['coder'], aggfunc=set)
+            agreement = table[table.columns[0]] == table[table.columns[1]]
+            score = agreement.sum() / len(agreement)
+        return (score, support) if return_support else score
+
+    def percentage(self):
+        return self._pairwise_average(self.percentage_pairwise)

@@ -22,5 +22,14 @@ def get_agreement(project_id):
     dataset = services.get_dataset(project_id=project_id)
     # check agreement
     task = AgreementScore(dataset)
-    scores = task.kappa()
-    return jsonify(jsend.success(scores.to_dict()))
+    scores = [
+        {
+            'label': 'Kappa Agreement',
+            'table': task.kappa().to_dict(orient='split')
+        },
+        {
+            'label': 'Percentage Agreement',
+            'table': task.percentage().to_dict(orient='split')
+        },
+    ]
+    return jsonify(jsend.success(scores))
