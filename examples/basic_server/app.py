@@ -13,4 +13,4 @@ with open(os.path.join(os.getcwd(), 'config.json')) as fp:
 tf = TextFlow(config)
 
 if __name__ == '__main__':
-    tf.app.run(debug=True)
+    tf.app.run(port=8002, debug=True)
