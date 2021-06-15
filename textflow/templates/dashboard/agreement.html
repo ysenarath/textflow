@@ -1,40 +1,81 @@
 {% raw %}
 <script id="agreement-section-template" type="text/x-handlebars-template">
-    {{#each data}}
-    <div class="table-container">
-        <p>{{ this.label }}</p>
-        <table class="table">
-            <tr>
-                {{#each this.table.columns}}
-                <th>{{ this }}</th>
-                {{/each}}
-            </tr>
-            {{#each this.table.data}}
-            <tr>
-                {{#each this}}
-                <td>
-                    {{ this }}
-                </td>
-                {{/each}}
-            </tr>
+    <div id="blacklist">
+        <p>Blacklist</p>
+        <div class="field is-grouped">
+            <div class="control is-expanded">
+                <label for="candidate"></label>
+                <input id="candidate" class="input" type="text">
+            </div>
+            <div class="control">
+                <button id="add-candidate-button" class="button is-link"><i class="fas fa-plus"></i></button>
+            </div>
+        </div>
+        <div class="tags">
+            {{#each blacklist}}
+            <span class="tag">{{ this }}</span>
             {{/each}}
-        </table>
+        </div>
     </div>
-    {{/each}}
+    <div id="agreement-tables">
+        {{#each agreement}}
+        <div class="table-container">
+            <p>{{ this.label }}</p>
+            <table class="table">
+                <tr>
+                    {{#each this.table.columns}}
+                    <th>{{ this }}</th>
+                    {{/each}}
+                </tr>
+                {{#each this.table.data}}
+                <tr>
+                    {{#each this}}
+                    <td>
+                        {{ this }}
+                    </td>
+                    {{/each}}
+                </tr>
+                {{/each}}
+            </table>
+        </div>
+        {{/each}}
+    </div>
 </script>
 {% endraw %}
 
 <!--suppress JSUnresolvedVariable -->
 <script>
     templates.add('agreement', function () {
-        let source = document.getElementById("agreement-section-template").innerHTML;
-        let template = Handlebars.compile(source);
+        const source = document.getElementById('agreement-section-template').innerHTML;
+        const template = Handlebars.compile(source);
+        const LOADING_TEMPLATE = '<progress class="progress is-small is-primary" max="100">15%</progress>';
 
-        function render(id) {
-            $.get('{{ url_for('dashboard.get_agreement', project_id=project_id) }}')
-                .then((data) => {
-                    document.getElementById(id).innerHTML = template(data);
-                }).catch(console.log);
+        function render(id, blacklist = []) {
+            let args = '';
+            for (let i = 0; i < blacklist.length; i++) {
+                if (args !== '') {
+                    args += '&'
+                }
+                args += 'blacklist=' + blacklist[i]
+            }
+            if (args !== '') {
+                args = '?' + args;
+            }
+            let url = '{{ url_for('dashboard.get_agreement', project_id=project_id) }}' + args;
+            document.getElementById(id).innerHTML = LOADING_TEMPLATE;
+            $.get(url).then((data) => {
+                data = {
+                    blacklist: blacklist,
+                    agreement: data.data,
+                };
+                document.getElementById(id).innerHTML = template(data);
+                let addButton = document.getElementById('add-candidate-button')
+                addButton.addEventListener('click', () => {
+                    let candidate = document.getElementById('candidate');
+                    blacklist.push(candidate.value);
+                    render(id, blacklist);
+                });
+            }).catch(console.log);
         }
 
         return {render}

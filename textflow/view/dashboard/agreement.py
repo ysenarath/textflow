@@ -1,6 +1,6 @@
 """ project admin view """
 
-from flask import jsonify
+from flask import jsonify, request
 
 from textflow import auth, services
 from textflow.metrics.agreement import AgreementScore
@@ -19,9 +19,13 @@ def get_agreement(project_id):
     :param project_id: project id
     :return: multiple types of score values
     """
+    if 'blacklist' in request.args:
+        blacklist = request.args.getlist('blacklist')
+    else:
+        blacklist = []
     dataset = services.get_dataset(project_id=project_id)
     # check agreement
-    task = AgreementScore(dataset)
+    task = AgreementScore(dataset, blacklist=blacklist)
     scores = [
         {
             'label': 'Kappa Agreement',
