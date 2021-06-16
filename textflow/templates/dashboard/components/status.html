@@ -1,0 +1,23 @@
+<div>
+    <nav class="level">
+        <div class="level-item has-text-centered">
+            <div>
+                <p class="heading">Total</p>
+                <p class="title">%{num_documents}</p>
+            </div>
+        </div>
+        <div class="level-item has-text-centered">
+            <div>
+                <p class="heading">Completed</p>
+                <p class="title">%{num_completed}</p>
+            </div>
+        </div>
+        <div class="level-item has-text-centered">
+            <div>
+                <p class="heading">Remaining</p>
+                <p class="title">%{num_remaining}</p>
+            </div>
+        </div>
+    </nav>
+    <progress class="progress" v-bind:value="percentage" max="100">15%</progress>
+</div>

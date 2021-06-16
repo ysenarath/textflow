@@ -1,0 +1,33 @@
+<div class="field is-horizontal">
+    <div class="field-body">
+        <div class="field w-100">
+            <label for="dataset-select" class="label">Dataset</label>
+            <div class="control">
+                <div class="select w-100">
+                    <select class="input" id="dataset-select" v-model="selectedDataset">
+                        <option v-for="dataset in datasets">%{dataset}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="field w-100">
+            <label for="validator-select" class="label">Validator</label>
+            <div class="control">
+                <div class="select w-100">
+                    <select class="input" id="validator-select" v-model="selectedGroup">
+                        <option v-for="group in groups">%{group}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="field">
+            <label class="label">⠀</label>
+            <div class="control is-flex is-justify-content-flex-end">
+                <button id="download-dataset-button" class="button is-link" style="min-width: 8em;"
+                        v-on:click="download()">
+                    Download
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

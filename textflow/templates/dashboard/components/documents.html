@@ -1,4 +1,4 @@
-<script id="documents-section-template" type="text/x-handlebars-template">
+<div>
     {% set form = forms.upload_documents %}
     <form method="POST"
           action="{{ url_for('dashboard.upload_documents', project_id=project_id, obj='docs') }}"
@@ -30,19 +30,4 @@
             </div>
         </div>
     </form>
-</script>
-
-<!--suppress JSUnresolvedVariable -->
-<script>
-    templates.add('documents', function () {
-        let source = document.getElementById("documents-section-template").innerHTML;
-        let template = Handlebars.compile(source);
-        let data = {};
-
-        function render(id) {
-            document.getElementById(id).innerHTML = template(data)
-        }
-
-        return {render}
-    })
-</script>
+</div>

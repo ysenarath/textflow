@@ -1,4 +1,4 @@
-<script id="users-section-template" type="text/x-handlebars-template">
+<div>
     <form method="POST" action="{{ url_for('dashboard.create_user', project_id=project_id) }}">
         {% set create_user_form = forms.create_user %}
         {{ create_user_form.csrf_token }}
@@ -65,21 +65,4 @@
             {% endfor %}
         </table>
     </form>
-</script>
-
-<!--suppress JSUnresolvedVariable -->
-<script>
-    templates.add('users', function () {
-        let source = document.getElementById('users-section-template').innerHTML;
-
-        let template = Handlebars.compile(source);
-
-        let data = {};
-
-        function render(id) {
-            document.getElementById(id).innerHTML = template({data})
-        }
-
-        return {render}
-    })
-</script>
+</div>

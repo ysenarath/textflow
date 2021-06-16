@@ -1,4 +1,4 @@
-<script id="labels-section-template" type="text/x-handlebars-template">
+<div>
     <form method="POST" action="{{ url_for('dashboard.create_label', project_id=project_id) }}">
         {% set create_label_form = forms.create_label %}
         {{ create_label_form.csrf_token }}
@@ -65,19 +65,4 @@
             {% endfor %}
         </table>
     </form>
-</script>
-
-<!--suppress JSUnresolvedVariable -->
-<script>
-    templates.add('labels', function () {
-        let source = document.getElementById('labels-section-template').innerHTML;
-        let template = Handlebars.compile(source);
-        let data = {};
-
-        function render(id) {
-            document.getElementById(id).innerHTML = template({data})
-        }
-
-        return {render}
-    })
-</script>
+</div>
