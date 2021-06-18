@@ -8,6 +8,7 @@ import click
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from textflow import TextFlow, services
+from textflow.metrics.agreement import AgreementScore
 from textflow.model import *
 from textflow.services import db
 
@@ -460,5 +461,28 @@ def cli_annotation_create(ctx, project_id, document_id, user_id, label, span):
             logger.error('Error: {}'.format(err_msg))
 
 
+@annotation_group.command(name='agreement')
+@click.option('-p', '--project_id', help='Project ident', prompt='Project ID')
+@click.option('-b', '--blacklist', help='Ident. of blacklist', default=None, multiple=True)
+@click.pass_context
+def agreement(ctx, project_id, blacklist):
+    if blacklist is None:
+        blacklist = []
+    config = ctx.obj['CONFIG']
+    tf = TextFlow(config)
+    with tf.app_context():
+        dataset = services.get_dataset(project_id=project_id)
+        # check agreement
+        task = AgreementScore(dataset, blacklist=blacklist)
+        click.echo('Kappa Agreement')
+        click.echo(task.kappa().to_csv())
+        click.echo('Percentage Agreement')
+        click.echo(task.percentage().to_csv())
+
+
 def main():
+    cli(obj={})
+
+
+if __name__ == '__main__':
     cli(obj={})
