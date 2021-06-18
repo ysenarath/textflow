@@ -3,7 +3,6 @@
 This module implements one class :class:`AgreementScore`
 """
 from functools import reduce
-from typing import Final
 
 import numpy as np
 from sklearn import metrics as skm
@@ -29,7 +28,7 @@ class AgreementScore:
             dataset = pd.DataFrame(dataset, columns=['coder', 'item', 'label'])
         self._dataset = dataset
         self._blacklist = blacklist
-        self.coder_pairs: Final = self._get_pairs()
+        self.coder_pairs = self._get_pairs()
 
     def _get_pairs(self):
         """Gets coder pairs in dataset
