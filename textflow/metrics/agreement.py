@@ -2,9 +2,10 @@
 
 This module implements one class :class:`AgreementScore`
 """
+from functools import reduce
+from typing import Final
 
-import statistics
-
+import numpy as np
 from sklearn import metrics as skm
 
 import pandas as pd
@@ -14,34 +15,28 @@ __all__ = [
 ]
 
 
+def _get_unique_intersect(x, y) -> np.ndarray:
+    return np.intersect1d(x, y, assume_unique=True, return_indices=False)
+
+
 class AgreementScore:
     def __init__(self, dataset, blacklist=None):
         if blacklist is None:
             blacklist = []
-        self._blacklist = blacklist
         if hasattr(dataset, 'build_item_tuples'):
-            self._dataset = dataset.build_item_tuples()
-        else:
-            self._dataset = dataset
-        self.coder_pairs = self._get_pairs()
-
-    def _get_coders(self):
-        """Gets coders in dataset
-
-        :return: all coders
-        """
-        result = set()
-        for (c, _, _) in self._dataset:
-            if c not in self._blacklist:
-                result.add(c)
-        return list(result)
+            dataset = dataset.build_item_tuples()
+        if not isinstance(dataset, pd.DataFrame):
+            dataset = pd.DataFrame(dataset, columns=['coder', 'item', 'label'])
+        self._dataset = dataset
+        self._blacklist = blacklist
+        self.coder_pairs: Final = self._get_pairs()
 
     def _get_pairs(self):
         """Gets coder pairs in dataset
 
         :return: all coder pairs
         """
-        cs = self._get_coders()
+        cs = self._dataset['coder'].unique().tolist()
         results = []
         for cs_a in cs:
             cs.remove(cs_a)
@@ -55,30 +50,12 @@ class AgreementScore:
         :param coders: list of names of coders
         :return: data from only provided coders and support (optional) or None
         """
-        result, support = [], {c: set() for c in coders}
-        # add items coded by each coder to support
-        for coder, item, _ in self._dataset:
-            if coder in support:
-                support[coder].add(item)
+        support = self._dataset.groupby('coder').agg({'item': lambda x: np.unique(x).tolist()}).to_dict()['item']
         # get common support item set
-        common_items = None
-        for coder, items in support.items():
-            if common_items is None:
-                common_items = set(items)
-            else:
-                common_items = common_items.intersection(items)
-        # check if there is common item set between coders
-        #   if not there is none
-        if common_items is None:
+        common_items = reduce(_get_unique_intersect, support.values())
+        if common_items.shape[0] == 0:
             return None
-        # get all annotations from coders with common items
-        for coder, item, label in self._dataset:
-            if (coder in support) and (item in common_items):
-                result += [(coder, item, label)]
-        # check if result is non empty
-        if len(result) == 0:
-            return None
-        df = pd.DataFrame(result, columns=['coder', 'item', 'label'])
+        df = self._dataset[self._dataset['item'].isin(common_items) & self._dataset['coder'].isin(coders)]
         label_counts = pd.pivot_table(df, values='label', index=['item', 'coder'], aggfunc=set)['label'].apply(len)
         if label_counts.max() > 1:  # multilabel
             pivot_table = pd.pivot_table(df, index=['item'], columns=['label', 'coder'], aggfunc=len) \
@@ -93,17 +70,14 @@ class AgreementScore:
         :param func: input function
         :return: average score and table of scores
         """
-        scores = [0 for _ in range(len(self.coder_pairs))]
-        if len(scores) == 0:
-            columns = ('pair', 'score', 'support')
-            rows = [('avg_score', 0.0, 0), ('weighted_avg_score', 0.0, 0), ]
-            score_table = pd.DataFrame(rows, columns=columns)
-            return score_table
+        scores, weights = [], []
         for ix, pair in enumerate(self.coder_pairs):
             pivot_table = self._filter_data(pair)
+            if pivot_table is None:
+                continue
             if hasattr(pivot_table.columns, 'levels'):
-                _support, _agreement = 0, 0
                 if len(pivot_table.columns.levels) == 2:
+                    _support, _agreement = 0, 0
                     labels = pivot_table.columns.levels[0]
                     for label in labels:
                         label_agreement = func(pivot_table[label])
@@ -111,24 +85,22 @@ class AgreementScore:
                         _support += pivot_table[label].shape[0]
                     _agreement = _agreement / len(labels)
                     _support = _support / len(labels)
+                else:
+                    continue
             else:
                 _agreement = func(pivot_table)
                 _support = pivot_table.shape[0]
-            scores[ix] = _agreement, _support
-        sum_of_weights = sum([w for _, w in scores])
-        if sum_of_weights == 0:
-            weighted_avg_score = 0
-        else:
-            weighted_sum = sum([score * w for score, w in scores])
-            weighted_avg_score = weighted_sum / sum_of_weights
-        avg_score = statistics.mean([score for score, _ in scores])
-        scores, support = list(zip(*scores))
-        columns = ('Pair', 'Score', 'Support')
-        rows = list(zip(self.coder_pairs, scores, support))
-        rows.append(('Average Score', avg_score, sum(support)))
-        rows.append(('Weighted Average Score', weighted_avg_score, sum(support)))
-        score_table = pd.DataFrame(rows, columns=columns)
-        return score_table
+            scores.append(_agreement)
+            weights.append(_support)
+        columns = ('Annotators', 'Agreement', 'Support')
+        if len(scores) == 0:
+            return pd.DataFrame([], columns=columns)
+        avg_score = np.mean(scores)
+        weighted_avg_score = np.average(scores, weights=weights)
+        rows = list(zip(self.coder_pairs, scores, weights))
+        rows.append(('Average', avg_score, sum(weights)))
+        rows.append(('Average (weighted)', weighted_avg_score, sum(weights)))
+        return pd.DataFrame(rows, columns=columns)
 
     @staticmethod
     def kappa_pairwise(table):
