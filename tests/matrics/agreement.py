@@ -2,6 +2,20 @@ import unittest
 
 from textflow.metrics.agreement import AgreementScore
 
+EMPTY_LIST = []
+
+ONE_ANNOTATOR_LIST = [
+    ("r1", "I01", "high"),
+    ("r1", "I02", "low"),
+]
+
+TWO_ANNOTATOR_LIST = [
+    ("r1", "I01", "high"),
+    ("r1", "I02", "low"),
+    ("r2", "I03", "high"),
+    ("r2", "I04", "high"),
+]
+
 MULTI_CLASS_EXAMPLE = [
     ("r1", "I01", "high"), ("r2", "I01", "high"),
     ("r1", "I02", "high"), ("r2", "I02", "high"),
@@ -30,27 +44,57 @@ MULTI_LABEL_EXAMPLE = [
 
 
 class PercentageAgreementTestCase(unittest.TestCase):
-    def test_percentage_agreement(self):
+    def test_agreement(self):
         scorer = AgreementScore(MULTI_CLASS_EXAMPLE)
         scores = scorer.percentage()
-        self.assertEqual(0.7, scores.iloc[0]['Score'])
+        self.assertEqual(0.7, scores.iloc[0]['Agreement'])
 
-    def test_multi_label_percentage_agreement(self):
+    def test_multi_label_agreement(self):
         scorer = AgreementScore(MULTI_LABEL_EXAMPLE)
         scores = scorer.percentage()
-        self.assertLessEqual(0.8, scores.iloc[0]['Score'])
+        self.assertLessEqual(0.8, scores.iloc[0]['Agreement'])
+
+    def test_empty_list_agreement(self):
+        scorer = AgreementScore(EMPTY_LIST)
+        scores = scorer.percentage()
+        self.assertEqual(0, scores.shape[0])
+
+    def test_one_annotator_agreement(self):
+        scorer = AgreementScore(ONE_ANNOTATOR_LIST)
+        scores = scorer.percentage()
+        self.assertEqual(0, scores.shape[0])
+
+    def test_one_annotation_agreement(self):
+        scorer = AgreementScore(TWO_ANNOTATOR_LIST)
+        scores = scorer.percentage()
+        self.assertEqual(0, scores.shape[0])
 
 
 class KappaAgreementTestCase(unittest.TestCase):
-    def test_kappa_agreement(self):
+    def test_agreement(self):
         scorer = AgreementScore(MULTI_CLASS_EXAMPLE)
         scores = scorer.kappa()
-        self.assertAlmostEqual(0.348, scores.iloc[0]['Score'], places=3)
+        self.assertAlmostEqual(0.348, scores.iloc[0]['Agreement'], places=3)
 
-    def test_multi_label_kappa_agreement(self):
+    def test_multi_label_agreement(self):
         scorer = AgreementScore(MULTI_LABEL_EXAMPLE)
         scores = scorer.kappa()
-        self.assertAlmostEqual(0.699, scores.iloc[0]['Score'], places=3)
+        self.assertAlmostEqual(0.699, scores.iloc[0]['Agreement'], places=3)
+
+    def test_empty_list_agreement(self):
+        scorer = AgreementScore(EMPTY_LIST)
+        scores = scorer.kappa()
+        self.assertEqual(0, scores.shape[0])
+
+    def test_one_annotator_agreement(self):
+        scorer = AgreementScore(ONE_ANNOTATOR_LIST)
+        scores = scorer.kappa()
+        self.assertEqual(0, scores.shape[0])
+
+    def test_one_annotation_agreement(self):
+        scorer = AgreementScore(TWO_ANNOTATOR_LIST)
+        scores = scorer.percentage()
+        self.assertEqual(0, scores.shape[0])
 
 
 if __name__ == '__main__':
