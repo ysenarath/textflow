@@ -28,7 +28,11 @@ class AgreementScore:
             dataset = pd.DataFrame(dataset, columns=['coder', 'item', 'label'])
         self._dataset = dataset
         self._blacklist = blacklist
-        self.coder_pairs = self._get_pairs()
+        self._support = self._dataset \
+            .groupby('coder') \
+            .agg({'item': lambda x: np.unique(x).tolist()}) \
+            .to_dict()['item']
+        self._coder_pairs = self._get_pairs()
 
     def _get_pairs(self):
         """Gets coder pairs in dataset
@@ -49,9 +53,8 @@ class AgreementScore:
         :param coders: list of names of coders
         :return: data from only provided coders and support (optional) or None
         """
-        support = self._dataset.groupby('coder').agg({'item': lambda x: np.unique(x).tolist()}).to_dict()['item']
         # get common support item set
-        common_items = reduce(_get_unique_intersect, support.values())
+        common_items = reduce(_get_unique_intersect, [self._support[c] for c in coders if c in coders])
         if common_items.shape[0] == 0:
             return None
         df = self._dataset[self._dataset['item'].isin(common_items) & self._dataset['coder'].isin(coders)]
@@ -70,7 +73,7 @@ class AgreementScore:
         :return: average score and table of scores
         """
         scores, weights = [], []
-        for ix, pair in enumerate(self.coder_pairs):
+        for ix, pair in enumerate(self._coder_pairs):
             pivot_table = self._filter_data(pair)
             if pivot_table is None:
                 continue
@@ -96,7 +99,7 @@ class AgreementScore:
             return pd.DataFrame([], columns=columns)
         avg_score = np.mean(scores)
         weighted_avg_score = np.average(scores, weights=weights)
-        rows = list(zip(self.coder_pairs, scores, weights))
+        rows = list(zip(self._coder_pairs, scores, weights))
         rows.append(('Average', avg_score, sum(weights)))
         rows.append(('Average (weighted)', weighted_avg_score, sum(weights)))
         return pd.DataFrame(rows, columns=columns)
