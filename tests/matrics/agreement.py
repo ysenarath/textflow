@@ -42,6 +42,11 @@ MULTI_LABEL_EXAMPLE = [
     ("r1", "I10", "low"), ("r2", "I10", "low"),
 ]
 
+MULTI_LABEL_MINI_EXAMPLE = [
+    ("r1", "I01", "high"), ("r1", "I01", "low"), ("r2", "I01", "high"),
+    ("r1", "I02", "high"), ("r2", "I02", "high"),
+]
+
 
 class PercentageAgreementTestCase(unittest.TestCase):
     def test_agreement(self):
@@ -53,6 +58,11 @@ class PercentageAgreementTestCase(unittest.TestCase):
         scorer = AgreementScore(MULTI_LABEL_EXAMPLE)
         scores = scorer.percentage()
         self.assertLessEqual(0.8, scores.iloc[0]['Agreement'])
+
+    def test_multi_label_mini_agreement(self):
+        scorer = AgreementScore(MULTI_LABEL_MINI_EXAMPLE)
+        scores = scorer.percentage()
+        self.assertEqual(0.75, scores.iloc[0]['Agreement'])
 
     def test_empty_list_agreement(self):
         scorer = AgreementScore(EMPTY_LIST)
@@ -80,6 +90,11 @@ class KappaAgreementTestCase(unittest.TestCase):
         scorer = AgreementScore(MULTI_LABEL_EXAMPLE)
         scores = scorer.kappa()
         self.assertAlmostEqual(0.699, scores.iloc[0]['Agreement'], places=3)
+
+    def test_multi_label_mini_agreement(self):
+        scorer = AgreementScore(MULTI_LABEL_MINI_EXAMPLE)
+        scores = scorer.kappa()
+        self.assertEqual(0, scores.iloc[0]['Agreement'])
 
     def test_empty_list_agreement(self):
         scorer = AgreementScore(EMPTY_LIST)

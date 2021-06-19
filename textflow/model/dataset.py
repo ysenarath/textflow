@@ -15,6 +15,8 @@ datasets = PluginManager()
 
 IB_TAGS = ['I', 'B']
 
+SYS_MAJORITY = 'sys.majority'
+
 
 class Dataset:
     def __init__(self, annotation_sets, tokenizer=None, validator='sys.majority'):
@@ -72,6 +74,12 @@ class Dataset:
         :return: an iterable of target/dependent variable
         """
         raise NotImplementedError
+
+    def save(self):
+        pass
+
+    def load(self):
+        pass
 
 
 @datasets.register('sequence_labeling')
@@ -152,7 +160,7 @@ class SequenceLabelingDataset(Dataset):
                     maj_tag, maj_lbl = '?', None
                 prv_label = (maj_tag, maj_lbl)
                 majority_vote.append(prv_label)
-            records[i].labels['sys.majority'] = majority_vote
+            records[i].labels[SYS_MAJORITY] = majority_vote
         return records
 
     def build_item_tuples(self):
@@ -163,6 +171,8 @@ class SequenceLabelingDataset(Dataset):
         result = []
         for d in self.records.values():
             for coder, labels in d.labels.items():
+                if coder == SYS_MAJORITY:
+                    continue
                 for index, (label, (_, _, token)) in enumerate(zip(labels, d.tokens)):
                     result.append((coder, '{}_{}'.format(d.id, index), label[-1]))
         return result
@@ -261,7 +271,7 @@ class MultiLabelDataset(Dataset):
             #   to consider for annotation (half of the number of available annotations)
             min_num = len(labels) // 2 + 1
             majority_vote = [k for k, v in label_counts.items() if v >= min_num]
-            records[i].labels['sys.majority'] = majority_vote
+            records[i].labels[SYS_MAJORITY] = majority_vote
         return records
 
     def build_item_tuples(self):
@@ -270,11 +280,12 @@ class MultiLabelDataset(Dataset):
         :return: label item tuples
         """
         result = []
-        label_set = self.classes_
         for d in self.records.values():
             for coder, labels in d.labels.items():
-                for label in label_set:
-                    result.append((coder, '{}_{}'.format(d.id, label), str(label in labels)))
+                if coder == SYS_MAJORITY:
+                    continue
+                for label in labels:
+                    result.append((coder, str(d.id), str(label)))
         return result
 
     @property

@@ -14,6 +14,10 @@ __all__ = [
 ]
 
 
+def _get_unique(x):
+    return np.unique(x).tolist()
+
+
 def _get_unique_intersect(x, y) -> np.ndarray:
     return np.intersect1d(x, y, assume_unique=True, return_indices=False)
 
@@ -30,65 +34,62 @@ class AgreementScore:
         self._blacklist = blacklist
         self._support = self._dataset \
             .groupby('coder') \
-            .agg({'item': lambda x: np.unique(x).tolist()}) \
+            .agg({'item': _get_unique}) \
             .to_dict()['item']
-        self._coder_pairs = self._get_pairs()
+        self._labels = _get_unique(self._dataset['label'])
+        self._coder_pairs = self._get_coder_pairs()
 
-    def _get_pairs(self):
+    def _get_coder_pairs(self):
         """Gets coder pairs in dataset
 
         :return: all coder pairs
         """
-        cs = self._dataset['coder'].unique().tolist()
+        coders = [c for c in self._dataset['coder'].unique() if c not in self._blacklist]
         results = []
-        for cs_a in cs:
-            cs.remove(cs_a)
-            for cs_b in cs:
-                results.append((cs_a, cs_b))
+        for coder_a in coders:
+            coders.remove(coder_a)
+            for coder_b in coders:
+                results.append((coder_a, coder_b))
         return results
 
-    def _filter_data(self, coders):
+    def _pivot_table(self, coders):
         """Filter and return only data for coders provided.
 
         :param coders: list of names of coders
         :return: data from only provided coders and support (optional) or None
         """
         # get common support item set
-        common_items = reduce(_get_unique_intersect, [self._support[c] for c in coders if c in coders])
+        common_items = reduce(_get_unique_intersect, [self._support[c] for c in coders])
         if common_items.shape[0] == 0:
             return None
         df = self._dataset[self._dataset['item'].isin(common_items) & self._dataset['coder'].isin(coders)]
-        label_counts = pd.pivot_table(df, values='label', index=['item', 'coder'], aggfunc=set)['label'].apply(len)
-        if label_counts.max() > 1:  # multilabel
-            pivot_table = pd.pivot_table(df, index=['item'], columns=['label', 'coder'], aggfunc=len) \
-                .fillna(0)
+        label_counts = pd.pivot_table(df, values='label', index=['item', 'coder'], aggfunc=_get_unique)
+        if label_counts['label'].apply(len).max() > 1:  # multilabel
+            _pivot_table = pd.pivot_table(df, index=['item'], columns=['coder'], values='label', aggfunc=list)
+            pivot_table = {label: _pivot_table.applymap(lambda x: label in x) for label in self._labels}
         else:  # multi class / binary
             pivot_table = pd.pivot_table(df, index=['item'], columns=['coder'], values='label', aggfunc='first')
         return pivot_table
 
-    def _pairwise_average(self, func):
+    def _pairwise_average(self, func, multilabel=False):
         """Run provided function for every pair of annotators
 
         :param func: input function
+        :param multilabel: whether func supports multilabel
         :return: average score and table of scores
         """
         scores, weights = [], []
         for ix, pair in enumerate(self._coder_pairs):
-            pivot_table = self._filter_data(pair)
+            pivot_table = self._pivot_table(pair)
             if pivot_table is None:
                 continue
-            if hasattr(pivot_table.columns, 'levels'):
-                if len(pivot_table.columns.levels) == 2:
-                    _support, _agreement = 0, 0
-                    labels = pivot_table.columns.levels[0]
-                    for label in labels:
-                        label_agreement = func(pivot_table[label])
-                        _agreement += label_agreement
-                        _support += pivot_table[label].shape[0]
-                    _agreement = _agreement / len(labels)
-                    _support = _support / len(labels)
-                else:
-                    continue
+            if isinstance(pivot_table, dict):
+                _support, _agreement = 0, 0
+                for label in self._labels:
+                    _agreement += func(pivot_table[label])
+                    _support += pivot_table[label].shape[0]
+                _agreement = _agreement / len(self._labels)
+                _support = _support / len(self._labels)
             else:
                 _agreement = func(pivot_table)
                 _support = pivot_table.shape[0]
@@ -97,11 +98,12 @@ class AgreementScore:
         columns = ('Annotators', 'Agreement', 'Support')
         if len(scores) == 0:
             return pd.DataFrame([], columns=columns)
+        avg_weights = np.mean(weights)
         avg_score = np.mean(scores)
         weighted_avg_score = np.average(scores, weights=weights)
         rows = list(zip(self._coder_pairs, scores, weights))
-        rows.append(('Average', avg_score, sum(weights)))
-        rows.append(('Average (weighted)', weighted_avg_score, sum(weights)))
+        rows.append(('Average', avg_score, avg_weights))
+        rows.append(('Average (weighted)', weighted_avg_score, avg_weights))
         return pd.DataFrame(rows, columns=columns)
 
     @staticmethod
@@ -111,7 +113,8 @@ class AgreementScore:
         :return: kappa score and support (optional)
         """
         col_1, col_2 = table.columns
-        return skm.cohen_kappa_score(table[col_1], table[col_2])
+        result = skm.cohen_kappa_score(table[col_1], table[col_2])
+        return 0 if np.isnan(result) else result
 
     def kappa(self):
         """Cohen 1960 - Averages naively over kappas for each coder pair.
