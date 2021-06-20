@@ -1,5 +1,10 @@
 """ Base class and in-built dataset types. """
+import os
+import pickle
 from types import SimpleNamespace
+
+from packaging.utils import canonicalize_name
+from packaging.version import parse as parse_version
 
 from textflow.utils import PluginManager
 from textflow.utils.text import Tokenizer
@@ -19,9 +24,13 @@ SYS_MAJORITY = 'sys.majority'
 
 
 class Dataset:
-    def __init__(self, annotation_sets, tokenizer=None, validator='sys.majority'):
-        self.records = self.build_dataset(annotation_sets, tokenizer=tokenizer)
-        self.validator = validator
+    def __init__(self, annotation_sets=None, tokenizer=None, validator='sys.majority'):
+        if annotation_sets is not None:
+            self.records = self.build_dataset(annotation_sets, tokenizer=tokenizer)
+            self.validator = validator
+        else:
+            self.records = []
+            self.validator = None
 
     def build_dataset(self, annotation_sets, tokenizer):
         """Builds dataset from provided annotation sets
@@ -75,11 +84,39 @@ class Dataset:
         """
         raise NotImplementedError
 
-    def save(self):
-        pass
+    @staticmethod
+    def _latest_version(root_path, filename):
+        max_version = parse_version('0.0.1')
+        for fn in os.listdir(root_path):
+            filename_name = '{filename}-'.format(filename=filename)
+            if fn.startswith(filename_name):
+                fv = filename[len(filename_name):]
+                fvp = parse_version(fv)
+                if max_version < fvp:
+                    max_version = fvp
+        return max_version
 
-    def load(self):
-        pass
+    def save(self, path, version=None):
+        root_path, filename = os.path.splitext(path)
+        filename = canonicalize_name(filename)
+        if version is None:
+            version = Dataset._latest_version(root_path, filename)
+        path = os.path.join(root_path, '{}-{}'.format(filename, version))
+        with open(path, 'wb') as fp:
+            pickle.dump(self, fp)
+
+    @classmethod
+    def load(cls, path, version=None):
+        root_path, filename = os.path.splitext(path)
+        filename = canonicalize_name(filename)
+        if version is None:
+            version = Dataset._latest_version(root_path, filename)
+        path = os.path.join(root_path, '{}-{}'.format(filename, version))
+        with open(path, 'rb') as fp:
+            result = pickle.load(fp)
+        if isinstance(result, cls):
+            raise TypeError('Expected type \'{}\', got \'{}\' instead'.format(cls.__name__, result.__name__))
+        return result
 
 
 @datasets.register('sequence_labeling')

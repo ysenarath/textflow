@@ -3,6 +3,7 @@
 This module implements one class :class:`AgreementScore`
 """
 from functools import reduce
+from itertools import combinations
 
 import numpy as np
 from sklearn import metrics as skm
@@ -19,7 +20,7 @@ def _get_unique(x):
 
 
 def _get_unique_intersect(x, y) -> np.ndarray:
-    return np.intersect1d(x, y, assume_unique=True, return_indices=False)
+    return np.intersect1d(x, y, return_indices=False)
 
 
 class AgreementScore:
@@ -44,13 +45,8 @@ class AgreementScore:
 
         :return: all coder pairs
         """
-        coders = [c for c in self._dataset['coder'].unique() if c not in self._blacklist]
-        results = []
-        for coder_a in coders:
-            coders.remove(coder_a)
-            for coder_b in coders:
-                results.append((coder_a, coder_b))
-        return results
+        results = [c for c in self._dataset['coder'].unique() if c not in self._blacklist]
+        return list(combinations(results, 2))
 
     def _pivot_table(self, coders):
         """Filter and return only data for coders provided.
@@ -60,7 +56,7 @@ class AgreementScore:
         """
         # get common support item set
         common_items = reduce(_get_unique_intersect, [self._support[c] for c in coders])
-        if common_items.shape[0] == 0:
+        if len(common_items) == 0:
             return None
         df = self._dataset[self._dataset['item'].isin(common_items) & self._dataset['coder'].isin(coders)]
         label_counts = pd.pivot_table(df, values='label', index=['item', 'coder'], aggfunc=_get_unique)
@@ -82,8 +78,8 @@ class AgreementScore:
         for ix, pair in enumerate(self._coder_pairs):
             pivot_table = self._pivot_table(pair)
             if pivot_table is None:
-                continue
-            if isinstance(pivot_table, dict):
+                _support, _agreement = 0, 0
+            elif isinstance(pivot_table, dict):
                 _support, _agreement = 0, 0
                 for label in self._labels:
                     _agreement += func(pivot_table[label])
@@ -101,9 +97,12 @@ class AgreementScore:
         avg_weights = np.mean(weights)
         avg_score = np.mean(scores)
         weighted_avg_score = np.average(scores, weights=weights)
-        rows = list(zip(self._coder_pairs, scores, weights))
+        coder_pairs_str = [', '.join(p) for p in self._coder_pairs]
+        rows = list(zip(coder_pairs_str, scores, weights))
         rows.append(('Average', avg_score, avg_weights))
         rows.append(('Average (weighted)', weighted_avg_score, avg_weights))
+        len_items = self._dataset[['coder', 'item']].drop_duplicates().groupby('item').count().value_counts()
+        rows.append(('Dataset Size', len_items, len_items))
         return pd.DataFrame(rows, columns=columns)
 
     @staticmethod

@@ -5,7 +5,7 @@ import setuptools
 with open("README.md") as fh:
     long_description = fh.read().strip()
 
-with open('packages.txt') as fh:
+with open('requirements.txt') as fh:
     requirements = fh.read().strip().split('\n')
 
 setuptools.setup(

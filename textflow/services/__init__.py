@@ -577,7 +577,8 @@ def generate_status_report(ctx, user_id, project_id=None):
 
 @service
 def get_status(ctx, project_id):
-    subquery = db.session.query(AnnotationSet.document_id, func.count(AnnotationSet.user_id).label('frequency')) \
+    subquery = db.session.query(AnnotationSet.document_id, func.count(AnnotationSet.user_id)
+                                .label('frequency')) \
         .filter(AnnotationSet.completed.is_(True)) \
         .group_by(AnnotationSet.document_id) \
         .subquery()
@@ -588,9 +589,9 @@ def get_status(ctx, project_id):
         .outerjoin(AnnotationSet,
                    and_(AnnotationSet.document_id == Document.id, AnnotationSet.user_id == Assignment.user_id)) \
         .filter(Document.project_id == project_id) \
-        .filter(Project.redundancy <= subquery.c.frequency) \
         .filter(AnnotationSet.completed.is_(True)) \
         .filter(AnnotationSet.skipped.is_(False)) \
+        .filter(Project.redundancy <= subquery.c.frequency) \
         .distinct(Document.id) \
         .count()
     num_documents = Document.query \
