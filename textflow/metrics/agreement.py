@@ -31,6 +31,7 @@ class AgreementScore:
             dataset = dataset.build_item_tuples()
         if not isinstance(dataset, pd.DataFrame):
             dataset = pd.DataFrame(dataset, columns=['coder', 'item', 'label'])
+        dataset['label'].fillna('OTHER', inplace=True)
         self._dataset = dataset
         self._blacklist = blacklist
         self._support = self._dataset \
@@ -65,6 +66,7 @@ class AgreementScore:
             pivot_table = {label: _pivot_table.applymap(lambda x: label in x) for label in self._labels}
         else:  # multi class / binary
             pivot_table = pd.pivot_table(df, index=['item'], columns=['coder'], values='label', aggfunc='first')
+        pivot_table = pivot_table.fillna('OTHER')
         return pivot_table
 
     def _pairwise_average(self, func, multilabel=False):
@@ -132,3 +134,13 @@ class AgreementScore:
 
     def percentage(self):
         return self._pairwise_average(self.percentage_pairwise)
+
+    @staticmethod
+    def f1_pairwise(table):
+        col_1, col_2 = table.columns
+        # calculate average agreement
+        result = skm.f1_score(table[col_1], table[col_2], average='micro')
+        return 0 if np.isnan(result) else result
+
+    def f1_score(self):
+        return self._pairwise_average(self.f1_pairwise)

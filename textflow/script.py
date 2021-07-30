@@ -99,6 +99,15 @@ def annotation_group():
     pass
 
 
+@cli.group(name='dataset')
+def dataset_group():
+    """Run label commands
+
+    :return: None
+    """
+    pass
+
+
 @project_group.command(name='create')
 @click.option('-n', '--name', prompt='Project name', help='Name of project used in identifying the project by user')
 @click.option('-t', '--type', prompt='Project type', help='Type of project used to identify annotation type - ' +
@@ -464,8 +473,9 @@ def cli_annotation_create(ctx, project_id, document_id, user_id, label, span):
 @annotation_group.command(name='agreement')
 @click.option('-p', '--project_id', help='Project ident', prompt='Project ID')
 @click.option('-b', '--blacklist', help='Ident. of blacklist', default=None, multiple=True)
+@click.option('--scoring', '-s', multiple=True)
 @click.pass_context
-def agreement(ctx, project_id, blacklist):
+def agreement(ctx, project_id, blacklist, scoring):
     if blacklist is None:
         blacklist = []
     config = ctx.obj['CONFIG']
@@ -474,10 +484,23 @@ def agreement(ctx, project_id, blacklist):
         dataset = services.get_dataset(project_id=project_id)
         # check agreement
         task = AgreementScore(dataset, blacklist=blacklist)
-        click.echo('Kappa Agreement')
-        click.echo(task.kappa().to_csv())
-        click.echo('Percentage Agreement')
-        click.echo(task.percentage().to_csv())
+        if 'kappa' in scoring:
+            click.echo('Kappa Agreement')
+            click.echo(task.kappa().to_csv())
+        if 'f1-score' in scoring:
+            click.echo('F1 Agreement')
+            click.echo(task.f1_score().to_csv())
+        if 'percentage' in scoring:
+            click.echo('Percentage Agreement')
+            click.echo(task.percentage().to_csv())
+
+
+@dataset_group.command('statistics')
+@click.option('-p', '--project_id', help='Project ident', prompt='Project ID')
+@click.pass_context
+def statistics(ctx, project_id):
+    status = services.get_status(project_id)
+    click.echo(status)
 
 
 def main():
