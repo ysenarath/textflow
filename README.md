@@ -36,7 +36,3 @@ To read the full documentation please visit [here](https://docs.textflow.app/).
 
 We highly value your feedback on this project, 
 so let us know. Kindly place an issue for any bugs or feature recommendations.
-
-### About
-
-You can contact the author via his e-mail:`ysenarath.93@gmail.com`.
