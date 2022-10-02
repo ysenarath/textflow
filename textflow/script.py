@@ -484,15 +484,32 @@ def agreement(ctx, project_id, blacklist, scoring):
         dataset = services.get_dataset(project_id=project_id)
         # check agreement
         task = AgreementScore(dataset, blacklist=blacklist)
-        if 'kappa' in scoring:
+        if 'kappa' in scoring or 'kappa-score' in scoring:
             click.echo('Kappa Agreement')
             click.echo(task.kappa().to_csv())
-        if 'f1-score' in scoring:
+        if 'f1' in scoring or 'f1-score' in scoring:
             click.echo('F1 Agreement')
             click.echo(task.f1_score().to_csv())
-        if 'percentage' in scoring:
+        if 'percentage' in scoring or 'percentage-score' in scoring:
             click.echo('Percentage Agreement')
             click.echo(task.percentage().to_csv())
+
+
+@annotation_group.command(name='disagreement')
+@click.option('-p', '--project_id', help='Project ident', prompt='Project ID')
+@click.option('-b', '--blacklist', help='Ident. of blacklist', default=None, multiple=True)
+@click.option('--scoring', '-s', multiple=True)
+@click.pass_context
+def disagreement(ctx, project_id, blacklist, scoring):
+    if blacklist is None:
+        blacklist = []
+    config = ctx.obj['CONFIG']
+    tf = TextFlow(config)
+    with tf.app_context():
+        dataset = services.get_dataset(project_id=project_id)
+        for X, y in zip(dataset.X, dataset.y):
+            if '?' in y:
+                print(X)
 
 
 @dataset_group.command('statistics')
