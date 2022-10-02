@@ -1,4 +1,4 @@
-""" Base class and in-built dataset types. """
+"""Base class and in-built dataset types."""
 import os
 import pickle
 from types import SimpleNamespace
