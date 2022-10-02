@@ -21,8 +21,7 @@ class AnnotationSpan(db.Model):
 class Annotation(db.Model):
     """ Annotation Entity - contains annotation with span or whole document """
     id = db.Column(db.Integer, primary_key=True)
-    span = db.relationship('AnnotationSpan', backref='annotation', uselist=False,
-                           cascade="all, delete-orphan")
+    span = db.relationship('AnnotationSpan', backref='annotation', uselist=False, cascade="all, delete-orphan")
     label_id = db.Column(db.Integer, db.ForeignKey('label.id'), nullable=False)
     label = db.relationship('Label', backref=db.backref('annotations', lazy=True), uselist=False)
     created_on = db.Column(db.DateTime, server_default=db.func.now())
