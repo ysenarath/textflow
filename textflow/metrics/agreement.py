@@ -69,7 +69,7 @@ class AgreementScore:
         pivot_table = pivot_table.fillna('OTHER')
         return pivot_table
 
-    def _pairwise_average(self, func, multilabel=False):
+    def _pairwise_average(self, func, multilabel=False, drop_unannotated_tokens=True):
         """Run provided function for every pair of annotators
 
         :param func: input function
@@ -84,11 +84,16 @@ class AgreementScore:
             elif isinstance(pivot_table, dict):
                 _support, _agreement = 0, 0
                 for label in self._labels:
-                    _agreement += func(pivot_table[label])
+                    pivot_table_label = pivot_table[label]
+                    if drop_unannotated_tokens:
+                        pivot_table_label = pivot_table_label[(pivot_table_label != 'OTHER').any(axis=1)]
+                    _agreement += func(pivot_table_label)
                     _support += pivot_table[label].shape[0]
                 _agreement = _agreement / len(self._labels)
                 _support = _support / len(self._labels)
             else:
+                if drop_unannotated_tokens:
+                    pivot_table = pivot_table[(pivot_table != 'OTHER').any(axis=1)]
                 _agreement = func(pivot_table)
                 _support = pivot_table.shape[0]
             scores.append(_agreement)

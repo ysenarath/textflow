@@ -10,7 +10,6 @@ from sklearn.preprocessing import MultiLabelBinarizer
 from textflow.utils import PluginManager
 
 __all__ = [
-    'SequenceClassifier',
     'estimators',
 ]
 
