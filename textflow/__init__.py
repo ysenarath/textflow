@@ -20,10 +20,10 @@ class TextFlow:
         :param kwargs: configurations
         """
         self.local_config = local_config
-        self.app = self.__create_app()
-        self.__init_app()
+        self.app = self._create_app()
+        self._init_app()
 
-    def __create_app(self, **kwargs):
+    def _create_app(self, **kwargs):
         """ Create App
 
         :return: create flask server
@@ -42,7 +42,7 @@ class TextFlow:
                 server.config[k] = v
         return server
 
-    def __init_app(self):
+    def _init_app(self):
         """ Initialize App
 
         :return: initialize flask server
