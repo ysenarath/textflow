@@ -389,6 +389,7 @@ def delete_documents(ctx, user_id, project_id):
     if ctx.ignore_user:
         query = Document.query.filter(Document.project_id == project_id)
     else:
+        # delete the projects that are assigned to a given user
         query = Document.query \
             .filter(Document.project_id == project_id) \
             .join(Project, Project.id == Document.project_id) \
