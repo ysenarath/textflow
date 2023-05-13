@@ -36,16 +36,21 @@ def roles_required(role):
             elif len(args) > 0:
                 project_id = args[0]
             else:
-                raise ValueError('Project ID argument not found to determine identity of project')
+                raise ValueError('No project id provided')
             assignment = services.get_assignment(user_id, project_id)
             if assignment is None:
-                flash('Invalid user or project identity', 'error')
+                # error that the user is not assigned to the project
+                flash(
+                    f'You are not assigned to the project with id \'{project_id}\'',
+                    'error'
+                )
                 abort(401)
             elif assignment.role in role:
                 g.current_user_role = assignment.role
                 return func(*args, **kwargs)
             else:
-                flash('You are not authorize to access the resource', 'error')
+                # error: the user role is not permitted to access the requested resource
+                flash('You are not permitted to access the requested resource', 'error')
                 abort(401)
 
         decorated_func.__name__ = func.__name__

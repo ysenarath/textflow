@@ -1,4 +1,7 @@
-""" Login View """
+"""Login view.
+
+This module contains the login view.
+"""
 
 from urllib.parse import urlparse, urljoin
 
@@ -69,20 +72,20 @@ def login():
         if form.validate_on_submit():
             users = services.filter_users(username=form.username.data)
             if (len(users) <= 0) or (users[0] is None) or not users[0].verify_password(form.password.data):
-                flash('Invalid login credentials', 'error')
+                flash('Invalid username or password', 'error')
             else:
                 user = users[0]
                 # Login and validate the user.
                 # user should be an instance of your `User` class
                 auth.login_user(user)
-                flash('Logged in successfully', 'success')
+                flash('Logged in successfully.', 'success')
                 # login_user(user, remember=form.remember_me.data)
                 # check whether it is safe to redirect to provide next
                 if not is_safe_url(target):
                     return abort(400)
                 return redirect(target or url_for('index.index'))
         else:
-            flash('Invalid login credentials', 'error')
+            flash('Invalid username or password', 'error')
     return render_template('login.html', next=target, form=form)
 
 
@@ -94,4 +97,4 @@ def logout():
     :return: root page
     """
     auth.logout_user()
-    return redirect('/')
+    return redirect(url_for('index.index'))

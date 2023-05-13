@@ -20,5 +20,5 @@ def update_user():
         services.db.session.commit()
     return jsonify({
         'status': 'success',
-        'message': 'User profile updated successfully.'
+        'message': 'User updated successfully.'
     })

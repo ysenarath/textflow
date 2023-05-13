@@ -1,4 +1,4 @@
-""" Project view """
+"""Project view."""
 from flask import Blueprint, request, redirect, url_for
 
 from textflow.view.base import render_template
