@@ -1,10 +1,17 @@
+.hero.is-fullheight-with-stuff {
+    height: calc(100vh - 16rem);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .annotator-div {
     height: auto;
     display: flex;
     flex-flow: row wrap;
 }
 
-.input-group > .custom-select {
+.input-group>.custom-select {
     border-radius: 0;
     border-style: none;
     background-color: transparent;
@@ -22,11 +29,11 @@
     border-color: transparent;
 }
 
-.annotation-span > .annotation-text {
+.annotation-span>.annotation-text {
     border-style: none;
     padding: 2px;
 }
 
-.annotation-span > .annotation-label {
+.annotation-span>.annotation-label {
     color: whitesmoke;
 }
