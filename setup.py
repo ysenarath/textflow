@@ -12,7 +12,7 @@ setuptools.setup(
     name="textflow",
     version="0.4.6",
     author="Yasas Senarath",
-    author_email="ysenarath.93@gmail.com",
+    author_email="wayasas@gmail.com",
     description="Simple and extensible framework for end to end text based natural language understanding.",
     long_description=long_description,
     long_description_content_type="text/markdown",
