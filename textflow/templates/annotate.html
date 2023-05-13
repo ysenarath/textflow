@@ -1,309 +1,316 @@
 {% extends '_layouts/default.html' %}
 
 {% block styles %}
-    {{ super() }}
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/annotator.css') }}">
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/annotator.css') }}">
 {% endblock %}
 
 {% block content %}
-    <div class="columns">
-        <div class="column">
-            <div class="buttons">
-                <a href="/projects/{{ project.id }}" class="button is-highlight">
-                    <span class="icon"><i class="fas fa-tasks" aria-label="Project"></i></span><span>Project</span>
-                </a>
-                <a href="/projects/{{ project.id }}/history" class="button is-highlight">
-                    <span class="icon"><i class="fas fa-history"></i></span><span>History</span>
-                </a>
-                <a href="/projects/{{ project.id }}/annotate" class="button is-highlight has-text-link is-static">
-                    <span class="icon"><i class="fas fa-tag"></i></span><span>Annotate</span>
-                </a>
-            </div>
+<div class="columns">
+    <div class="column">
+        <div class="buttons">
+            <a href="{{ url_for('project.view_project', project_id=project.id) }}" class="button is-highlight">
+                <span class="icon"><i class="fas fa-tasks" aria-label="Project"></i></span><span>Project</span>
+            </a>
+            <a href="{{ url_for('project.view_project_history', project_id=project.id) }}" class="button is-highlight">
+                <span class="icon"><i class="fas fa-history"></i></span><span>History</span>
+            </a>
+            <a href="{{ url_for('annotate.annotate_next', project_id=project.id) }}"
+                class="button is-highlight has-text-link is-static">
+                <span class="icon"><i class="fas fa-tag"></i></span><span>Annotate</span>
+            </a>
         </div>
-        {% if (document is defined) and (document is not none) %}
-            <div class="column">
-                <div class="buttons is-pulled-right">
-                    <button class="button is-info is-light" onclick="toggleGuideline()">
-                        <span class="icon ml-1"><i class="fas fa-book" aria-label="Guideline"></i></span><span
-                            class="mr-1">Guide</span>
-                    </button>
-                    <a id="skipButton" href="javascript:void(0)" class="button is-danger is-light"
-                       onclick="submit(null, 'skip')">
-                            <span class="icon ml-1">
-                                <i class="fas fa-forward mr-1" aria-label="Skip"></i>
-                            </span><span class="mr-1">Skip</span>
-                    </a>
-                    <a id="flagButton" href="javascript:void(0)"
-                       class="button {% if annotation_set.flagged %}is-warning{% else %}is-light{% endif %}"
-                       onclick="submit({'status':'{{ annotation_set.flagged }}' !== 'True'}, 'flag')">
-                            <span class="icon ml-1">
-                                <i class="fas fa-flag mr-1" aria-label="Flag"></i>
-                            </span><span class="mr-1">Flag</span>
-                    </a>
-                    <a id="nextButton" href="javascript:void(0)" class="button is-success is-light"
-                       onclick="submit(null, 'next')">
-                            <span class="icon ml-1">
-                                <i class="fas fa-play mr-1" aria-label="Next"></i>
-                            </span><span class="mr-1">Next</span>
-                    </a>
-                </div>
-            </div>
-        {% endif %}
     </div>
     {% if (document is defined) and (document is not none) %}
-        <div class="columns">
-            <div class="column">
-                {% if project.type == 'sequence_labeling' %}
-                    <div class="box">
-                        <div class="annotator-div is-family-primary is-size-4" id="annotationField"></div>
-                    </div>
-                {% else %}
-                    <div class="card">
-                        {% for ll in project.labels %}
-                            <label>
-                                <input type="checkbox" value={{ ll.value }} id="var_option_{{ ll.value }}"
-                                       onchange="submit(getLabel('{{ ll.value }}'), 'label')" hidden>
-                            </label>
-                        {% endfor %}
-                        <div class="card-header pl-5" style="min-height: 3.5em; background: #effaf3;">
-                            <div class="field is-grouped is-grouped-multiline pt-3">
-                                {% for ll in project.labels %}
-                                    <div class="control" id="option_{{ ll.value }}" hidden>
-                                        <div class="tags has-addons">
-                                            <span class="tag is-medium is-info">{{ ll.label }}</span>
-                                            <a class="tag is-medium is-info" onclick="addLabel('{{ ll.value }}')">
-                                                <i class="fas fa-plus-circle"></i>
-                                            </a>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <div class="card-content">
-                            <div class="field is-grouped is-grouped-multiline">
-                                {% for ll in project.labels %}
-                                    <div class="control" id="selected_option_{{ ll.value }}" hidden>
-                                        <div class="tags has-addons">
-                                            <span class="tag is-medium is-success">{{ ll.label }}</span>
-                                            <a class="tag is-medium is-success" onclick="removeLabel('{{ ll.value }}')">
-                                                <i class="fas fa-times-circle"></i>
-                                            </a>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                            <p class="subtitle">{{ document.text | safe }}</p>
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
-            {% if project.render_guideline() is not none %}
-                <div id="guideline" class="column is-one-third-desktop" style="display: none;">
-                    <div class="box">
-                        {{ project.render_guideline() | safe }}
-                    </div>
-                </div>
-            {% endif %}
+    <div class="column">
+        <div class="buttons is-pulled-right">
+            <button class="button is-info is-light" onclick="toggleGuideline()">
+                <span class="icon ml-1"><i class="fas fa-book" aria-label="Guideline"></i></span><span
+                    class="mr-1">Guide</span>
+            </button>
+            <a id="skipButton" href="javascript:void(0)" class="button is-danger is-light"
+                onclick="submit(null, 'skip')">
+                <span class="icon ml-1">
+                    <i class="fas fa-forward mr-1" aria-label="Skip"></i>
+                </span><span class="mr-1">Skip</span>
+            </a>
+            <a id="flagButton" href="javascript:void(0)"
+                class="button {% if annotation_set.flagged %}is-warning{% else %}is-light{% endif %}"
+                onclick="submit({'status':'{{ annotation_set.flagged }}' !== 'True'}, 'flag')">
+                <span class="icon ml-1">
+                    <i class="fas fa-flag mr-1" aria-label="Flag"></i>
+                </span><span class="mr-1">Flag</span>
+            </a>
+            <a id="nextButton" href="javascript:void(0)" class="button is-success is-light"
+                onclick="submit(null, 'next')">
+                <span class="icon ml-1">
+                    <i class="fas fa-play mr-1" aria-label="Next"></i>
+                </span><span class="mr-1">Next</span>
+            </a>
         </div>
-    {% else %}
-        <div class="columns">
-            <div class="column is-half is-offset-one-quarter">
-                <div class="box">
-                    <h1 class="title">Congratulations!</h1>
-                    <div class="block">
-                        <p>We do not have any more documents for you to annotate now. We will let you know if we
-                            need your help again.</p>
-                    </div>
-                    <h2 class="subtitle">Thank you for your contribution.</h2>
-                </div>
-            </div>
-        </div>
+    </div>
     {% endif %}
+</div>
+{% if (document is defined) and (document is not none) %}
+<div class="columns">
+    <div class="column">
+        {% if project.type == 'sequence_labeling' %}
+        <div class="box">
+            <div class="annotator-div is-family-primary is-size-4" id="annotationField"></div>
+        </div>
+        {% else %}
+        <div class="card">
+            {% for ll in project.labels %}
+            <label>
+                <input type="checkbox" value={{ ll.value }} id="var_option_{{ ll.value }}"
+                    onchange="submit(getLabel('{{ ll.value }}'), 'label')" hidden>
+            </label>
+            {% endfor %}
+            <div class="card-header pl-5" style="min-height: 3.5em; background: #effaf3;">
+                <div class="field is-grouped is-grouped-multiline pt-3">
+                    {% for ll in project.labels %}
+                    <div class="control" id="option_{{ ll.value }}" hidden>
+                        <div class="tags has-addons">
+                            <span class="tag is-medium is-info">{{ ll.label }}</span>
+                            <a class="tag is-medium is-info" onclick="addLabel('{{ ll.value }}')">
+                                <i class="fas fa-plus-circle"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="field is-grouped is-grouped-multiline">
+                    {% for ll in project.labels %}
+                    <div class="control" id="selected_option_{{ ll.value }}" hidden>
+                        <div class="tags has-addons">
+                            <span class="tag is-medium is-success">{{ ll.label }}</span>
+                            <a class="tag is-medium is-success" onclick="removeLabel('{{ ll.value }}')">
+                                <i class="fas fa-times-circle"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <p class="subtitle">{{ document.text | safe }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% if project.render_guideline() is not none %}
+    <div id="guideline" class="column is-one-third-desktop" style="display: none;">
+        <div class="box">
+            {{ project.render_guideline() | safe }}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<section class="hero is-fullheight-with-stuff">
+    <div class="hero-content">
+        <div class="container">
+            <h1 class="is-size-2 has-text-centered">
+                Congratulations!
+            </h1>
+            <h2 class="is-size-4 has-text-centered mt-4">
+                You've completed all the available documents for annotation at this time.
+            </h2>
+            <h2 class="is-size-4 has-text-centered">
+                We appreciate your dedication and commitment to engaging with this project.
+            </h2>
+            <!-- <h2 class="is-size-4 has-text-centered">
+                Thank you for being a valuable member of our community.
+            </h2> -->
+        </div>
+    </div>
+</section>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
-    {{ super() }}
-    <script src="{{ url_for('static', filename='scripts/annotator.js') }}"></script>
-    <!--suppress JSUnresolvedFunction, JSUnresolvedVariable -->
-    {% if (document is defined) and (document is not none) %}
-        <script>
-            // collection of URL endpoints
-            const url_for = {
-                annotations_api: '{{ url_for('annotate.get_annotations', project_id = project.id, document_id = document.id) }}',
-                annotate_next: '{{ url_for('annotate.annotate_next', project_id = project.id) }}',
-            };
+{{ super() }}
+<script src="{{ url_for('static', filename='scripts/annotator.js') }}"></script>
+<!--suppress JSUnresolvedFunction, JSUnresolvedVariable -->
+{% if (document is defined) and (document is not none) %}
+<script>
+    // collection of URL endpoints
+    const url_for = {
+        annotations_api: "{{ url_for('annotate.get_annotations', project_id = project.id, document_id = document.id) }}",
+        annotate_next: "{{ url_for('annotate.annotate_next', project_id = project.id) }}",
+    };
 
-            const documentText = '{{ document.text | safe }}';
+    const documentText = '{{ document.text | safe }}';
 
-            const projectType = '{{ project.type }}';
+    const projectType = '{{ project.type }}';
 
-            const labelOptions = JSON.parse('{{ options | safe }}');
+    const labelOptions = JSON.parse('{{ options | safe }}');
 
-            let annotator = null;
+    let annotator = null;
 
-            function loading(state = true) {
-                let nextButton = document.getElementById('nextButton');
-                if (state) {
-                    nextButton.classList.add('is-loading');
-                } else {
-                    nextButton.classList.remove('is-loading');
-                }
+    function loading(state = true) {
+        let nextButton = document.getElementById('nextButton');
+        if (state) {
+            nextButton.classList.add('is-loading');
+        } else {
+            nextButton.classList.remove('is-loading');
+        }
+    }
+
+    function toggleGuideline() {
+        let x = document.getElementById("guideline");
+        if (x.style.display === "none") {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
+        }
+    }
+
+    /**
+     * Gets status of checkbox indicated by provided label ident
+     *
+     * @param id: label id
+     */
+    function getLabel(id) {
+        let checkbox = $('#option_' + id);
+        return { value: checkbox.val(), status: checkbox.prop('checked') };
+    }
+
+    function removeLabel(id) {
+        let checkbox = $('#var_option_' + id);
+        let data = { value: checkbox.val(), status: false };
+        submit(data, 'label');
+    }
+
+    function addLabel(id) {
+        let checkbox = $('#var_option_' + id);
+        let data = { value: checkbox.val(), status: true };
+        submit(data, 'label');
+    }
+
+    /**
+     * Submit data to server
+     *
+     * @param data: JSON data
+     * @param type: type of submission; options: (label, annotation)
+     * @param method: method to use for submission; options: (POST, DELETE)
+     */
+    function submit(data, type = 'label', method = 'POST') {
+        loading();
+        let target = null;
+        if (['next', 'skip'].includes(type)) {
+            target = url_for.annotate_next;
+        } else if (type === 'flag') {
+            target = window.location.href;
+        }
+        let payload = { type };
+        if (data !== null) {
+            payload = { data, type };
+        }
+        $.ajax({
+            type: method,
+            url: url_for.annotations_api,
+            dataType: 'json',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(payload),
+            success: function (data) {
+                loading(false);
+                refresh(target);
+            },
+        });
+    }
+
+    /**
+     * Update annotations
+     */
+    function refreshAnnotations() {
+        loading();
+        $.get(url_for.annotations_api).then(
+            (data) => {
+                let annotations = data.data;
+                annotator.setAnnotations(annotations);
+                loading(false);
             }
+        ).catch((error) => {
+            console.log(error);
+        });
+    }
 
-            function toggleGuideline() {
-                let x = document.getElementById("guideline");
-                if (x.style.display === "none") {
-                    x.style.display = "block";
-                } else {
-                    x.style.display = "none";
-                }
-            }
+    /**
+     * Refresh page
+     *
+     * @param target:
+     */
+    function refresh(target) {
+        if (target === null) {
+            refreshAnnotations();
+        } else {
+            window.location.href = target;
+        }
+    }
 
-            /**
-             * Gets status of checkbox indicated by provided label ident
-             *
-             * @param id: label id
-             */
-            function getLabel(id) {
-                let checkbox = $('#option_' + id);
-                return {value: checkbox.val(), status: checkbox.prop('checked')};
-            }
-
-            function removeLabel(id) {
-                let checkbox = $('#var_option_' + id);
-                let data = {value: checkbox.val(), status: false};
-                submit(data, 'label');
-            }
-
-            function addLabel(id) {
-                let checkbox = $('#var_option_' + id);
-                let data = {value: checkbox.val(), status: true};
-                submit(data, 'label');
-            }
-
-            /**
-             * Submit data to server
-             *
-             * @param data: JSON data
-             * @param type: type of submission; options: (label, annotation)
-             * @param method: method to use for submission; options: (POST, DELETE)
-             */
-            function submit(data, type = 'label', method = 'POST') {
-                loading();
-                let target = null;
-                if (['next', 'skip'].includes(type)) {
-                    target = url_for.annotate_next;
-                } else if (type === 'flag') {
-                    target = window.location.href;
-                }
-                let payload = {type};
-                if (data !== null) {
-                    payload = {data, type};
-                }
-                $.ajax({
-                    type: method,
-                    url: url_for.annotations_api,
-                    dataType: 'json',
-                    contentType: "application/json; charset=utf-8",
-                    data: JSON.stringify(payload),
-                    success: function (data) {
-                        loading(false);
-                        refresh(target);
-                    },
-                });
-            }
-
-            /**
-             * Update annotations
-             */
-            function refreshAnnotations() {
-                loading();
-                $.get(url_for.annotations_api).then(
-                    (data) => {
-                        let annotations = data.data;
-                        annotator.setAnnotations(annotations);
-                        loading(false);
+    /**
+     * Initialize page
+     */
+    function initialize() {
+        if (projectType === 'sequence_labeling') {
+            // set new annotator
+            annotator = new Annotator('annotationField', documentText, labelOptions);
+            // listen to events - delete
+            annotator.addEventListener('delete', (annotation) => {
+                submit(annotation, 'annotation', 'DELETE');
+            });
+            // listen to events - update
+            annotator.addEventListener('update', (annotation, value) => {
+                annotation.label = value;
+                submit(annotation, 'annotation');
+            });
+            // initialize annotator
+            annotator.initialize();
+        } else {
+            annotator = {
+                setAnnotations: function (annotations) {
+                    let checkedLabels = [];
+                    for (let ak in annotations) {
+                        if (annotations.hasOwnProperty(ak)) {
+                            let lv = annotations[ak].label;
+                            checkedLabels.push(lv);
+                        }
                     }
-                ).catch((error) => {
-                    console.log(error);
-                });
-            }
-
-            /**
-             * Refresh page
-             *
-             * @param target:
-             */
-            function refresh(target) {
-                if (target === null) {
-                    refreshAnnotations();
-                } else {
-                    window.location.href = target;
-                }
-            }
-
-            /**
-             * Initialize page
-             */
-            function initialize() {
-                if (projectType === 'sequence_labeling') {
-                    // set new annotator
-                    annotator = new Annotator('annotationField', documentText, labelOptions);
-                    // listen to events - delete
-                    annotator.addEventListener('delete', (annotation) => {
-                        submit(annotation, 'annotation', 'DELETE');
-                    });
-                    // listen to events - update
-                    annotator.addEventListener('update', (annotation, value) => {
-                        annotation.label = value;
-                        submit(annotation, 'annotation');
-                    });
-                    // initialize annotator
-                    annotator.initialize();
-                } else {
-                    annotator = {
-                        setAnnotations: function (annotations) {
-                            let checkedLabels = [];
-                            for (let ak in annotations) {
-                                if (annotations.hasOwnProperty(ak)) {
-                                    let lv = annotations[ak].label;
-                                    checkedLabels.push(lv);
-                                }
+                    for (let lk in labelOptions) {
+                        if (labelOptions.hasOwnProperty(lk)) {
+                            let lv = labelOptions[lk].value;
+                            let var_checkbox = $('#var_option_' + lv);
+                            if (checkedLabels.includes(lv)) {
+                                var_checkbox.prop('checked', true);
+                            } else {
+                                var_checkbox.prop('checked', false);
                             }
-                            for (let lk in labelOptions) {
-                                if (labelOptions.hasOwnProperty(lk)) {
-                                    let lv = labelOptions[lk].value;
-                                    let var_checkbox = $('#var_option_' + lv);
-                                    if (checkedLabels.includes(lv)) {
-                                        var_checkbox.prop('checked', true);
-                                    } else {
-                                        var_checkbox.prop('checked', false);
-                                    }
-                                    let removeLabelBtn = $('#selected_option_' + lv);
-                                    if (checkedLabels.includes(lv)) {
-                                        removeLabelBtn.show();
-                                    } else {
-                                        removeLabelBtn.hide();
-                                    }
-                                    let addLabelBtn = $('#option_' + lv);
-                                    if (checkedLabels.includes(lv)) {
-                                        addLabelBtn.hide();
-                                    } else {
-                                        addLabelBtn.show();
-                                    }
-                                }
+                            let removeLabelBtn = $('#selected_option_' + lv);
+                            if (checkedLabels.includes(lv)) {
+                                removeLabelBtn.show();
+                            } else {
+                                removeLabelBtn.hide();
+                            }
+                            let addLabelBtn = $('#option_' + lv);
+                            if (checkedLabels.includes(lv)) {
+                                addLabelBtn.hide();
+                            } else {
+                                addLabelBtn.show();
                             }
                         }
                     }
                 }
-                // refresh page
-                refresh(null);
             }
+        }
+        // refresh page
+        refresh(null);
+    }
 
-            /**
-             * Initialize when document is ready
-             */
-            $(document).ready(initialize);
-        </script>
-    {% endif %}
+    /**
+     * Initialize when document is ready
+     */
+    $(document).ready(initialize);
+</script>
+{% endif %}
 {% endblock %}

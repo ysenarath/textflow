@@ -1,17 +1,17 @@
 {% set url_path = request.url.split('?')[0].split('/') %}
-{% if 'projects' in  url_path %}
-    {% set url_path = url_path[url_path.index('projects') + 1:] %}
+{% if 'projects' in url_path %}
+{% set url_path = url_path[url_path.index('projects') + 1:] %}
 {% else %}
-    {% set url_path = none %}
+{% set url_path = none %}
 {% endif %}
 
 <nav class="navbar is-fixed-top pl-6 pr-6" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
-        <a class="navbar-item" href="/">
+        <a class="navbar-item" href="{{ url_for('index.index') }}">
             <img src="{{ url_for('static', filename='images/long-logo.png') }}" height="28" alt="TextFlow Logo">
         </a>
         <div role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
-             data-target="navbarBasic">
+            data-target="navbarBasic">
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
@@ -20,7 +20,7 @@
     <div id="navbarBasic" class="navbar-menu">
         <div class="navbar-start">
             {% if current_user.is_authenticated and url_path is not none %}
-                <div class="navbar-item">
+            <!-- <div class="navbar-item">
                     <nav class="breadcrumb" aria-label="breadcrumbs">
                         <ul>
                             <li>
@@ -35,7 +35,7 @@
                             {% endfor %}
                         </ul>
                     </nav>
-                </div>
+                </div> -->
             {% endif %}
             {% block header_actions %}{% endblock %}
         </div>
@@ -59,54 +59,63 @@
                 </div>
             </div>
             {% if current_user.is_authenticated %}
-                <div class="navbar-item p-1">
-                    <div class="field has-addons has-addons-centered">
-                        <p class="control">
-                            <a class="button is-rounded" href="/logout">
-                                <span class="is-text mr-2">{{ current_user.username }}</span>
-                                <i class="fas fa-sign-out-alt"></i>
-                            </a>
-                        </p>
-                    </div>
+            <div class="navbar-item p-1">
+                <div class="field has-addons has-addons-centered">
+                    <p class="control">
+                        <a class="button is-rounded" href="{{ url_for('login.logout') }}">
+                            <span class="is-text mr-2">{{ current_user.username }}</span>
+                            <i class="fas fa-sign-out-alt"></i>
+                        </a>
+                    </p>
                 </div>
+            </div>
             {% else %}
-                <div class="navbar-item p-1">
-                    <div class="field has-addons has-addons-centered">
-                        <p class="control">
-                            <a class="button is-rounded" href="{{ url_for('login.login') }}" style="">
-                                <span class="is-text mr-2">Login</span>
-                                <i class="fas fa-sign-in-alt"></i>
-                            </a>
-                        </p>
-                    </div>
+            <div class="navbar-item p-1">
+                <div class="field has-addons has-addons-centered">
+                    <p class="control">
+                        <a class="button is-rounded" href="{{ url_for('login.login') }}" style="">
+                            <span class="is-text mr-2">Login</span>
+                            <i class="fas fa-sign-in-alt"></i>
+                        </a>
+                    </p>
                 </div>
+            </div>
             {% endif %}
         </div>
     </div>
 </nav>
 
 <nav id="notificationsPanel" class="panel"
-     style="display: none; position: absolute; right: 0; top:0; margin-top: 4rem; margin-right: 24px; min-width: 350px; z-index: 9999;">
+    style="display: none; position: absolute; right: 0; top:0; margin-top: 4rem; margin-right: 24px; min-width: 350px; z-index: 9999;">
     <p class="panel-heading">
         <span class="is-flex is-justify-content-space-between">
             Notifications<button class="delete" onclick="$('#notificationsPanel').toggle(false)"></button>
         </span>
     </p>
     {% if messages %}
-        {% for category, message in messages %}
-            <a class="panel-block has-background-white">
-                <span class="panel-icon">
-                  <i class="fas fa-info-circle"></i>
-                </span>
-                {{ message }}
-            </a>
-        {% endfor %}
+    {% for category, message in messages %}
+    <a class="panel-block has-background-white">
+        <span class="panel-icon">
+            <i class="fas fa-info-circle"></i>
+        </span>
+        {{ message }}
+    </a>
+    {% endfor %}
     {% else %}
-        <a class="panel-block has-background-white">
-                <span class="panel-icon">
-                  <i class="fas fa-info-circle"></i>
-                </span>
-            You don't have any notifications!
-        </a>
+    <a class="panel-block has-background-white">
+        <!-- <span class="panel-icon">
+            <i class="fas fa-info-circle"></i>
+        </span> -->
+        <!-- write a message stating that the user have no activve notificaions -->
+        <!-- You have no active notificaions at the moment. Check back later. -->
+        <!-- add formatting with html -->
+        <div class="content">
+            <!-- center text -->
+            <p class="has-text-weight-light has-text-centered">
+                <span>You have no active notificaions at the moment.</span><br>
+                <span>Check back later.</span>
+            </p>
+        </div>
+    </a>
     {% endif %}
 </nav>

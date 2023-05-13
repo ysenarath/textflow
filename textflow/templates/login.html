@@ -4,7 +4,7 @@
     <div class="is-flex is-justify-content-center mt-6">
         <div class="box" style="width: 450px;">
             <h1 class="title has-text-centered">Login</h1>
-            <form method="POST" action="/login?next={{ next | safe }}">
+            <form method="POST" action="{{ url_for('login.login') }}?next={{ next | safe }}">
                 {{ form.csrf_token }}
                 <div class="field">
                     <label class="label">{{ form.username.label }}</label>

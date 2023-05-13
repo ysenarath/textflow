@@ -32,7 +32,7 @@
             }
             $.ajax({
                 type: 'POST',
-                url: '{{ url_for('user_view.update_user') }}',
+                url: "{{ url_for('user_view.update_user') }}",
                 dataType: 'json',
                 contentType: "application/json; charset=utf-8",
                 data: JSON.stringify({data}),
