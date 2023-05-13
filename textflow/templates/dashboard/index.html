@@ -91,9 +91,9 @@
     Vue.component('status-component', {
         data: function () {
             return {
-                num_documents: 0,
-                num_completed: 0,
-                num_remaining: 0,
+                numDocuments: 0,
+                numCompleted: 0,
+                numRemaining: 0,
                 percentage: 0,
             }
         },
@@ -101,9 +101,9 @@
             initialize: function () {
                 $.get(url_for.get_status)
                     .then((payload) => {
-                        this.num_documents = payload.data['num_documents'];
-                        this.num_completed = payload.data['num_completed'];
-                        this.num_remaining = payload.data['num_remaining'];
+                        this.numDocuments = payload.data['num_documents'];
+                        this.numCompleted = payload.data['num_completed'];
+                        this.numRemaining = payload.data['num_remaining'];
                         this.percentage = payload.data['percentage'];
                     }).catch(console.log);
             }
@@ -122,16 +122,44 @@
     });
 
     Vue.component('documents-component', {
-        delimiters: ['%{', '}'],
-        template: `{% include 'dashboard/documents.html' %}`,
         data() {
             return {
                 isUploading: false,
                 isDeleting: false,
+                selectedFile: null,
+                // progress: 0,
+                // statusUpdateInterval: null,
             }
         },
+        // mounted() {
+        //     self.statusUpdateInterval = setInterval(this.statusUpdate, Math.pow(10, 3));
+        // },
+        // unmounted() {
+        //     if (this.statusUpdateInterval) {
+        //         clearInterval(this.statusUpdateInterval);
+        //     }
+        // },
         methods: {
-            upload_documents: function () {
+            // statusUpdate: function () {
+            //     // const self = this;
+            //     $.get(url_for.get_status)
+            //         .then((payload) => {
+            //             let numDocuments = payload.data['num_documents'];
+            //             this.progress = Math.ceil(1 - Math.min(Math.log(numDocuments + 1), 1)) * 100;
+            //             console.log(this.progress);
+            //         }).catch(console.log);
+            // },
+            changeSelectedFile: function () {
+                let uploadForm = document.getElementById('upload-documents-form');
+                var formData = new FormData(uploadForm);
+                selectedFile = formData.get('file');
+                if (selectedFile && selectedFile.name !== '') {
+                    this.selectedFile = selectedFile;
+                } else {
+                    this.selectedFile = null;
+                }
+            },
+            uploadDocuments: function () {
                 this.isUploading = true;
                 let uploadForm = document.getElementById('upload-documents-form');
                 var formData = new FormData(uploadForm);
@@ -153,7 +181,7 @@
                     }
                 );
             },
-            delete_documents: function () {
+            deleteDocuments: function () {
                 this.isDeleting = true;
                 $.ajax({
                     type: "DELETE",
@@ -171,7 +199,9 @@
                     }
                 );
             }
-        }
+        },
+        delimiters: ['%{', '}'],
+        template: `{% include 'dashboard/documents.html' %}`,
     });
 
     Vue.component('project-component', {

@@ -1,51 +1,46 @@
 <div>
     {% set form = forms.upload_documents %}
-    <div class="columns">
-        <div class="column">
-            <div class="row">
-                <form id="upload-documents-form" enctype="multipart/form-data">
-                    {{ form.csrf_token }}
-                    {{ form.hidden_tag() }}
-                    <div class="field is-horizontal">
-                        <div class="field-body">
-                            <div class="field">
-                                <label class="label">Upload</label>
-                                <div class="control">
-                                    <div class="file">
-                                        <label class="file-label">
-                                            {{ form.file(class_='file-input') }}
-                                            <span class="file-cta">
-                                                <span class="file-icon">
-                                                    <i class="fas fa-upload"></i>
-                                                </span>
-                                                <span class="file-label">Choose a file…</span>
-                                            </span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="field w-100">
-                                <label class="label">⠀</label>
-                                <input class="button is-link"
-                                 value="Submit" v-on:click="upload_documents" 
-                                 :disabled="isDeleting || isUploading"
-                                 />
-                            </div>
-                        </div>
-                    </div>
-                </form>
+    <form id="upload-documents-form" enctype="multipart/form-data">
+        {{ form.csrf_token }}
+        {{ form.hidden_tag() }}
+        <div class="field is-grouped is-grouped-centered">
+            <div class="control">
+                <div class="file has-name">
+                    <label class="file-label">
+                        {{ form.file(class_='file-input', **{'v-on:change':"changeSelectedFile"}) }}
+                        <!-- , **{'v-on:change':"uploadDocuments"} -->
+                        <span class="file-cta">
+                            <span class="file-icon">
+                                <i class="fas fa-file"></i>
+                            </span>
+                            <span class="file-label">
+                                Select File
+                            </span>
+                        </span>
+                        <span class="file-name">
+                            %{ selectedFile ? selectedFile.name : 'No file selected' }
+                        </span>
+                    </label>
+                </div>
             </div>
-        </div>
-        %{
-
-        }
-        <div class="column">
-            <div class="row">
-                <label class="label">⠀</label>
-                <button id="delete-documents-button" class="button is-link" style="min-width: 8em;"
-                    v-on:click="delete_documents" :disabled="isDeleting || isUploading">Detete
+            <div class="control has-icons-left">
+                <span class="icon is-small is-left">
+                    <i class="fas fa-upload" aria-hidden="true"></i>
+                </span>
+                <button class="button is-link" style="min-width: 8em;" v-on:click="uploadDocuments"
+                    :disabled="isDeleting || isUploading || !selectedFile">
+                    Upload
+                </button>
+            </div>
+            <div class="control has-icons-left">
+                <span class="icon is-small is-left">
+                    <i class="fas fa-trash" aria-hidden="true"></i>
+                </span>
+                <button class="button is-danger" style="min-width: 8em;" v-on:click="deleteDocuments"
+                    :disabled="isDeleting || isUploading">
+                    Detete
                 </button>
             </div>
         </div>
-    </div>
+    </form>
 </div>
