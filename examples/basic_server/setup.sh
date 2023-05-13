@@ -3,11 +3,11 @@
 # Author: Yasas Senarath
 
 # Initialize environment
-python -m venv venv
-source ./venv/bin/activate
+# python -m venv venv
+# source ./venv/bin/activate
 
 # pip install <path to textflow source>
-pip install ../../.
+# pip install ../../.
 
 # Clean the existing db
 rm database.sqlite config.json
@@ -62,3 +62,4 @@ textflow user assign -u guest3 -p 2
 
 # now run the project using __main__.sh
 # python app.py
+# python -m gunicorn  -w 4 'app:create_app()'
