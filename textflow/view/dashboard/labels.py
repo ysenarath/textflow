@@ -43,9 +43,9 @@ def create_label(project_id):
             services.db.session.add(obj)
             services.db.session.commit()
         else:
-            flash('Label with value "{}" exists. Please retry with another value.'.format(val))
+            flash(f'Label with value "{val}" already exists. Please retry with another value.')
     else:
-        flash('Invalid form input. Please check and try again. Error: {}'.format(add_label_form.errors))
+        flash('Invalid form input. Please check and try again.')
     return redirect(url_for('dashboard.index', project_id=project_id))
 
 
@@ -76,5 +76,5 @@ def delete_labels(project_id):
             services.delete_label(label_id)
             none_selected = False
     if none_selected:
-        flash('You have to select labels that need to be removed first.')
+        flash('No labels selected. Please select at least one label to delete.')
     return redirect(url_for('dashboard.index', project_id=project_id))

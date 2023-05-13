@@ -53,9 +53,9 @@ def create_user(project_id):
             services.db.session.add(a)
             services.db.session.commit()
         else:
-            flash('Username not found: "{}". Please enter a valid username.'.format(username))
+            flash(f'User with username "{username}" does not exist. Please retry with another username.')
     else:
-        flash('Invalid form input. Please check and try again. Error: {}'.format(update_user_form.errors))
+        flash('Invalid form input. Please check and try again.')
     return redirect(url_for('dashboard.index', project_id=project_id))
 
 
@@ -87,7 +87,7 @@ def delete_users(project_id):
                 services.remove_assignment(user_id, project_id)
                 none_selected = False
             else:
-                flash('You can\'t remove yourself from the project.')
+                flash('You cannot remove yourself from the project.')
     if none_selected:
-        flash('You have to select users that need to be removed first.')
+        flash('No user selected. Please select at least one user to remove.')
     return redirect(url_for('dashboard.index', project_id=project_id))
