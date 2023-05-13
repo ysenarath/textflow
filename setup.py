@@ -11,7 +11,7 @@ with open('requirements.txt') as fh:
 setuptools.setup(
     name="textflow",
     version="0.4.6",
-    author="Yasas Senarath",
+    author="Yasas",
     author_email="wayasas@gmail.com",
     description="Simple and extensible framework for end to end text based natural language understanding.",
     long_description=long_description,
