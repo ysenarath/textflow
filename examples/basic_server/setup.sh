@@ -9,6 +9,8 @@
 # pip install <path to textflow source>
 # pip install ../../.
 
+which python
+
 # Clean the existing db
 rm database.sqlite config.json
 
