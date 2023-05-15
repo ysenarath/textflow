@@ -291,6 +291,34 @@ def cli_user_update(ctx, username, password):
             logger.error('Error: {}'.format(str(e)))
 
 
+@user_group.command(name='delete')
+@click.option('-u', '--username', prompt='Username', help='Username for the account that needs the change of password')
+@click.pass_context
+def cli_user_delete(ctx, username):
+    """Deletes provided user from system.
+
+    :param ctx: context
+    :param username: username for the account that needs the change of password
+    :return:
+    """
+    config = ctx.obj['CONFIG']
+    tf = TextFlow(config)
+    with tf.app_context():
+        db.create_all()
+        try:
+            users = services.filter_users(username=username)
+            if len(users) == 1:
+                user = users[0]
+                db.session.delete(user)
+                db.session.commit()
+                logger.info('Completed successfully.')
+            else:
+                logger.error('Completed with an error: User not found.')
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logger.error('Error: {}'.format(str(e)))
+
+
 @user_group.command(name='assign')
 @click.option('-u', '--username', prompt='Username', help='Username of assignee.')
 @click.option('-p', '--project_id', prompt='Project ID', help='Project ID to assign.')
