@@ -18,10 +18,13 @@ class Project(db.Model):
     description = db.Column(db.Text, default='No description provided.')
     type = db.Column(db.String(80), nullable=False)
     documents = db.relationship('Document', backref='project')
-    labels = db.relationship('Label', backref='project', lazy=True, cascade='all, delete', order_by='Label.order')
-    users = db.relationship('Assignment', backref='project', lazy=True, cascade='all, delete')
+    labels = db.relationship('Label', backref='project',
+                             lazy=True, cascade='all, delete', order_by='Label.order')
+    users = db.relationship('Assignment', backref='project',
+                            lazy=True, cascade='all, delete')
     redundancy = db.Column(db.Integer, default=3)
     guideline_template = db.Column(db.String, nullable=True)
+    tasks = db.relationship('Task', backref='project', lazy=True)
 
     def render_guideline(self):
         """ Meta renderer used to create header for document when annotating.

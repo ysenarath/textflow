@@ -30,6 +30,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(512), nullable=False)
     projects = db.relationship('Assignment', backref='user', lazy=True, cascade='all, delete-orphan')
     profile = db.relationship('Profile', uselist=False, back_populates='user', lazy='joined', cascade='all, delete-orphan')
+    tasks = db.relationship('Task', back_populates='user', lazy='joined')
 
     def __init__(self, *args, **kwargs):
         super(User, self).__init__(*args, **kwargs)
