@@ -148,3 +148,4 @@ cython_debug/
 /examples/healther/
 /examples/advance_server/
 /examples/ch-annotation-server/
+/examples/basic_server/redis-stable
