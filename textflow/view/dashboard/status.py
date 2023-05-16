@@ -2,6 +2,7 @@
 
 from celery.result import AsyncResult
 from flask import jsonify
+from flask_login import current_user
 
 from textflow import auth, services
 from textflow.utils import jsend
@@ -21,6 +22,21 @@ def get_project_status(project_id):
     """
     status = services.get_status(project_id=project_id)
     return jsonify(jsend.success(status))
+
+
+@view.route('/api/status/projects/<project_id>/tasks')
+@auth.login_required
+@auth.roles_required(role=['admin', 'manager'])
+def list_project_tasks(project_id) -> list[str]:
+    user_id = current_user.id
+    tasks = []
+    for task in services.list_tasks(project_id=project_id, user_id=user_id):
+        tasks.append({
+            'id': task.id,
+            'user_id': task.user_id,
+            'project_id': task.project_id,
+        })
+    return jsonify(jsend.success(tasks))
 
 
 @view.route('/api/status/tasks/<id>')
