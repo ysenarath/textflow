@@ -13,7 +13,7 @@ from flask_wtf.file import FileRequired
 import pandas as pd
 
 from textflow import auth, services
-from textflow.model import Document
+from textflow.model import Document, Task
 from textflow.view.base import FakeBlueprint
 from textflow.utils import jsend
 
@@ -106,7 +106,15 @@ def delete_documents_task(user_id, project_id) -> int:
 def delete_documents(project_id):
     # from flask_login import current_user
     user_id = current_user.id
+    task_hash = hash(tuple('delete_documents', user_id, project_id))
     result = delete_documents_task.delay(user_id, project_id)
+    task = Task(
+        task_id=result.id,
+        hash=task_hash,
+        user_id=user_id,
+    )
+    services.db.session.add(task)
+    services.db.session.commit()
     return jsonify(jsend.success({
         'title': 'Scheduled documents deletion',
         'message': 'Documents deletion scheduled successfully',
