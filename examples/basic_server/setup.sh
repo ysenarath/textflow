@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Author: Yasas Senarath
-
 # Initialize environment
 # python -m venv venv
 # source ./venv/bin/activate
@@ -11,11 +9,19 @@
 
 which python
 
-wget https://download.redis.io/redis-stable.tar.gz
-tar -xzvf redis-stable.tar.gz
-rm redis-stable.tar.gz
-cd redis-stable
-make
+# How to install redis from source?
+# ---------------------------------
+
+# https://redis.io/docs/getting-started/installation/install-redis-from-source/
+
+# >>
+# wget https://download.redis.io/redis-stable.tar.gz
+# tar -xzvf redis-stable.tar.gz
+# rm redis-stable.tar.gz
+# cd redis-stable
+# make
+# cd ..
+# >>
 
 # Clean the existing db
 rm database.sqlite config.json
