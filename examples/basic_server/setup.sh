@@ -11,6 +11,12 @@
 
 which python
 
+wget https://download.redis.io/redis-stable.tar.gz
+tar -xzvf redis-stable.tar.gz
+rm redis-stable.tar.gz
+cd redis-stable
+make
+
 # Clean the existing db
 rm database.sqlite config.json
 

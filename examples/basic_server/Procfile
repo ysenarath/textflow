@@ -1,1 +1,2 @@
-web: venv/bin/gunicorn -w 4 -b :8002 "app:create_app()"
+web: ./venv/bin/gunicorn -w 4 -b :8002 "app:create_app()"
+redis: ./bin/redis-server
