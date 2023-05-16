@@ -109,7 +109,7 @@ def delete_documents(project_id):
     task_hash = f'delete_documents({user_id},{project_id})'
     result = delete_documents_task.delay(user_id, project_id)
     task = Task(
-        task_id=result.id,
+        id=result.id,
         hash=task_hash,
         user_id=user_id,
     )
