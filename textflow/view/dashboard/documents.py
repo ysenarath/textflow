@@ -106,7 +106,7 @@ def delete_documents_task(user_id, project_id) -> int:
 def delete_documents(project_id):
     # from flask_login import current_user
     user_id = current_user.id
-    task_hash = hash(tuple('delete_documents', user_id, project_id))
+    task_hash = f'delete_documents({user_id},{project_id})'
     result = delete_documents_task.delay(user_id, project_id)
     task = Task(
         task_id=result.id,
