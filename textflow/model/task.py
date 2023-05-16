@@ -1,7 +1,7 @@
 from textflow.services.base import database as db
 
 __all__ = [
-    'Tasks',
+    'Task',
 ]
 
 
