@@ -139,14 +139,16 @@ cython_debug/
 
 # Extra gitignore files
 .idea/
+.DS_Store
+
+# Ignore dependent servers
 /examples/basic_server/config.json
 /examples/basic_server/database.sqlite
 /examples/basic_server/database.sqlite-journal
 /examples/basic_server/redis-stable
 /examples/basic_server/celerybeat-schedule.db
-.DS_Store
 
-# Ignore dependent servers
 /examples/healther/
 /examples/advance_server/
 /examples/ch-annotation-server/
+/examples/textflow-citizenhelper/
