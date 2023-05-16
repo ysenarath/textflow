@@ -110,10 +110,13 @@ def delete_documents(project_id):
     result = delete_documents_task.delay(user_id, project_id)
     task = Task(
         id=result.id,
-        hash=task_hash,
         user_id=user_id,
+        project_id=project_id,
+        hash=task_hash,
     )
+    # add task to the database
     services.db.session.add(task)
+    # commit the changes
     services.db.session.commit()
     return jsonify(jsend.success({
         'title': 'Scheduled documents deletion',

@@ -614,7 +614,7 @@ def get_status(ctx, project_id):
 @service
 def list_tasks(ctx, user_id=None, project_id=None):
     """Lists tasks.
-    
+
     :param ctx: context
     :param user_id: user id
     :param project_id: project id
@@ -626,3 +626,21 @@ def list_tasks(ctx, user_id=None, project_id=None):
     if project_id is not None:
         q = q.filter(Task.project_id == project_id)
     return q.all()
+
+
+@service
+def get_task(ctx, user_id=None, project_id=None, task_id=None):
+    """Gets task.
+
+    :param ctx: context
+    :param task_id: task id
+    :return: task
+    """
+    q = Task.query
+    if user_id is not None:
+        return q.filter(Task.user_id == user_id)
+    if project_id is not None:
+        q = q.filter(Task.project_id == project_id)
+    # Return an instance based on the given primary key identifier,
+    # or None if not found.
+    return q.get(task_id)

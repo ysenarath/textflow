@@ -30,7 +30,7 @@ def get_project_status(project_id):
 def list_project_tasks(project_id) -> list[str]:
     user_id = current_user.id
     tasks = []
-    for task in services.list_tasks(project_id=project_id, user_id=user_id):
+    for task in services.list_tasks(user_id=user_id, project_id=project_id):
         tasks.append({
             'id': task.id,
             'user_id': task.user_id,
@@ -39,11 +39,21 @@ def list_project_tasks(project_id) -> list[str]:
     return jsonify(jsend.success(tasks))
 
 
-@view.route('/api/status/tasks/<id>')
+@view.route('/api/status/projects/<project_id>/tasks/<task_id>')
 @auth.login_required
 @auth.roles_required(role=['admin', 'manager'])
-def get_task_status(id: str) -> dict[str, object]:
-    result = AsyncResult(id)
+def get_task_status(project_id, task_id: str) -> dict[str, object]:
+    task = services.get_task(
+        user_id=current_user.id,
+        project_id=project_id,
+        task_id=task_id
+    )
+    if task is None:
+        return jsonify(jsend.error({
+            'title': 'Task not found',
+            'message': f'Task with id \'{task_id}\' does not exist',
+        }))
+    result = AsyncResult(task_id)
     status = {
         'ready': result.ready(),
         'successful': result.successful(),
