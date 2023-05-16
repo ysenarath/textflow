@@ -17,7 +17,7 @@ __all__ = [
     'Label',
     'Assignment',
     'User',
-    'Task'
+    'Task',
     'Dataset',
     'datasets',
     'estimators',
