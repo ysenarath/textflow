@@ -16,6 +16,6 @@ class Task(db.Model):
     hash = db.Column(db.String(512), nullable=False, default='default')
     # user id of the user who started the task is stored here to keep track of who started 
     # the task (todo: and who can cancel it)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     # project id of the project that the task is related to
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
