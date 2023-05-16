@@ -45,7 +45,7 @@
 <!--suppress JSUnresolvedFunction -->
 <script>
     let url_for = {
-        get_status: "{{ url_for('dashboard.get_status', project_id=project_id) }}",
+        get_project_status: "{{ url_for('dashboard.get_project_status', project_id=project_id) }}",
         get_agreement: "{{ url_for('dashboard.get_agreement', project_id=project_id) }}",
         download_dataset: "{{ url_for('dashboard.get_dataset', project_id=project_id) }}",
         get_dataset_names: "{{ url_for('dashboard.get_dataset_names', project_id=project_id) }}",
@@ -99,7 +99,7 @@
         },
         methods: {
             initialize: function () {
-                $.get(url_for.get_status)
+                $.get(url_for.get_project_status)
                     .then((payload) => {
                         this.numDocuments = payload.data['num_documents'];
                         this.numCompleted = payload.data['num_completed'];
