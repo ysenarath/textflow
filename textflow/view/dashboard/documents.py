@@ -1,5 +1,7 @@
 import json
 
+from celery import shared_task
+
 from flask import request, flash, jsonify
 
 from flask_login import current_user
@@ -93,14 +95,20 @@ def upload_documents(project_id):
     }))
 
 
+@shared_task(ignore_result=False)
+def delete_documents_task(user_id, project_id) -> int:
+    services.delete_documents(user_id, project_id)
+
+
 @view.route('/api/projects/<project_id>/dashboard/documents', methods=['DELETE'])
 @auth.login_required
 @auth.roles_required(role='admin')
 def delete_documents(project_id):
     # from flask_login import current_user
     user_id = current_user.id
-    services.delete_documents(user_id, project_id)
+    result = delete_documents_task.delay(user_id, project_id)
     return jsonify(jsend.success({
-        'title': 'Documents deleted',
-        'message': 'Documents deleted successfully',
+        'title': 'Scheduled documents deletion',
+        'message': 'Documents deletion scheduled successfully',
+        'task_id': result.id,
     }))
