@@ -146,10 +146,13 @@ def add_annotation(ctx, project_id, user_id, document_id, data):
     label = filter_label(project_id, value=data['label']['value'])
     annotation_set = get_annotation_set(user_id, project_id, document_id)
     if 'span' in data:
-        annotation_span = AnnotationSpan(start=data['span']['start'], length=data['span']['length'])
-        annotation = Annotation(label_id=label.id, span=annotation_span, annotation_set_id=annotation_set.id)
+        annotation_span = AnnotationSpan(
+            start=data['span']['start'], length=data['span']['length'])
+        annotation = Annotation(
+            label_id=label.id, span=annotation_span, annotation_set_id=annotation_set.id)
     else:
-        annotation = Annotation(label_id=label.id, annotation_set_id=annotation_set.id)
+        annotation = Annotation(
+            label_id=label.id, annotation_set_id=annotation_set.id)
     try:
         annotation_set.annotations.append(annotation)
         db.session.commit()
@@ -208,7 +211,8 @@ def get_annotation_set(ctx, user_id, project_id, document_id):
         .first()
     if annotation_set is None:
         # create annotation set if not exist
-        annotation_set = AnnotationSet(document_id=document_id, user_id=user_id)
+        annotation_set = AnnotationSet(
+            document_id=document_id, user_id=user_id)
         db.session.add(annotation_set)
         db.session.commit()
     return annotation_set
@@ -605,3 +609,20 @@ def get_status(ctx, project_id):
         'num_remaining': num_documents - num_completed,
         'percentage': int(num_completed / num_documents) * 100 if num_documents > 0 else 0,
     }
+
+
+@service
+def list_tasks(ctx, user_id=None, project_id=None):
+    """Lists tasks.
+    
+    :param ctx: context
+    :param user_id: user id
+    :param project_id: project id
+    :return: list of tasks
+    """
+    q = Task.query
+    if user_id is not None:
+        return q.filter(Task.user_id == user_id).all()
+    if project_id is not None:
+        q = q.filter(Task.project_id == project_id)
+    return q.all()
