@@ -16,3 +16,4 @@ Flask-Login
 Flask-SQLAlchemy
 sklearn-crfsuite
 Flask-WTF
+celery>=5.2.0

@@ -2,9 +2,9 @@
 import logging
 from os.path import expanduser
 
-from flask import Flask, Blueprint
+from flask import Flask
 
-from textflow import view, config
+from textflow import view, config, tasks
 from textflow.auth import login_manager
 from textflow.services.base import database as db
 
@@ -37,7 +37,9 @@ class TextFlow:
         """
         self.local_config = local_config
         self.app = self._create_app(**kwargs)
-        self._init_app()
+        db.init_app(self.app)
+        login_manager.init_app(self.app)
+        self.celery_app = tasks.init_app(self.app)
 
     def _create_app(self, url_prefix=None, **kwargs):
         """ Create App
@@ -65,14 +67,6 @@ class TextFlow:
                 server.wsgi_app, prefix=url_prefix
             )
         return server
-
-    def _init_app(self):
-        """ Initialize App
-
-        :return: initialize flask server
-        """
-        db.init_app(self.app)
-        login_manager.init_app(self.app)
 
     def app_context(self):
         """ Gets and returns app context from Flask app """
