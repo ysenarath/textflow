@@ -581,7 +581,7 @@ def generate_status_report(ctx, user_id, project_id=None):
 
 
 @service
-def get_status(ctx, project_id):
+def get_project_status(ctx, project_id):
     subquery = db.session.query(AnnotationSet.document_id, func.count(AnnotationSet.user_id)
                                 .label('frequency')) \
         .filter(AnnotationSet.completed.is_(True)) \

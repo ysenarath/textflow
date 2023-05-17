@@ -20,7 +20,7 @@ def get_project_status(project_id):
     :param project_id: project id
     :return: multiple types of score values
     """
-    status = services.get_status(project_id=project_id)
+    status = services.get_project_status(project_id=project_id)
     return jsonify(jsend.success(status))
 
 
