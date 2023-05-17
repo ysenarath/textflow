@@ -37,7 +37,8 @@ def cli(ctx, debug, mode, config_path, database_url):
         if config_path is None:
             config_path = os.path.join(os.getcwd(), 'config.json')
         if database_url is None:
-            config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////{}/database.sqlite'.format(os.getcwd())
+            config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////{}/database.sqlite'.format(
+                os.getcwd())
         else:
             config['SQLALCHEMY_DATABASE_URI'] = database_url
         if os.path.exists(config_path):
@@ -130,7 +131,8 @@ def cli_project_create(ctx, name, type):
             a = Project(name=name, type=type)
             db.session.add(a)
             db.session.commit()
-            logger.info('Project with name {} created successfully'.format(name))
+            logger.info(
+                'Project with name {} created successfully'.format(name))
         except SQLAlchemyError as e:
             db.session.rollback()
             logger.error('Error: {}'.format(str(e)))
@@ -181,7 +183,8 @@ def cli_project_delete(ctx, project_id):
                     db.session.delete(p)
                     db.session.commit()
             else:
-                logger.error('Error: No such project with ID={}.'.format(project_id))
+                logger.error(
+                    'Error: No such project with ID={}.'.format(project_id))
         except IntegrityError as e:
             db.session.rollback()
             logger.error('Error: {}'.format(str(e)))
@@ -210,10 +213,19 @@ def cli_project_show(ctx):
             if max_len[1] < len(p.name):
                 max_len[1] = len(p.name)
         # print table
-        table_format = '{:>' + str(max_len[0]) + '} {:<' + str(max_len[0]) + '}'
+        table_format = '{:>' + \
+            str(max_len[0]) + '} {:<' + str(max_len[0]) + '}'
         print(table_format.format('ID', 'Name'))
         for p in projects:
             print(table_format.format(*p))
+
+
+@project_group.command(name='status')
+@click.option('-p', '--project_id', help='Project ident', prompt='Project ID')
+@click.pass_context
+def status(ctx, project_id):
+    status = services.get_project_status(project_id)
+    click.echo(status)
 
 
 @user_group.command(name='create')
@@ -339,10 +351,12 @@ def cli_user_assign(ctx, username, project_id, role):
         try:
             u = services.filter_users(username=username)
             if len(u) == 1:
-                r = services.get_assignment(user_id=u[0].id, project_id=project_id)
+                r = services.get_assignment(
+                    user_id=u[0].id, project_id=project_id)
                 if r is None:
                     if role is not None:
-                        a = Assignment(user_id=u[0].id, project_id=project_id, role=role)
+                        a = Assignment(
+                            user_id=u[0].id, project_id=project_id, role=role)
                     else:
                         a = Assignment(user_id=u[0].id, project_id=project_id)
                     db.session.add(a)
@@ -354,7 +368,8 @@ def cli_user_assign(ctx, username, project_id, role):
                         db.session.commit()
                         logger.info('Completed successfully.')
                     else:
-                        logger.error('Error: {}'.format('unable to update existing assignment - invalid parameters'))
+                        logger.error('Error: {}'.format(
+                            'unable to update existing assignment - invalid parameters'))
             else:
                 logger.error('Error: {}'.format('Invalid user'))
         except SQLAlchemyError as e:
@@ -379,7 +394,8 @@ def cli_user_unassign(ctx, username, project_id):
         db.create_all()
         try:
             u = services.filter_users(username=username)
-            status = services.remove_assignment(user_id=u[0].id, project_id=project_id)
+            status = services.remove_assignment(
+                user_id=u[0].id, project_id=project_id)
             if status:
                 logger.info('Completed successfully.')
             else:
@@ -437,7 +453,8 @@ def cli_documents_upload(ctx, project_id, input):
             with open(input, 'r', encoding='utf-8') as fp:
                 for line in fp:
                     d = json.loads(line)
-                    a = Document(id_str=d['id'], text=d['text'], meta=d['meta'], project_id=project_id)
+                    a = Document(id_str=d['id'], text=d['text'],
+                                 meta=d['meta'], project_id=project_id)
                     db.session.add(a)
                 db.session.commit()
             logger.info('Completed successfully.')
@@ -488,8 +505,10 @@ def cli_annotation_create(ctx, project_id, document_id, user_id, label, span):
     with tf.app_context():
         db.create_all()
         try:
-            doc = services.filter_document.ignore_user(None, project_id=int(project_id), id_str=document_id)
-            data = {'label': {'value': label}, 'span': {'start': span[0], 'length': span[1] - span[0]}}
+            doc = services.filter_document.ignore_user(
+                None, project_id=int(project_id), id_str=document_id)
+            data = {'label': {'value': label}, 'span': {
+                'start': span[0], 'length': span[1] - span[0]}}
             services.add_annotation(project_id, user_id, doc.id, data)
             logger.info('Completed successfully.')
         except SQLAlchemyError as err:
@@ -538,14 +557,6 @@ def disagreement(ctx, project_id, blacklist, scoring):
         for X, y in zip(dataset.X, dataset.y):
             if '?' in y:
                 print(X)
-
-
-@dataset_group.command('statistics')
-@click.option('-p', '--project_id', help='Project ident', prompt='Project ID')
-@click.pass_context
-def statistics(ctx, project_id):
-    status = services.get_status(project_id)
-    click.echo(status)
 
 
 def main():
