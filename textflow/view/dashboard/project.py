@@ -1,4 +1,4 @@
-from flask import url_for
+from flask import url_for, flash
 from flask_login import current_user
 from flask_wtf import FlaskForm
 from werkzeug.utils import redirect
@@ -23,9 +23,11 @@ view = FakeBlueprint()
 class ProjectForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[DataRequired()])
-    type = SelectField('Type', validators=[DataRequired()], choices=project_types)
-    redundancy = IntegerField('Redundancy', validators=[DataRequired(), NumberRange(min=1)])
-    guideline_template = TextAreaField('Guideline', validators=[DataRequired()])
+    type = SelectField('Type', validators=[
+                       DataRequired()], choices=project_types)
+    redundancy = IntegerField('Redundancy', validators=[
+                              DataRequired(), NumberRange(min=1)])
+    guideline_template = TextAreaField('Guideline', validators=[])
 
 
 @view.route('/projects/<project_id>/dashboard/project', methods=['POST'])
@@ -34,6 +36,12 @@ class ProjectForm(FlaskForm):
 def post_project(project_id):
     p = services.get_project(user_id=current_user.id, project_id=project_id)
     project_form = ProjectForm(obj=p)
-    project_form.populate_obj(p)
-    services.db.session.commit()
+    if project_form.validate_on_submit():
+        project_form.populate_obj(p)
+        if p.guideline_template == '':
+            flash('The guideline template is empty.', category='warning')
+            p.guideline_template = None
+        services.db.session.commit()
+    else:
+        flash('Invalid form input. Please check and try again.')
     return redirect(url_for('dashboard.index', project_id=project_id))

@@ -22,6 +22,12 @@
                         {{ create_label_form['order'](class_="input", type='number') }}
                     </p>
                 </div>
+                <div class="field w-100">
+                    <label class="label">{{ create_label_form['color'].label }}</label>
+                    <p class="control">
+                        {{ create_label_form['color'](class_="input", type='color') }}
+                    </p>
+                </div>
                 <div class="field">
                     <label class="label">⠀</label>
                     <div class="control is-flex is-justify-content-flex-end">
@@ -53,6 +59,7 @@
                 <th>Label</th>
                 <th>Value</th>
                 <th>Order</th>
+                <th>Color</th>
             </tr>
             {% for row in update_labels_form.labels %}
                 {{ row.csrf_token }}
@@ -61,6 +68,7 @@
                     <td>{{ row['label'](class_="input") }}</td>
                     <td>{{ row['value'](class_="input") }}</td>
                     <td>{{ row['order'](class_="input", type='number') }}</td>
+                    <td>{{ row['color'](class_="input") }}</td>
                 </tr>
             {% endfor %}
         </table>

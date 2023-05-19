@@ -2,7 +2,15 @@
 
 {% block styles %}
 {{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='styles/annotator.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='packages/recogito-js/recogito.min.css') }}">
+<style>
+{% for label in project.labels %}
+.annotation-{{ label.value }} {
+    background-color: rgba({{ label.color_rgb }}, 0.2);
+    border-bottom: 2px solid {{ label.color }};
+}
+{% endfor %}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -54,57 +62,46 @@
 {% if (document is defined) and (document is not none) %}
 <div class="columns">
     <div class="column">
-        {% if project.type == 'sequence_labeling' %}
-        <div class="box">
-            <div class="annotator-div is-family-primary is-size-4" id="annotationField"></div>
-        </div>
-        {% else %}
-        <div class="card">
+        <div class="row">
             {% for ll in project.labels %}
             <label>
-                <input type="checkbox" value={{ ll.value }} id="var_option_{{ ll.value }}"
+                <input type="checkbox" value="{{ ll.value }}" id="var_option_{{ ll.value }}"
                     onchange="submit(getLabel('{{ ll.value }}'), 'label')" hidden>
             </label>
             {% endfor %}
-            <div class="card-header pl-5" style="min-height: 3.5em; background: #effaf3;">
-                <div class="field is-grouped is-grouped-multiline pt-3">
-                    {% for ll in project.labels %}
-                    <div class="control" id="option_{{ ll.value }}" hidden>
-                        <div class="tags has-addons">
-                            <span class="tag is-medium is-info">{{ ll.label }}</span>
-                            <a class="tag is-medium is-info" onclick="addLabel('{{ ll.value }}')">
-                                <i class="fas fa-plus-circle"></i>
-                            </a>
-                        </div>
+            <div class="field is-grouped is-grouped-multiline pt-3">
+                {% for ll in project.labels %}
+                <div class="control" id="option_{{ ll.value }}" hidden>
+                    <div class="tags has-addons" onclick="addLabel('{{ ll.value }}')">
+                        <span class="tag is-medium">{{ ll.label }}</span>
+                        <span class="tag is-medium" style="color: {{ ll.color }}">
+                            <i class="fas fa-times-circle"></i>
+                        </span>
                     </div>
-                    {% endfor %}
                 </div>
-            </div>
-            <div class="card-content">
-                <div class="field is-grouped is-grouped-multiline">
-                    {% for ll in project.labels %}
-                    <div class="control" id="selected_option_{{ ll.value }}" hidden>
-                        <div class="tags has-addons">
-                            <span class="tag is-medium is-success">{{ ll.label }}</span>
-                            <a class="tag is-medium is-success" onclick="removeLabel('{{ ll.value }}')">
-                                <i class="fas fa-times-circle"></i>
-                            </a>
-                        </div>
+                <div class="control" id="selected_option_{{ ll.value }}" hidden>
+                    <div class="tags has-addons" onclick="removeLabel('{{ ll.value }}')">
+                        <span class="tag is-medium">{{ ll.label }}</span>
+                        <span class="tag is-medium" style="color: {{ ll.color }}">
+                            <i class="fas fa-check-circle"></i>
+                        </span>
                     </div>
-                    {% endfor %}
                 </div>
-                <p class="subtitle">{{ document.text | safe }}</p>
+                {% endfor %}
             </div>
         </div>
-        {% endif %}
-    </div>
-    {% if project.render_guideline() is not none %}
-    <div id="guideline" class="column is-one-third-desktop" style="display: none;">
-        <div class="box">
-            {{ project.render_guideline() | safe }}
+        <div class="row py-3">
+            <div id="annotation-field" class="plaintext">{{ document.text | safe }}</div>
         </div>
     </div>
-    {% endif %}
+</div>
+{% if project.render_guideline() is not none %}
+<div id="guideline" class="column is-one-third-desktop" style="display: none;">
+    <div class="box">
+        {{ project.render_guideline() | safe }}
+    </div>
+</div>
+{% endif %}
 </div>
 {% else %}
 <section class="hero is-fullheight-with-stuff">
@@ -119,9 +116,6 @@
             <h2 class="is-size-4 has-text-centered">
                 We appreciate your dedication and commitment to engaging with this project.
             </h2>
-            <!-- <h2 class="is-size-4 has-text-centered">
-                Thank you for being a valuable member of our community.
-            </h2> -->
         </div>
     </div>
 </section>
@@ -130,7 +124,8 @@
 
 {% block scripts %}
 {{ super() }}
-<script src="{{ url_for('static', filename='scripts/annotator.js') }}"></script>
+<script src="{{ url_for('static', filename='packages/recogito-js/recogito.min.js') }}"></script>
+<script src="{{ url_for('static', filename='packages/recogito-js/recogito-widgets.min.js') }}"></script>
 <!--suppress JSUnresolvedFunction, JSUnresolvedVariable -->
 {% if (document is defined) and (document is not none) %}
 <script>
@@ -140,13 +135,40 @@
         annotate_next: "{{ url_for('annotate.annotate_next', project_id = project.id) }}",
     };
 
+    const documentID = '{{ document.id | safe }}';
+
     const documentText = '{{ document.text | safe }}';
 
     const projectType = '{{ project.type }}';
 
     const labelOptions = JSON.parse('{{ options | safe }}');
 
+    let currentSelection = null;
+
     let annotator = null;
+
+    const setDocumentAnnotations = function (annotations) {
+        let checkedLabels = [];
+        annotations.forEach(function (annotation) {
+            annotation.labels.forEach(function (label) {
+                checkedLabels.push(label.value);
+            });
+        });
+        labelOptions.forEach(function (label) {
+            let var_checkbox = $('#var_option_' + label.value);
+            let removeLabelBtn = $('#selected_option_' + label.value);
+            let addLabelBtn = $('#option_' + label.value);
+            if (checkedLabels.includes(label.value)) {
+                var_checkbox.prop('checked', true);
+                removeLabelBtn.show();
+                addLabelBtn.hide();
+            } else {
+                var_checkbox.prop('checked', false);
+                removeLabelBtn.hide();
+                addLabelBtn.show();
+            }
+        });
+    }
 
     function loading(state = true) {
         let nextButton = document.getElementById('nextButton');
@@ -166,26 +188,74 @@
         }
     }
 
-    /**
-     * Gets status of checkbox indicated by provided label ident
-     *
-     * @param id: label id
-     */
     function getLabel(id) {
         let checkbox = $('#option_' + id);
         return { value: checkbox.val(), status: checkbox.prop('checked') };
     }
 
-    function removeLabel(id) {
+    function addLabel(id) {
         let checkbox = $('#var_option_' + id);
-        let data = { value: checkbox.val(), status: false };
+        let data = {
+            'labels': [
+                { value: checkbox.val(), status: true },
+            ]
+        };
         submit(data, 'label');
     }
 
-    function addLabel(id) {
+    function removeLabel(id) {
         let checkbox = $('#var_option_' + id);
-        let data = { value: checkbox.val(), status: true };
+        let data = {
+            'labels': [
+                { value: checkbox.val(), status: false },
+            ],
+        };
         submit(data, 'label');
+    }
+
+    /**
+     * Update annotations
+     */
+    function refresh() {
+        loading();
+        $.get(url_for.annotations_api).then(
+            (payload) => {
+                const data = payload['data'];
+                setDocumentAnnotations(data);
+                annotator.clearAnnotations();
+                data.forEach((annotation) => {
+                    if (annotation.span !== null) {
+                        let labels = [];
+                        if (annotation.labels !== null) {
+                            annotation.labels.forEach((label) => {
+                                labels.push({
+                                    'type': 'TextualBody',
+                                    'value': label.value,
+                                    'purpose': 'classifying'
+                                });
+                            });
+                        }
+                        annotation = {
+                            '@context': 'http://www.w3.org/ns/anno.jsonld',
+                            'id': annotation.id,
+                            'type': 'Annotation',
+                            'body': labels,
+                            'target': {
+                                'selector': [{
+                                    'type': 'TextPositionSelector',
+                                    'start': annotation.span.start,
+                                    'end': annotation.span.start + annotation.span.length
+                                }]
+                            }
+                        };
+                        annotator.addAnnotation(annotation);
+                    };
+                });
+                loading(false);
+            }
+        ).catch((error) => {
+            console.log(error);
+        });
     }
 
     /**
@@ -214,97 +284,69 @@
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(payload),
             success: function (data) {
+                const message = data['data'];
+                toastr.info(message['body']);
                 loading(false);
-                refresh(target);
+                refresh();
+                if (target !== null) {
+                    window.location.href = target;
+                }
             },
         });
     }
 
-    /**
-     * Update annotations
-     */
-    function refreshAnnotations() {
-        loading();
-        $.get(url_for.annotations_api).then(
-            (data) => {
-                let annotations = data.data;
-                annotator.setAnnotations(annotations);
-                loading(false);
+    const createAnnotation = (annotation) => {
+        const annotationID = annotation.id;
+        let span = null;
+        annotation.target.selector.forEach((selector) => {
+            if (selector.type === 'TextPositionSelector') {
+                span = {
+                    start: selector.start,
+                    length: selector.end - selector.start
+                };
             }
-        ).catch((error) => {
-            console.log(error);
         });
-    }
-
-    /**
-     * Refresh page
-     *
-     * @param target:
-     */
-    function refresh(target) {
-        if (target === null) {
-            refreshAnnotations();
-        } else {
-            window.location.href = target;
+        let labels = [];
+        annotation.body.forEach((body) => {
+            if (body.type === 'TextualBody') {
+                labels.push({ 'value': body.value });
+            }
+        });
+        let data = { span, labels };
+        if (!annotationID.toString().startsWith('#')) {
+            data['id'] = annotationID;
         }
+        submit(data, 'annotation');
+    };
+
+    const deleteAnnotation = (annotation) => {
+        submit(annotation, 'annotation', 'DELETE');
     }
 
     /**
      * Initialize page
      */
     function initialize() {
-        if (projectType === 'sequence_labeling') {
-            // set new annotator
-            annotator = new Annotator('annotationField', documentText, labelOptions);
-            // listen to events - delete
-            annotator.addEventListener('delete', (annotation) => {
-                submit(annotation, 'annotation', 'DELETE');
-            });
-            // listen to events - update
-            annotator.addEventListener('update', (annotation, value) => {
-                annotation.label = value;
-                submit(annotation, 'annotation');
-            });
-            // initialize annotator
-            annotator.initialize();
-        } else {
-            annotator = {
-                setAnnotations: function (annotations) {
-                    let checkedLabels = [];
-                    for (let ak in annotations) {
-                        if (annotations.hasOwnProperty(ak)) {
-                            let lv = annotations[ak].label;
-                            checkedLabels.push(lv);
-                        }
-                    }
-                    for (let lk in labelOptions) {
-                        if (labelOptions.hasOwnProperty(lk)) {
-                            let lv = labelOptions[lk].value;
-                            let var_checkbox = $('#var_option_' + lv);
-                            if (checkedLabels.includes(lv)) {
-                                var_checkbox.prop('checked', true);
-                            } else {
-                                var_checkbox.prop('checked', false);
-                            }
-                            let removeLabelBtn = $('#selected_option_' + lv);
-                            if (checkedLabels.includes(lv)) {
-                                removeLabelBtn.show();
-                            } else {
-                                removeLabelBtn.hide();
-                            }
-                            let addLabelBtn = $('#option_' + lv);
-                            if (checkedLabels.includes(lv)) {
-                                addLabelBtn.hide();
-                            } else {
-                                addLabelBtn.show();
-                            }
-                        }
-                    }
+        annotator = Recogito.init({
+            content: document.getElementById('annotation-field'), // ID or DOM element
+            locale: 'auto',
+            allowEmpty: true,
+            widgets: [
+                { widget: recogito.widgets.Classify, options: labelOptions },
+            ],
+            formatter: (annotation) => {
+                classes_ = (annotation.bodies.length > 1) ? 'has-multiple-bodies' : '';
+                if (annotation.bodies.length > 0) {
+                    classes_ += ' annotation-' + annotation.bodies[0].value;
                 }
-            }
-        }
+                return classes_
+            },
+        });
+        annotator.on('createAnnotation', createAnnotation);
+        annotator.on('updateAnnotation', createAnnotation);
+        annotator.on('deleteAnnotation', deleteAnnotation);
         // refresh page
-        refresh(null);
+        refresh();
     }
 
     /**

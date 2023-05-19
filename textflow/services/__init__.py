@@ -127,7 +127,7 @@ def filter_annotations_by_label(ctx, user_id, project_id, document_id, label_val
         .filter(AnnotationSet.user_id == user_id, AnnotationSet.document_id == document_id) \
         .join(Document, Document.id == AnnotationSet.document_id) \
         .filter(Document.project_id == project_id) \
-        .join(Label, Annotation.label_id == Label.id) \
+        .join(Annotation.labels) \
         .filter(Label.value == label_value) \
         .all()
 
@@ -140,26 +140,34 @@ def add_annotation(ctx, project_id, user_id, document_id, data):
     :param project_id: project id
     :param user_id: user id (not username)
     :param document_id: document id
-    :param data: annotation params
+    :param data: annotation params, label details
     :return: adds annotation and return status
     """
-    label = filter_label(project_id, value=data['label']['value'])
     annotation_set = get_annotation_set(user_id, project_id, document_id)
     if 'span' in data:
         annotation_span = AnnotationSpan(
-            start=data['span']['start'], length=data['span']['length'])
+            start=data['span']['start'],
+            length=data['span']['length']
+        )
         annotation = Annotation(
-            label_id=label.id, span=annotation_span, annotation_set_id=annotation_set.id)
+            span=annotation_span,
+            annotation_set_id=annotation_set.id
+        )
     else:
         annotation = Annotation(
-            label_id=label.id, annotation_set_id=annotation_set.id)
+            annotation_set_id=annotation_set.id
+        )
+    for label in data['labels']:
+        # get the (actual) label from the value of the label
+        label = filter_label(project_id, value=label['value'])
+        annotation.labels.append(label)
     try:
         annotation_set.annotations.append(annotation)
         db.session.commit()
-        return True
+        return annotation.id
     except SQLAlchemyError as err:
         db.session.rollback()
-        return False
+        return None
 
 
 @service
@@ -168,6 +176,7 @@ def delete_annotation(ctx, user_id, project_id, annotation_id):
 
     :return: whether annotation is deleted or not
     """
+    # delete annotation by id but make sure the provided params are correct
     annotation = Annotation.query \
         .filter(Annotation.id == annotation_id) \
         .join(AnnotationSet, Annotation.annotation_set_id == AnnotationSet.id) \
@@ -280,13 +289,26 @@ def update_annotation(ctx, project_id, user_id, annotation_id, data):
     :return: whether updated or not
     """
     annotation = get_annotation(project_id, user_id, annotation_id)
+    status = True
     if annotation is None:
-        return False
+        status = False
     else:
-        label = filter_label(project_id, value=data['label']['value'])
-        annotation.label = label
+        # delete all associated labels of annotation
+        annotation.labels.clear()
+        # add new labels
+        for label in data['labels']:
+            # get the (actual) label from the value of the label
+            label = filter_label(project_id, value=label['value'])
+            if label is not None:
+                annotation.labels.append(label)
+            else:
+                status = False
+                break
+    if status:
         db.session.commit()
-    return True
+    else:
+        db.session.rollback()
+    return status
 
 
 @service
@@ -553,14 +575,14 @@ def generate_status_report(ctx, user_id, project_id=None):
             .filter(AnnotationSet.user_id == user_id, Document.project_id == project_id,
                     AnnotationSet.completed.is_(True)) \
             .count()
-        num_annotations = db.session.query(Label.value, Label.label, func.count(distinct(Annotation.id))) \
-            .outerjoin(Annotation, Annotation.label_id == Label.id) \
-            .filter(Label.project_id == project_id) \
-            .outerjoin(AnnotationSet, AnnotationSet.id == Annotation.annotation_set_id) \
-            .filter(or_(AnnotationSet.user_id == user_id, AnnotationSet.user_id.is_(None))) \
-            .group_by(Label.label) \
-            .order_by(Label.order) \
-            .all()
+        # num_annotations = db.session.query(Label.value, Label.label, func.count(distinct(Annotation.id))) \
+        #     .outerjoin(Annotation, Annotation.label_id == Label.id) \
+        #     .filter(Label.project_id == project_id) \
+        #     .outerjoin(AnnotationSet, AnnotationSet.id == Annotation.annotation_set_id) \
+        #     .filter(or_(AnnotationSet.user_id == user_id, AnnotationSet.user_id.is_(None))) \
+        #     .group_by(Label.label) \
+        #     .order_by(Label.order) \
+        #     .all()
         num_assigned = Document.query \
             .filter(Document.project_id == project_id) \
             .outerjoin(AnnotationSet, and_(AnnotationSet.document_id == Document.id,
@@ -572,7 +594,7 @@ def generate_status_report(ctx, user_id, project_id=None):
         else:
             progress = num_completed * 100 / num_assigned
         return dict(
-            num_annotations={v: (l, c) for v, l, c in num_annotations},
+            # num_annotations={v: (l, c) for v, l, c in num_annotations},
             num_assigned=num_assigned,
             num_completed=num_completed,
             progress=progress,
