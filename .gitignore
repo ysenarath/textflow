@@ -152,3 +152,4 @@ cython_debug/
 /examples/advance_server/
 /examples/ch-annotation-server/
 /examples/textflow-citizenhelper/
+/examples/basic_server/dump.rdb
