@@ -2,6 +2,7 @@ Flask
 WTForms
 joblib
 Werkzeug
+Pillow>=9.3.0
 scikit-learn>=1.0.0
 pandas
 nltk
