@@ -1,33 +1,44 @@
-{% extends '_layouts/default.html' %}
+{% extends 'layouts/base.html' %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    html,
+    body {
+        height: 100%;
+    }
+
+    .form-login-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .form-login {
+        max-width: 400px;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-    <div class="is-flex is-justify-content-center mt-6">
-        <div class="box" style="width: 450px;">
-            <h1 class="title has-text-centered">Login</h1>
-            <form method="POST" action="{{ url_for('login.login') }}?next={{ next | safe }}">
-                {{ form.csrf_token }}
-                <div class="field">
-                    <label class="label">{{ form.username.label }}</label>
-                    <p class="control has-icons-left has-icons-right">
-                        {{ form.username(size=24, class_="input") }}
-                        <span class="icon is-small is-left">
-                        <i class="fas fa-user"></i>
-                    </span>
-                    </p>
-                </div>
-                <div class="field">
-                    <label class="label">{{ form.password.label }}</label>
-                    <p class="control has-icons-left">
-                        {{ form.password(size=24, class_="input") }}
-                        <span class="icon is-small is-left">
-                        <i class="fas fa-lock"></i>
-                    </span>
-                    </p>
-                </div>
-                <div class="buttons has-addons is-right pt-3">
-                    <input class="button is-link is-light" type="submit" value="Login"/>
-                </div>
-            </form>
-        </div>
+<div class="form-login-container h-100 w-100 z-3">
+    <div class="d-flex flex-rows h-100 v-100">
+        <form class="form-login w-md-100 m-auto py-2 px-4 border rounded-3 bg-body-tertiary" method="POST"
+            action="{{ url_for('login.login') }}?next={{ next | safe }}">
+            {{ form.csrf_token }}
+            <h1 class="text-center">Login</h1>
+            <div class="form-floating mb-3">
+                {{ form.username(size=24, class_="form-control", placeholder="Username") }}
+                <label for="username">{{ form.username.label }}</label>
+            </div>
+            <div class="form-floating mb-3">
+                {{ form.password(size=24, class_="form-control", placeholder="Password") }}
+                <label for="password">{{ form.password.label }}</label>
+            </div>
+            <div class="form-floating mb-3 text-end">
+                <input class="btn btn-primary mb-3" type="submit" value="Login" />
+            </div>
+        </form>
     </div>
+</div>
 {% endblock %}

@@ -1,69 +1,46 @@
-{% extends '_layouts/default.html' %}
+{% extends 'layouts/base.html' %}
+
+{% set activePage = 'Project' %}
+
+{% block header %}
+{% include 'includes/project-header.html.jinja' %}
+{% endblock %}
 
 {% block content %}
-    <div class="columns">
-        <div class="column">
-            <div class="buttons">
-                <a href="{{ url_for('project.view_project', project_id=project.id) }}" class="button is-highlight has-text-link is-static">
-                    <span class="icon"><i class="fas fa-tasks" aria-label="Project"></i></span><span>Project</span>
-                </a>
-                <a href="{{ url_for('project.view_project_history', project_id=project.id) }}" class="button is-highlight">
-                    <span class="icon"><i class="fas fa-history"></i></span><span>History</span>
-                </a>
-                <a href="{{ url_for('annotate.annotate_next', project_id=project.id) }}" class="button is-highlight">
-                    <span class="icon"><i class="fas fa-tag"></i></span><span>Annotate</span>
-                </a>
+<div class="px-4 py-5 my-5 text-center border-bottom">
+    <h1 class="display-5 fw-bold text-body-emphasis">{{ project.name }}</h1>
+    <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4">
+            {{ project.description }}
+        </p>
+    </div>
+</div>
+<div class="container px-4" id="icon-grid">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        <div class="col d-flex align-items-start">
+            <div>
+                <h2 class="fw-bold mb-0 fs-4">{{ project_status.num_documents }}</h2>
+                <p>The total number of documents assigned to you.</p>
+            </div>
+        </div>
+        <div class="col d-flex align-items-start">
+            <div>
+                <h2 class="fw-bold mb-0 fs-4">{{ project_status.num_completed }}</h2>
+                <p>The number of documents completed by you.</p>
+            </div>
+        </div>
+        <div class="col d-flex align-items-start">
+            <div>
+                <h2 class="fw-bold mb-0 fs-4">{{ project_status.num_remaining }}</h2>
+                <p>The number of documents remaining to be completed by you.</p>
+            </div>
+        </div>
+        <div class="col d-flex align-items-start">
+            <div>
+                <h2 class="fw-bold mb-0 fs-4">{{ '%d' | format(project_status.progress) }}%</h2>
+                <p>The percentage of documents completed by you.</p>
             </div>
         </div>
     </div>
-    <div class="section">
-        <!-- Header -->
-        <div class="block has-text-centered">
-            <h1 class="title">{{ project.name }}</h1>
-            <h2 class="subtitle">{{ project.description }}</h2>
-        </div>
-        <!-- Information -->
-        <div class="block p-6">
-            <nav class="level">
-                <div class="level-item has-text-centered">
-                    <div>
-                        <p class="heading">Total</p>
-                        <p class="title">{{ project_status.num_assigned }}</p>
-                    </div>
-                </div>
-                <div class="level-item has-text-centered">
-                    <div>
-                        <p class="heading">Completed</p>
-                        <p class="title">{{ project_status.num_completed }}</p>
-                    </div>
-                </div>
-                <div class="level-item has-text-centered">
-                    <div>
-                        <p class="heading">Remaining</p>
-                        <p class="title">{{ project_status.num_assigned - project_status.num_completed }}</p>
-                    </div>
-                </div>
-                <div class="level-item has-text-centered">
-                    <div>
-                        <p class="heading">Progress</p>
-                        <p class="title">{{ '%d' | format(project_status.progress) }}%</p>
-                    </div>
-                </div>
-            </nav>
-        </div>
-        <!-- <div class="block">
-            <div class="columns is-mobile is-centered">
-                <div class="field is-grouped is-grouped-multiline">
-                    {% for k, v in project_status.num_annotations.items() %}
-                        <div class="control">
-                            <div class="tags has-addons are-medium">
-                                <span class="tag is-highlight">{{ v[0] }}</span>
-                                <span class="tag is-info">{{ v[1] }}</span>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div> -->
-    </div>
+</div>
 {% endblock %}

@@ -1,46 +1,18 @@
-<div>
-    {% set form = forms.upload_documents %}
-    <form id="upload-documents-form" enctype="multipart/form-data">
-        {{ form.csrf_token }}
-        {{ form.hidden_tag() }}
-        <div class="field is-grouped is-grouped-centered">
-            <div class="control">
-                <div class="file has-name">
-                    <label class="file-label">
-                        {{ form.file(class_='file-input', **{'v-on:change':"changeSelectedFile"}) }}
-                        <!-- , **{'v-on:change':"uploadDocuments"} -->
-                        <span class="file-cta">
-                            <span class="file-icon">
-                                <i class="fas fa-file"></i>
-                            </span>
-                            <span class="file-label">
-                                Select File
-                            </span>
-                        </span>
-                        <span class="file-name">
-                            %{ selectedFile ? selectedFile.name : 'No file selected' }
-                        </span>
-                    </label>
-                </div>
-            </div>
-            <div class="control has-icons-left">
-                <span class="icon is-small is-left">
-                    <i class="fas fa-upload" aria-hidden="true"></i>
-                </span>
-                <button class="button is-link" style="min-width: 8em;" v-on:click="uploadDocuments"
-                    :disabled="isDeleting || isUploading || !selectedFile">
-                    Upload
-                </button>
-            </div>
-            <div class="control has-icons-left">
-                <span class="icon is-small is-left">
-                    <i class="fas fa-trash" aria-hidden="true"></i>
-                </span>
-                <button class="button is-danger" style="min-width: 8em;" v-on:click="deleteDocuments"
-                    :disabled="isDeleting || isUploading">
-                    Detete
-                </button>
-            </div>
-        </div>
-    </form>
-</div>
+{% set form = forms.upload_documents %}
+
+<form id="upload-documents-form" enctype="multipart/form-data">
+    {{ form.csrf_token }}
+    {{ form.hidden_tag() }}
+    <label class="file-label">
+        {{ form.file(class_='form-control', **{'v-on:change':"changeSelectedFile"}) }}
+        <!-- \${ selectedFile ? selectedFile.name : 'No file selected' } -->
+    </label>
+    <button class="btn btn-primary" style="min-width: 8em;" v-on:click="uploadDocuments"
+        :disabled="isDeleting || isUploading || !selectedFile">
+        Upload
+    </button>
+    <button class="btn btn-danger" style="min-width: 8em;" v-on:click="deleteDocuments"
+        :disabled="isDeleting || isUploading">
+        Detete
+    </button>
+</form>

@@ -1,0 +1,61 @@
+<style>
+{# {% for label in project.labels %}
+.annotation-{{ label.value }} {
+    background-color: rgba({{ label.color_rgb }}, 0.2);
+    border-bottom: 2px solid {{ label.color }};
+}
+
+#option-{{ label.value }} > .tags > .tag {
+    background-color: rgba({{ label.color_rgb }}, 0.2);
+}
+
+#selected-option-{{ label.value }} > .tags > .tag {
+    background-color: rgba({{ label.color_rgb }}, 1);
+    color: #ffffff;
+}
+
+.mrm-classify-widget > .annotation-button-{{ label.value }} {
+    color: {{ label.color }};
+}
+
+.mrm-classify-widget > .annotation-button-{{ label.value }}.selected {
+    background-color: {{ label.color }};
+}
+{% endfor %} #}
+
+.r6o-editor .r6o-editor-inner {
+    background-color: var(--bs-body-bg) !important;
+    color: var(--bs-body-color) !important;
+}
+
+.mrm-classify-widget button {
+    color: var(--bs-body-color) !important;
+}
+
+.mrm-classify-widget button:hover {
+    color: var(--bs-body-bg) !important;
+    background-color: var(--bs-body-color) !important;
+}
+
+/* ===== Scrollbar CSS ===== */
+/* Firefox */
+* {
+    scrollbar-width: auto;
+    scrollbar-color: #787878 #ffffff;
+}
+
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+    width: 12px;
+}
+
+*::-webkit-scrollbar-track {
+    background: #ffffff;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: #787878;
+    border-radius: 8px;
+    border: 2px solid #ffffff;
+}
+</style>

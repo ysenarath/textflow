@@ -1,9 +1,17 @@
-""" Login related functions """
+"""Authentication module.
 
+This module contains the authentication logic for the application.
+"""
 from flask import abort, flash, g
-from flask_login import LoginManager, current_user, login_required, login_user, logout_user
+from flask_login import (
+    LoginManager,
+    current_user,
+    login_required,
+    login_user,
+    logout_user
+)
 
-from textflow import services
+from textflow.database import queries
 
 __all__ = [
     'login_manager',
@@ -11,6 +19,7 @@ __all__ = [
     'login_required',
     'roles_required',
     'logout_user',
+    'current_user',
 ]
 
 login_manager = LoginManager()
@@ -37,20 +46,26 @@ def roles_required(role):
                 project_id = args[0]
             else:
                 raise ValueError('No project id provided')
-            assignment = services.get_assignment(user_id, project_id)
+            assignment = queries.get_assignment(
+                # user_id, project_id
+                user_id=user_id,
+                project_id=project_id
+            )
             if assignment is None:
                 # error that the user is not assigned to the project
                 flash(
-                    f'You are not assigned to the project with id \'{project_id}\'',
-                    'error'
+                    f'You are not assigned to the project with id \
+                        \'{project_id}\'', 'error'
                 )
                 abort(401)
             elif assignment.role in role:
                 g.current_user_role = assignment.role
                 return func(*args, **kwargs)
             else:
-                # error: the user role is not permitted to access the requested resource
-                flash('You are not permitted to access the requested resource', 'error')
+                # error: the user role is not permitted to access the
+                # requested resource
+                flash('You are not permitted to access the requested \
+                      resource', 'error')
                 abort(401)
 
         decorated_func.__name__ = func.__name__

@@ -1,94 +1,84 @@
-{% extends '_layouts/default.html' %}
-
+{% extends 'layouts/base.html' %}
 {% block styles %}
-{{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='styles/dash.css') }}">
+    {{ super() }}
+    <style>
+        .sidebar {
+            min-width: 15em;
+        }
+    </style>
 {% endblock %}
-
-{% block is_full_content %}
-<div id="app" class="columns mt-0" style="height: 100%;">
-    <div id="dashboard-sidebar" class="column sidebar">
-        {% for title, sections in sidebar %}
-        <ul class="menu-list pl-3">
-            <li>
-                <p class="menu-label pt-1">{{ title }}</p>
-            </li>
-            {% for section in sections %}
-            <li>
-                <a v-on:click.stop.prevent="viewSection('{{ section.value }}')">
-                    <i class="fas {{ section.icon }}" aria-hidden="true"></i>
-                    <span class="ml-3">{{ section.label }}</span>
-                </a>
-            </li>
-            {% endfor %}
-        </ul>
-        {% endfor %}
-    </div>
-    <div class="column content">
-        <div id="content-body" class="container p-5">
+{% block content %}
+    <div id="app" class="d-flex flex-row" style="height: 100%;">
+        <div class="sidebar">
+            <ul class="nav flex-column nav-pills">
+                {% for title, sections in sidebar %}
+                    <li class="nav-item">
+                        <a class="nav-link disabled">{{ title }}</a>
+                    </li>
+                    {% for section in sections %}
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               v-on:click.stop.prevent="viewSection('{{ section.value }}')">
+                                <i class="bi bi-{{ section.icon }} me-1" aria-hidden="true"></i>
+                                {{ section.label }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="w-100">
             <status-component v-if="activeSection == 'status'"></status-component>
             <users-component v-if="activeSection == 'users'"></users-component>
-            <agreement-component v-if="activeSection == 'agreement'"></agreement-component>
             <documents-component v-if="activeSection == 'documents'"></documents-component>
             <project-component v-if="activeSection == 'project'"></project-component>
-            <labels-component v-if="activeSection == 'labels'"></labels-component>
-            <dataset-component v-if="activeSection == 'dataset'"></dataset-component>
-            <models-component v-if="activeSection == 'models'"></models-component>
+            <tasks-component v-if="activeSection == 'tasks'"></tasks-component>
         </div>
     </div>
-</div>
 {% endblock %}
-
 {% block scripts %}
-{{ super() }}
-<script src="{{ url_for('static', filename='scripts/vue.js') }}"></script>
-<!--suppress JSUnresolvedFunction -->
-<script>
-    let url_for = {
+    {{ super() }}
+    <script src="{{ url_for('static', filename='packages/vue-js/vue.global.prod.js') }}"></script>
+    
+    <!--suppress JSUnresolvedFunction -->
+    <script>
+    const url_for = {
         get_project_status: "{{ url_for('dashboard.get_project_status', project_id=project_id) }}",
-        get_agreement: "{{ url_for('dashboard.get_agreement', project_id=project_id) }}",
-        download_dataset: "{{ url_for('dashboard.get_dataset', project_id=project_id) }}",
-        get_dataset_names: "{{ url_for('dashboard.get_dataset_names', project_id=project_id) }}",
-        get_group_names: "{{ url_for('dashboard.get_group_names', project_id=project_id) }}",
-        estimator_fit: "{{ url_for('dashboard.estimator_fit', project_id=project_id) }}",
-        get_estimator_names: "{{ url_for('dashboard.get_estimator_names', project_id=project_id) }}",
         delete_documents: "{{ url_for('dashboard.delete_documents', project_id=project_id) }}",
         upload_documents: "{{ url_for('dashboard.upload_documents', project_id=project_id) }}",
     }
 
-    Vue.component('agreement-component', {
+    const app = Vue.createApp({
         data: function () {
             return {
-                blacklist: [],
-                blacklistInput: '',
-                agreement: [],
+                activeSection: '{{ section }}',
             }
         },
         methods: {
-            update: function () {
-                let args = '';
-                for (let i = 0; i < this.blacklist.length; i++) {
-                    if (args !== '') args += '&';
-                    args += 'blacklist=' + this.blacklist[i]
-                }
-                if (args !== '') args = '?' + args;
-                $.get(url_for.get_agreement + args).then((data) => {
-                    this.agreement = data.data;
-                }).catch(console.log);
+            viewSection: function (section) {
+                let url = "{{ url_for('dashboard.update_section', project_id=project_id) }}?value=" + section;
+                $.get(url).then((payload) => {
+                    this.activeSection = payload.data;
+                }).catch(e => {
+                    console.error('Unable to reach server. Please check your internet connection.');
+                    console.warn('Your session page won\'t be saved.');
+                    console.log(e);
+                    this.activeSection = section;
+                });
             },
             initialize: function () {
-                this.update();
-            }
+                // Initialize document turn to current page
+                this.viewSection(this.activeSection);
+            },
         },
         mounted: function () {
             // Initialize when document is ready
             this.initialize();
         },
-        delimiters: ['%{', '}'],
-        template: `{% include 'dashboard/agreement.html' %}`
+        delimiters: ['${', '}'],
     });
 
-    Vue.component('status-component', {
+    app.component('status-component', {
         data: function () {
             return {
                 numDocuments: 0,
@@ -112,43 +102,24 @@
             // Initialize when document is ready
             this.initialize();
         },
-        delimiters: ['%{', '}'],
+        delimiters: ['${', '}'],
         template: `{% include 'dashboard/status.html' %}`
     });
 
-    Vue.component('users-component', {
-        delimiters: ['%{', '}'],
+    app.component('users-component', {
+        delimiters: ['${', '}'],
         template: `{% include 'dashboard/users.html' %}`
     });
 
-    Vue.component('documents-component', {
+    app.component('documents-component', {
         data() {
             return {
                 isUploading: false,
                 isDeleting: false,
                 selectedFile: null,
-                // progress: 0,
-                // statusUpdateInterval: null,
             }
         },
-        // mounted() {
-        //     self.statusUpdateInterval = setInterval(this.statusUpdate, Math.pow(10, 3));
-        // },
-        // unmounted() {
-        //     if (this.statusUpdateInterval) {
-        //         clearInterval(this.statusUpdateInterval);
-        //     }
-        // },
         methods: {
-            // statusUpdate: function () {
-            //     // const self = this;
-            //     $.get(url_for.get_status)
-            //         .then((payload) => {
-            //             let numDocuments = payload.data['num_documents'];
-            //             this.progress = Math.ceil(1 - Math.min(Math.log(numDocuments + 1), 1)) * 100;
-            //             console.log(this.progress);
-            //         }).catch(console.log);
-            // },
             changeSelectedFile: function () {
                 let uploadForm = document.getElementById('upload-documents-form');
                 var formData = new FormData(uploadForm);
@@ -200,159 +171,27 @@
                 );
             }
         },
-        delimiters: ['%{', '}'],
+        delimiters: ['${', '}'],
         template: `{% include 'dashboard/documents.html' %}`,
     });
 
-    Vue.component('project-component', {
-        delimiters: ['%{', '}'],
+    app.component('project-component', {
+        delimiters: ['${', '}'],
         template: `{% include 'dashboard/project.html' %}`
     });
 
-    Vue.component('labels-component', {
-        delimiters: ['%{', '}'],
-        template: `{% include 'dashboard/labels.html' %}`
-    });
-
-    Vue.component('dataset-component', {
+    app.component('tasks-component', {
         data: function () {
             return {
-                datasets: [],
-                selectedDataset: '',
-                groups: [],
-                selectedGroup: '',
+                numCreatedLabels: {},
             }
         },
         methods: {
-            saveAs: function (content, filename) {
-                const blob = new Blob([JSON.stringify(content, null, 2)], { type: 'application/json' })
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.download = filename;
-                a.href = url;
-                a.click();
-            },
-            download: function () {
-                let args = '';
-                if (this.selectedGroup !== '') {
-                    args += 'validator=' + this.selectedGroup;
-                }
-                if (args !== '') args = '?' + args;
-                $.get(url_for.download_dataset + args)
-                    .then((payload) => {
-                        if (payload['status'] === 'success') {
-                            const fn = this.selectedDataset + '_' + this.selectedGroup + '.json';
-                            this.saveAs(payload.data, fn);
-                        }
-                    });
-            },
-            update: function () {
-                $.get(url_for.get_dataset_names).then((payload) => {
-                    this.datasets = payload.data;
-                    this.selectedDataset = payload.data[0];
-                    let args = '';
-                    if (this.selectedDataset !== '') {
-                        args += 'name=' + this.selectedDataset;
-                    }
-                    if (args !== '') {
-                        args = '?' + args;
-                    }
-                    $.get(url_for.get_group_names + args).then((payload) => {
-                        this.groups = payload.data;
-                        this.selectedGroup = 'sys.majority';
-                    })
-                }
-                );
-            },
-            initialize: function () {
-                this.update();
-            }
         },
-        mounted: function () {
-            // Initialize when document is ready
-            this.initialize();
-        },
-        watch: {
-            selectedDataset: function (v1, v2) {
-                this.update();
-            }
-        },
-        delimiters: ['%{', '}'],
-        template: `{% include 'dashboard/dataset.html' %}`
+        delimiters: ['${', '}'],
+        template: `{% include 'dashboard/tasks.html' %}`
     });
 
-    Vue.component('models-component', {
-        data: function () {
-            return {
-                datasets: [],
-                selectedDataset: '',
-                estimators: [],
-                selectedEstimator: '',
-            }
-        },
-        methods: {
-            train: function () {
-                $.post({
-                    type: "POST",
-                    url: url_for.estimator_fit,
-                    data: JSON.stringify({
-                        dataset: this.selectedDataset,
-                        estimator: this.selectedEstimator,
-                    }),
-                    contentType: 'application/json;charset=UTF-8',
-                }).then(console.log);
-            },
-            update: function () {
-                $.get(url_for.get_dataset_names).then((payload) => {
-                    this.datasets = payload.data;
-                    this.selectedDataset = payload.data[0];
-                });
-                $.get(url_for.get_estimator_names).then((payload) => {
-                    this.estimators = payload.data;
-                    this.selectedEstimator = payload.data[0];
-                });
-            },
-            initialize: function () {
-                this.update();
-            }
-        },
-        mounted: function () {
-            // Initialize when document is ready
-            this.initialize();
-        },
-        delimiters: ['%{', '}'],
-        template: `{% include 'dashboard/models.html' %}`
-    });
-
-    const app = new Vue({
-        el: '#app',
-        data: function () {
-            return {
-                activeSection: '{{ section }}',
-            }
-        },
-        methods: {
-            viewSection: function (section) {
-                let url = "{{ url_for('dashboard.update_section', project_id=project_id) }}?value=" + section;
-                $.get(url).then((payload) => {
-                    this.activeSection = payload.data;
-                }).catch(e => {
-                    console.error('Unable to reach server. Please check your internet connection.');
-                    console.warn('Your session page won\'t be saved.');
-                    console.log(e);
-                    this.activeSection = section;
-                });
-            },
-            initialize: function () {
-                // Initialize document turn to current page
-                this.viewSection(this.activeSection);
-            },
-        },
-        mounted: function () {
-            // Initialize when document is ready
-            this.initialize();
-        },
-        delimiters: ['%{', '}'],
-    })
-</script>
+    app.mount('#app');
+    </script>
 {% endblock %}

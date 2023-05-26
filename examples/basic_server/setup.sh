@@ -29,7 +29,9 @@ rm database.sqlite config.json
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --
 
 # Create project
-textflow project create -t "sequence_labeling" -n "Named Entity Recognition"
+textflow project create -n "Named Entity Recognition"
+
+textflow task create -p 1 -t "span-categorization"
 
 # Add labels
 textflow label create -p 1 -l "Category A" -v "CAT_A"
@@ -43,12 +45,14 @@ textflow label create -p 1 -l "Category D" -v "CAT_D"
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --
 
 # Create project
-textflow project create -t "document_classification" -n "Sentiment Analysis"
+textflow project create -n "Sentiment Analysis"
+
+textflow task create -p 2 -t "text-classification"
 
 # Add labels
-textflow label create -p 2 -l "Negative" -v "CAT_NEGATIVE"
-textflow label create -p 2 -l "Neutral" -v "CAT_NEUTRAL"
-textflow label create -p 2 -l "Positive" -v "CAT_POSITIVE"
+textflow label create -p 2 -l "Negative" -v "CAT_NEGATIVE" -o 0 -c "red"
+textflow label create -p 2 -l "Neutral" -v "CAT_NEUTRAL" -o 1 -c "orange"
+textflow label create -p 2 -l "Positive" -v "CAT_POSITIVE" -o 2 -c "green"
 
 # Add documents
 # textflow document upload -p 2 -i documents.json

@@ -1,358 +1,540 @@
-{% extends '_layouts/default.html' %}
+<!-- This template is used to annotate a document.
 
+The user/annotator can 
+    - select a/multiple label for a document;
+    - select a/multiple labels for a single span of text;
+    - flag a document;
+    - skip a document;
+    - move to the next document.
+
+Notes: Updates to the annotations should be seamlessly 
+updated in the user interface, therfore, we need to use AJAX.
+-->
+{% extends 'layouts/base.html' %}
 {% block styles %}
-{{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='packages/recogito-js/recogito.min.css') }}">
-<style>
-{% for label in project.labels %}
-.annotation-{{ label.value }} {
-    background-color: rgba({{ label.color_rgb }}, 0.2);
-    border-bottom: 2px solid {{ label.color }};
-}
-{% endfor %}
-</style>
-{% endblock %}
-
+    {{ super() }}
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='packages/recogito-js/recogito.min.css') }}">
+    {% include "includes/annotate.css.jinja" %}
+{% endblock styles %}
+{% set activePage = "Annotate" %}
+{% block header %}
+    {% include "includes/project-header.html.jinja" %}
+{% endblock header %}
 {% block content %}
-<div class="columns">
-    <div class="column">
-        <div class="buttons">
-            <a href="{{ url_for('project.view_project', project_id=project.id) }}" class="button is-highlight">
-                <span class="icon"><i class="fas fa-tasks" aria-label="Project"></i></span><span>Project</span>
-            </a>
-            <a href="{{ url_for('project.view_project_history', project_id=project.id) }}" class="button is-highlight">
-                <span class="icon"><i class="fas fa-history"></i></span><span>History</span>
-            </a>
-            <a href="{{ url_for('annotate.annotate_next', project_id=project.id) }}"
-                class="button is-highlight has-text-link is-static">
-                <span class="icon"><i class="fas fa-tag"></i></span><span>Annotate</span>
-            </a>
-        </div>
-    </div>
-    {% if (document is defined) and (document is not none) %}
-    <div class="column">
-        <div class="buttons is-pulled-right">
-            <button class="button is-info is-light" onclick="toggleGuideline()">
-                <span class="icon ml-1"><i class="fas fa-book" aria-label="Guideline"></i></span><span
-                    class="mr-1">Guide</span>
-            </button>
-            <a id="skipButton" href="javascript:void(0)" class="button is-danger is-light"
-                onclick="submit(null, 'skip')">
-                <span class="icon ml-1">
-                    <i class="fas fa-forward mr-1" aria-label="Skip"></i>
-                </span><span class="mr-1">Skip</span>
-            </a>
-            <a id="flagButton" href="javascript:void(0)"
-                class="button {% if annotation_set.flagged %}is-warning{% else %}is-light{% endif %}"
-                onclick="submit({'status':'{{ annotation_set.flagged }}' !== 'True'}, 'flag')">
-                <span class="icon ml-1">
-                    <i class="fas fa-flag mr-1" aria-label="Flag"></i>
-                </span><span class="mr-1">Flag</span>
-            </a>
-            <a id="nextButton" href="javascript:void(0)" class="button is-success is-light"
-                onclick="submit(null, 'next')">
-                <span class="icon ml-1">
-                    <i class="fas fa-play mr-1" aria-label="Next"></i>
-                </span><span class="mr-1">Next</span>
-            </a>
-        </div>
-    </div>
-    {% endif %}
-</div>
-{% if (document is defined) and (document is not none) %}
-<div class="columns">
-    <div class="column">
-        <div class="row">
-            {% for ll in project.labels %}
-            <label>
-                <input type="checkbox" value="{{ ll.value }}" id="var_option_{{ ll.value }}"
-                    onchange="submit(getLabel('{{ ll.value }}'), 'label')" hidden>
-            </label>
-            {% endfor %}
-            <div class="field is-grouped is-grouped-multiline pt-3">
-                {% for ll in project.labels %}
-                <div class="control" id="option_{{ ll.value }}" hidden>
-                    <div class="tags has-addons" onclick="addLabel('{{ ll.value }}')">
-                        <span class="tag is-medium">{{ ll.label }}</span>
-                        <span class="tag is-medium" style="color: {{ ll.color }}">
-                            <i class="fas fa-times-circle"></i>
-                        </span>
+    <div id="app" style="max-height: 100%;">
+        <div class="container bg-body-tertiary rounded-3 mt-3 p-3"
+             v-if="initialized && document">
+            <div class="row mb-3">
+                <div class="d-flex flex-row">
+                    <button class="btn ms-auto"
+                            :diabled="loading"
+                            :class="guidelineState['show'] ? 'btn-info' : 'btn-outline-info'"
+                            v-on:click="guidelineState['show']=!guidelineState['show']">Guide</button>
+                    <a id="skipButton"
+                       :diabled="loading"
+                       class="btn btn-outline-primary ms-3"
+                       v-on:click="submit(null, 'skip')">Skip</a>
+                    <a id="flagButton"
+                       :diabled="loading"
+                       class="btn ms-3"
+                       :class="annotationSet.flagged ? 'btn-warning' : 'btn-outline-secondary'"
+                       v-on:click="toggleFlag()">Flag</a>
+                    <a id="nextButton"
+                       :diabled="loading"
+                       class="btn btn-outline-primary ms-3"
+                       v-on:click="submit(null, 'next')">Next</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="mt-3 p-3 border">
+                        <template v-for="(task, index) in project.tasks">
+                            <div class="pt-3"
+                                 :class="index != 0 ? 'border-top' : ''"
+                                 v-if="taskState[index]">
+                                <div class="mb-3" v-if="isTaskType(task, 'span-categorization', true)">
+                                    <annotation-component :id="'annotation-field-' + index" :labels="task.labels" :text="document.text" :annotations="annotationSet.annotations" v-on:created="createAnnotation" v-on:deleted="deleteAnnotation" v-on:updated="createAnnotation"></annotation-component>
+                                </div>
+                                <div class="mb-3" v-if="isTaskType(task, 'text-classification', true)">
+                                    <h1 v-if="task.title">${ task.title }</h1>
+                                    <p v-if="task.description">${ task.description }</p>
+                                    <template v-for="label in task.labels">
+                                        <input type="checkbox"
+                                               class="btn-check"
+                                               :data-tf-label-group="label.group ? label.group : null"
+                                               :value="label.value"
+                                               :checked="(label.value in labelState) && labelState[label.value]"
+                                               :id="'btn-option-'+ label.value"
+                                               v-on:change="updateLabelState"
+                                               :disabled="loading">
+                                        <label class="btn btn-outline-primary me-3"
+                                               :for="'btn-option-' + label.value">${ label.label }</label>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 </div>
-                <div class="control" id="selected_option_{{ ll.value }}" hidden>
-                    <div class="tags has-addons" onclick="removeLabel('{{ ll.value }}')">
-                        <span class="tag is-medium">{{ ll.label }}</span>
-                        <span class="tag is-medium" style="color: {{ ll.color }}">
-                            <i class="fas fa-check-circle"></i>
-                        </span>
-                    </div>
-                </div>
-                {% endfor %}
+                <div class="collapse h-100 p-3 border"
+                     :class="{'col-6 col-md-5 show': guidelineState['show']}"
+                     id="guidelineContainer">${ project.guideline_template }</div>
             </div>
         </div>
-        <div class="row py-3">
-            <div id="annotation-field" class="plaintext">{{ document.text | safe }}</div>
+        <div class="container bg-body-tertiary rounded-3 mt-3 p-3" v-else>
+            No documents.
         </div>
     </div>
-</div>
-{% if project.render_guideline() is not none %}
-<div id="guideline" class="column is-one-third-desktop" style="display: none;">
-    <div class="box">
-        {{ project.render_guideline() | safe }}
-    </div>
-</div>
-{% endif %}
-</div>
-{% else %}
-<section class="hero is-fullheight-with-stuff">
-    <div class="hero-content">
-        <div class="container">
-            <h1 class="is-size-2 has-text-centered">
-                Congratulations!
-            </h1>
-            <h2 class="is-size-4 has-text-centered mt-4">
-                You've completed all the available documents for annotation at this time.
-            </h2>
-            <h2 class="is-size-4 has-text-centered">
-                We appreciate your dedication and commitment to engaging with this project.
-            </h2>
-        </div>
-    </div>
-</section>
-{% endif %}
-{% endblock %}
-
+{% endblock content %}
 {% block scripts %}
-{{ super() }}
-<script src="{{ url_for('static', filename='packages/recogito-js/recogito.min.js') }}"></script>
-<script src="{{ url_for('static', filename='packages/recogito-js/recogito-widgets.min.js') }}"></script>
-<!--suppress JSUnresolvedFunction, JSUnresolvedVariable -->
-{% if (document is defined) and (document is not none) %}
-<script>
-    // collection of URL endpoints
-    const url_for = {
-        annotations_api: "{{ url_for('annotate.get_annotations', project_id = project.id, document_id = document.id) }}",
-        annotate_next: "{{ url_for('annotate.annotate_next', project_id = project.id) }}",
-    };
-
-    const documentID = '{{ document.id | safe }}';
-
-    const documentText = '{{ document.text | safe }}';
-
-    const projectType = '{{ project.type }}';
-
-    const labelOptions = JSON.parse('{{ options | safe }}');
-
-    let currentSelection = null;
-
-    let annotator = null;
-
-    const setDocumentAnnotations = function (annotations) {
-        let checkedLabels = [];
-        annotations.forEach(function (annotation) {
-            annotation.labels.forEach(function (label) {
-                checkedLabels.push(label.value);
-            });
-        });
-        labelOptions.forEach(function (label) {
-            let var_checkbox = $('#var_option_' + label.value);
-            let removeLabelBtn = $('#selected_option_' + label.value);
-            let addLabelBtn = $('#option_' + label.value);
-            if (checkedLabels.includes(label.value)) {
-                var_checkbox.prop('checked', true);
-                removeLabelBtn.show();
-                addLabelBtn.hide();
-            } else {
-                var_checkbox.prop('checked', false);
-                removeLabelBtn.hide();
-                addLabelBtn.show();
-            }
-        });
-    }
-
-    function loading(state = true) {
-        let nextButton = document.getElementById('nextButton');
-        if (state) {
-            nextButton.classList.add('is-loading');
-        } else {
-            nextButton.classList.remove('is-loading');
-        }
-    }
-
-    function toggleGuideline() {
-        let x = document.getElementById("guideline");
-        if (x.style.display === "none") {
-            x.style.display = "block";
-        } else {
-            x.style.display = "none";
-        }
-    }
-
-    function getLabel(id) {
-        let checkbox = $('#option_' + id);
-        return { value: checkbox.val(), status: checkbox.prop('checked') };
-    }
-
-    function addLabel(id) {
-        let checkbox = $('#var_option_' + id);
-        let data = {
-            'labels': [
-                { value: checkbox.val(), status: true },
-            ]
+    {{ super() }}
+    <script src="{{ url_for('static', filename='packages/recogito-js/recogito.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='packages/recogito-js/recogito-widgets.min.js') }}"></script>
+    <!--suppress JSUnresolvedFunction, JSUnresolvedVariable -->
+    <script src="{{ url_for('static', filename='packages/vue-js/vue.global.prod.js') }}"></script>
+    <script>
+        // collection of URL endpoints
+        {% if document is not none %}
+        const url_for = {
+            post_annotation: "{{ url_for('annotate.post_annotation', project_id = project.id, document_id = document.id) }}",
+            get_annotations: "{{ url_for('annotate.get_annotations', project_id = project.id, document_id = document.id) }}",
+            annotate_next: "{{ url_for('annotate.annotate_next', project_id = project.id) }}",
+            get_document: "{{ url_for('annotate.get_document', project_id = project.id, document_id = document.id) }}",
+            get_project: "{{ url_for('project.get_project', project_id = project.id) }}",
         };
-        submit(data, 'label');
-    }
+        {% else %}
+        const url_for = {
+            annotate_next: "{{ url_for('annotate.annotate_next', project_id = project.id) }}",
+            get_project: "{{ url_for('project.get_project', project_id = project.id) }}",
+        }
+        {% endif %}
 
-    function removeLabel(id) {
-        let checkbox = $('#var_option_' + id);
-        let data = {
-            'labels': [
-                { value: checkbox.val(), status: false },
-            ],
-        };
-        submit(data, 'label');
-    }
-
-    /**
-     * Update annotations
-     */
-    function refresh() {
-        loading();
-        $.get(url_for.annotations_api).then(
-            (payload) => {
-                const data = payload['data'];
-                setDocumentAnnotations(data);
-                annotator.clearAnnotations();
-                data.forEach((annotation) => {
-                    if (annotation.span !== null) {
-                        let labels = [];
-                        if (annotation.labels !== null) {
-                            annotation.labels.forEach((label) => {
-                                labels.push({
-                                    'type': 'TextualBody',
-                                    'value': label.value,
-                                    'purpose': 'classifying'
-                                });
+        const app = Vue.createApp({
+            data() {
+                return {
+                    // state managed by Vue
+                    initialized: false,
+                    loading: true,
+                    errors: [],
+                    taskState: {},
+                    labelState: {},
+                    guidelineState: {
+                        'show': false,
+                        'absolute-position': false,
+                    },
+                    // loaded from server
+                    // - static
+                    project: null,
+                    document: null,
+                    // - dynamic
+                    annotationSet: null,
+                }
+            },
+            methods: {
+                evaluate: function(condition) {
+                    // Evaluates a condition on status of the labels.
+                    // condition is a json object or null
+                    // if condition is null, return true
+                    let result = false;
+                    if (condition === null) {
+                        result = true;
+                    } else if (typeof condition === 'undefined') {
+                        result = true;
+                    } else if ('var' in condition) {
+                        if (condition.var in this.labelState) {
+                            result = this.labelState[condition.var];
+                        }
+                    } else if ('and' in condition) {
+                        result = condition['and'].every((k) => this.evaluate(k));
+                    } else if ('or' in condition) {
+                        result = condition['or'].some((k) => this.evaluate(k));
+                    } else if ('not' in condition) {
+                        result = !this.evaluate(condition['not']);
+                    }
+                    return result;
+                },
+                isTaskType: function (task, type, default_=false) {
+                    // Returns true if task.type is type
+                    // if task.type is not defined, returns default_
+                    let result = default_;
+                    // if task.type is a string
+                    if (!task.type) {
+                        return result;
+                    }
+                    return task.type === type;
+                },
+                updateTaskState: function() {
+                    this.project.tasks.forEach((task, i, array) => {
+                        const taskState = this.evaluate(task.condition);
+                        this.taskState[i] = taskState;
+                        if (!taskState) {
+                            task.labels.forEach((label, j, array) => {
+                                this.labelState[label.value] = false;
                             });
                         }
-                        annotation = {
-                            '@context': 'http://www.w3.org/ns/anno.jsonld',
-                            'id': annotation.id,
-                            'type': 'Annotation',
-                            'body': labels,
-                            'target': {
-                                'selector': [{
-                                    'type': 'TextPositionSelector',
-                                    'start': annotation.span.start,
-                                    'end': annotation.span.start + annotation.span.length
-                                }]
+                    });
+                },
+                updateLabelState: function(event) {
+                    this.labelState[event.target.value] = event.target.checked;
+                    // disable and uncheck all others in same group
+                    let dataGroup = event.target.getAttribute('data-tf-label-group');
+                    console.log('dataGroup :', typeof dataGroup, ' = ', dataGroup);
+                    if (dataGroup !== null || typeof dataGroup !== 'undefined' || dataGroup !== '') {
+                        this.project.tasks.forEach((task, i, array) => {
+                            task.labels.forEach((label, j, array) => {
+                                if (label.group === dataGroup && label.value !== event.target.value) {
+                                    this.labelState[label.value] = false;
+                                }
+                            });
+                        });
+                    }
+                    this.updateTaskState();
+                    const labelStateList = [];
+                    for (const [value, state] of Object.entries(this.labelState)) {
+                        labelStateList.push({
+                            'value': value,
+                            'status': state,
+                        });
+                    }
+                    this.submit({'labels': labelStateList}, 'label');
+                },
+                toggleGuideline: function() {
+                    console.log('toggleGuideline');
+                },
+                toggleFlag: function () {
+                    const isFlagged = this.annotationSet.flagged;
+                    const data = {
+                        'status': !isFlagged,
+                    }
+                    // output is a promise
+                    this.submit(data, 'flag');
+                },
+                submit: function(data, type='label', method='post') {
+                    this.loading = true;
+                    let target = null;
+                    if (['next', 'skip'].includes(type)) {
+                        // after skipping or moving to next document, redirect to annotate_next
+                        // todo: we can do this more efficiently using AJAX
+                        target = url_for.annotate_next;
+                    }
+                    let payload = { type };
+                    if (data !== null) {
+                        payload = { data, type };
+                    }
+                    return new Promise((resolve, reject) => {
+                        $.ajax({
+                            type: method,
+                            url: url_for.post_annotation,
+                            dataType: 'json',
+                            contentType: "application/json; charset=utf-8",
+                            data: JSON.stringify(payload),
+                            success: (data) => {
+                                if (data['status'] !== 'success') {
+                                    // errors and failiures
+                                    this.errors.push(data);
+                                    reject();
+                                } else {
+                                    resolve();
+                                }
+                            },
+                            error: function (jqXHR, textStatus, errorThrown) {
+                                const data = {
+                                    message: '' + errorThrown || textStatus,
+                                    status: 'error'
+                                }
+                                console.log('error', data);
+                                this.errors.push(data);
+                                reject();
+                            },
+                        });
+                    }).finally(() => {
+                        // update annotations after each submission
+                        // to annotation api
+                        this.getAnnotations().then(() => {
+                            this.loading = false;
+                            if (target !== null) {
+                                location.replace(target);
                             }
-                        };
-                        annotator.addAnnotation(annotation);
-                    };
-                });
-                loading(false);
-            }
-        ).catch((error) => {
-            console.log(error);
+                        }).catch(() => {
+                            this.loading = false;
+                        });
+                    });
+                },
+                getProperty: function(url, target, success=null, error=null) {
+                    if (typeof url === 'undefined' || url === null) {
+                        return new Promise((resolve, reject) => {
+                            // reject to load annotaitons
+                            reject();
+                        });
+                    }
+                    this[target] = {'errors': []};
+                    return new Promise((resolve, reject) => {
+                        $.ajax({
+                            url: url,
+                            type: 'GET',
+                            dataType: 'json',
+                            success: (data, textStatus, jqXHR) => {
+                                if (data['status'] !== 'success') {
+                                    // errors and failiures
+                                    this[target].errors.push(data);
+                                    if (error) error();
+                                    reject();
+                                }
+                                this[target] = Object.assign(this[target], data['data']);
+                                if (success) success();
+                                resolve();
+                            },
+                            error: function (jqXHR, textStatus, errorThrown) {
+                                const data = {
+                                    message: '' + errorThrown || textStatus,
+                                    status: 'error'
+                                }
+                                console.log('error', data);
+                                this[target].errors.push(data);
+                                if (error) error();
+                                reject();
+                            },
+                        });
+                    });
+                },
+                getAnnotations: function() {
+                    const isAlreadyLoading = this.loading;
+                    this.loading = true;
+                    return this.getProperty(
+                        url_for.get_annotations,
+                        'annotationSet',
+                    ).then(() => {
+                        console.log('annotationSet :', JSON.stringify(this.annotationSet));
+                        this.labelState = {};
+                        // update label state
+                        this.annotationSet.annotations.forEach((annotation, i, array) => {
+                            annotation.labels.forEach((label, j, array) => {
+                                this.labelState[label.value] = true;
+                            });
+                        });
+                        // update task state
+                        this.updateTaskState();
+                    }).catch(() => {
+                        // failed to load the annotations
+                        // need to refresh the page to continue
+                        self.initialized = false;
+                    }).finally(() => {
+                        // loading is complete
+                        // set loading to false if it was not already loading
+                        if (!isAlreadyLoading) { 
+                            this.loading = false;
+                        }
+                    });
+                },
+                createAnnotation: function(annotation) {
+                    const annotationID = annotation.id;
+                    let span = null;
+                    annotation.target.selector.forEach((selector) => {
+                        if (selector.type === 'TextPositionSelector') {
+                            span = {
+                                start: selector.start,
+                                length: selector.end - selector.start
+                            };
+                        }
+                    });
+                    let labels = [];
+                    annotation.body.forEach((body) => {
+                        if (body.type === 'TextualBody') {
+                            labels.push({ 'value': body.value });
+                        }
+                    });
+                    let data = { span, labels };
+                    if (!annotationID.toString().startsWith('#')) {
+                        data['id'] = annotationID;
+                    }
+                    this.submit(data, 'annotation')
+                        .catch(() => {
+                            console.log(JSON.stringify(this.errors));
+                        });;
+                },
+                deleteAnnotation: function(annotation) {
+                    this.submit(annotation, 'annotation', 'DELETE')
+                        .catch(() => {
+                            console.log(JSON.stringify(this.errors));
+                        });
+                },
+                initialize: function() {
+                    this.loading = true;
+                    this.initialized = false;
+                    // get annotations and init
+                    // project and document are supposed to be static throught 
+                    // the current page (until browser refresh)
+                    // therefore it is only loaded initially
+                    return new Promise((resolve, reject) => {
+                        this.getProperty(
+                            url_for.get_project,
+                            'project'
+                        ).then(() => {
+                            this.updateTaskState();
+                            this.getProperty(
+                                url_for.get_document,
+                                'document',
+                            ).then(() => {
+                                this.initialized = true; 
+                                this.getAnnotations()
+                                    .then(resolve)
+                                    .catch(reject);
+                            }).catch(reject);
+                        }).catch(reject);
+                    }).catch(() => {
+                        console.log(JSON.stringify(this.errors));
+                    })
+                    .finally(() => {
+                        this.loading = false
+                    });
+                },
+            },
+            computed: {
+                labels: function() {
+                    let labels = [];
+                    this.project.tasks.forEach((task, i, array) => {
+                        task.labels.forEach((label, j, array) => {
+                            labels.push(label);
+                        });
+                    });
+                    return labels;
+                },
+            },
+            mounted: function() {
+                // Initialize when document is ready
+                this.initialize();
+            },
+            delimiters: ['${', '}'],
         });
-    }
 
-    /**
-     * Submit data to server
-     *
-     * @param data: JSON data
-     * @param type: type of submission; options: (label, annotation)
-     * @param method: method to use for submission; options: (POST, DELETE)
-     */
-    function submit(data, type = 'label', method = 'POST') {
-        loading();
-        let target = null;
-        if (['next', 'skip'].includes(type)) {
-            target = url_for.annotate_next;
-        } else if (type === 'flag') {
-            target = window.location.href;
-        }
-        let payload = { type };
-        if (data !== null) {
-            payload = { data, type };
-        }
-        $.ajax({
-            type: method,
-            url: url_for.annotations_api,
-            dataType: 'json',
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(payload),
-            success: function (data) {
-                const message = data['data'];
-                toastr.info(message['body']);
-                loading(false);
-                refresh();
-                if (target !== null) {
-                    window.location.href = target;
+        app.component('annotation-component', {
+            props: {
+                id: String, 
+                text: String, 
+                annotations: {
+                    type: Array,
+                    default: []
+                },
+                locale: {
+                    type: String,
+                    default: 'auto'
+                },
+                allowEmpty: {
+                    type: Boolean,
+                    default: true
+                },
+                labels: {
+                    type: Array,
+                    default: []
+                },
+                formatter: {
+                    type: Function,
+                    default(annotation) {
+                        classes_ = (annotation.bodies.length > 1) ? 'has-multiple-bodies' : '';
+                        if (annotation.bodies.length > 0) {
+                            classes_ += ' annotation-' + annotation.bodies[0].value;
+                        }
+                        return classes_
+                    }
+                },
+            },
+            data: function () {
+                return {
+                    annotator: null,
+                    widgets: [
+                        {
+                            widget: recogito.widgets.Classify,
+                            options: this.labels,
+                        },
+                    ]
                 }
             },
-        });
-    }
-
-    const createAnnotation = (annotation) => {
-        const annotationID = annotation.id;
-        let span = null;
-        annotation.target.selector.forEach((selector) => {
-            if (selector.type === 'TextPositionSelector') {
-                span = {
-                    start: selector.start,
-                    length: selector.end - selector.start
-                };
-            }
-        });
-        let labels = [];
-        annotation.body.forEach((body) => {
-            if (body.type === 'TextualBody') {
-                labels.push({ 'value': body.value });
-            }
-        });
-        let data = { span, labels };
-        if (!annotationID.toString().startsWith('#')) {
-            data['id'] = annotationID;
-        }
-        submit(data, 'annotation');
-    };
-
-    const deleteAnnotation = (annotation) => {
-        submit(annotation, 'annotation', 'DELETE');
-    }
-
-    /**
-     * Initialize page
-     */
-    function initialize() {
-        annotator = Recogito.init({
-            content: document.getElementById('annotation-field'), // ID or DOM element
-            locale: 'auto',
-            allowEmpty: true,
-            widgets: [
-                { widget: recogito.widgets.Classify, options: labelOptions },
-            ],
-            formatter: (annotation) => {
-                classes_ = (annotation.bodies.length > 1) ? 'has-multiple-bodies' : '';
-                if (annotation.bodies.length > 0) {
-                    classes_ += ' annotation-' + annotation.bodies[0].value;
-                }
-                return classes_
+            methods: {
+                deleteAnnotation: function(annotation) {
+                    this.$emit('deleted', annotation)
+                },
+                createAnnotation: function(annotation) {
+                    this.$emit('created', annotation)
+                },
+                updateAnnotation: function(annotation) {
+                    this.$emit('updated', annotation)
+                },
+                initialize: function() {
+                    this.annotator = Recogito.init({
+                        content: this.id, 
+                        locale: this.locale,
+                        allowEmpty: this.allowEmpty,
+                        widgets: this.widgets,
+                        formatter: this.formatter,
+                    });
+                    this.annotator.on('createAnnotation', this.createAnnotation);
+                    this.annotator.on('updateAnnotation', this.updateAnnotation);
+                    this.annotator.on('deleteAnnotation', this.deleteAnnotation);
+                },
             },
+            computed: {
+                labelValues: function() {
+                    const values = this.labels.map((label) => label.value);
+                    return new Set(values);
+                },
+            },
+            watch: {
+                annotations: {
+                    handler(annotations, oldAnnotations) {
+                        if (this.annotator === null) {
+                            return;
+                        }
+                        let anns = [];
+                        annotations.forEach((annotation, i, array) => {
+                            if (annotation.span !== null) {
+                                let labels = [];
+                                if (annotation.labels !== null) {
+                                    annotation.labels.forEach((label) => {
+                                        if (this.labelValues.has(label.value)) {
+                                            labels.push({
+                                                'type': 'TextualBody',
+                                                'value': label.value,
+                                                'purpose': 'classifying'
+                                            });
+                                        }
+                                    });
+                                }
+                                console.log('labels :', JSON.stringify(labels));
+                                if (labels.length === 0) {
+                                    return;
+                                }
+                                annotation = {
+                                    '@context': 'http://www.w3.org/ns/anno.jsonld',
+                                    'id': annotation.id,
+                                    'type': 'Annotation',
+                                    'body': labels,
+                                    'target': {
+                                        'selector': [{
+                                            'type': 'TextPositionSelector',
+                                            'start': annotation.span.start,
+                                            'end': annotation.span.start + annotation.span.length
+                                        }]
+                                    }
+                                };
+                                anns.push(annotation);
+                            };
+                            this.annotator.clearAnnotations();
+                            anns.forEach((annotation, i, array) => {
+                                this.annotator.addAnnotation(annotation);
+                            });
+                        });
+                    },
+                    immediate: true,
+                    deep: true,
+                }
+            },
+            mounted() {
+                this.initialize();
+            },
+            delimiters: ['${', '}'],
+            template: `<div :id="id" class="plaintext">\${ text }</div>`
         });
-        annotator.on('createAnnotation', createAnnotation);
-        annotator.on('updateAnnotation', createAnnotation);
-        annotator.on('deleteAnnotation', deleteAnnotation);
-        // refresh page
-        refresh();
-    }
 
-    /**
-     * Initialize when document is ready
-     */
-    $(document).ready(initialize);
-</script>
-{% endif %}
-{% endblock %}
+        app.mount('#app');
+    </script>
+{% endblock scripts %}

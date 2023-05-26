@@ -1,0 +1,28 @@
+{% extends "includes/header.html" %}
+
+{% block header_navigation %}
+<ul class="navbar-nav flex-row flex-wrap">
+    <li class="nav-item py-2 py-lg-1 col-12 col-lg-auto">
+        <div class="vr d-none d-lg-flex h-100 mx-lg-2 text-white"></div>
+        <hr class="d-lg-none my-2 text-white-50">
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if activePage == 'Project' %}active{% endif %}" aria-current="page"
+            href="{{ url_for('project.view_project', project_id=project.id) }}">
+            Project
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if activePage == 'History' %}active{% endif %}"
+            href="{{ url_for('project.view_project_history', project_id=project.id) }}">
+            History
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if activePage == 'Annotate' %}active{% endif %}"
+            href="{{ url_for('annotate.annotate_next', project_id=project.id) }}">
+            Annotate
+        </a>
+    </li>
+</ul>
+{% endblock %}

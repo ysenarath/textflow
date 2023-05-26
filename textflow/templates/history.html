@@ -1,92 +1,74 @@
-{% extends '_layouts/default.html' %}
-
+{% extends "layouts/base.html" %}
+{% set activePage = "History" %}
+{% block header %}
+    {% include "includes/project-header.html.jinja" %}
+{% endblock header %}
+{% block styles %}
+    {{ super() }}
+    <style></style>
+{% endblock styles %}
 {% block content %}
-    <div class="columns">
-        <div class="column">
-            <div class="buttons">
-                <a href="{{ url_for('project.view_project', project_id=project.id) }}" class="button is-highlight">
-                    <span class="icon"><i class="fas fa-tasks" aria-label="Project"></i></span><span>Project</span>
-                </a>
-                <a href="{{ url_for('project.view_project_history', project_id=project.id) }}" class="button is-highlight has-text-link is-static">
-                    <span class="icon"><i class="fas fa-history"></i></span><span>History</span>
-                </a>
-                <a href="{{ url_for('annotate.annotate_next', project_id=project.id) }}" class="button is-highlight">
-                    <span class="icon"><i class="fas fa-tag"></i></span><span>Annotate</span>
-                </a>
-            </div>
-        </div>
-    </div>
-    <div class="columns">
-        <div class="column">
-            <div class="container box">
-                <div class="block">
-                    <div class="table-container">
-                        <table class="table is-fullwidth">
-                            <thead>
-                            <tr>
-                                <th>#</th>
-                                <th style="width: 100%;">Text</th>
-                                <th style="min-width: 100px;">
-                                    {% if request.args.get('flagged') == 'True' %}
-                                        <a href="{{ url_for('project.view_project_history',project_id=project.id,flagged=false) }}">
-                                         <span class="icon">
-                                            <i class="fas fa-flag"></i>
-                                        </span>
-                                            <span class="icon">
-                                          (<i class="fas fa-check"></i>)
-                                        </span>
-                                        </a>
-                                    {% elif request.args.get('flagged') == 'False' %}
-                                        <a href="{{ url_for('project.view_project_history',project_id=project.id) }}">
-                                        <span class="icon">
-                                            <i class="fas fa-flag"></i>
-                                        </span>
-                                            <span class="icon">
-                                            (<i class="fas fa-times"></i>)
-                                        </span>
-                                        </a>
-                                    {% else %}
-                                        <a href="{{ url_for('project.view_project_history',project_id=project.id,flagged=true) }}">
-                                        <span class="icon">
-                                            <i class="fas fa-flag"></i>
-                                        </span>
-                                            <span class="icon">
-                                        <i class="fa fa-flag" style="opacity:0;"></i>
-                                    </span>
-                                        </a>
-                                    {% endif %}
-                                </th>
-                                <th>Action</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for doc, aset in documents.items %}
-                                <tr>
-                                    <th scope="row">{{ doc.id }}</th>
-                                    <td> {{ doc.text | safe }}</td>
-                                    <td>
-                                        {% if aset.flagged %}
-                                            <i class="fas fa-check"></i>
-                                        {% else %}
-                                            <i class="fas fa-times"></i>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a class="button is-link is-light"
-                                           href="{{ url_for('annotate.annotate', project_id=project.id, document_id=doc.id) }}">
-                                            <i class="fas fa-tag"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="d-flex justify-content-center">
-                        {{ render_pagination(documents, 'project.view_project_history') }}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-{% endblock %}
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Text</th>
+                <th class="text-center">
+                    {% if request.args.get('flagged') == 'True' %}
+                        <button class="btn header-button"
+                                onmouseup="redirect('view_project_history_not_flagged');">
+                            <i class="bi bi-flag-fill"></i>(<i class="bi bi-check-lg"></i>)
+                        </button>
+                    {% elif request.args.get('flagged') == 'False' %}
+                        <button class="btn header-button"
+                                onmouseup="redirect('view_project_history');">
+                            <i class="bi bi-flag"></i>(<i class="bi bi-x-lg"></i>)
+                        </button>
+                    {% else %}
+                        <button class="btn header-button"
+                                onmouseup="redirect('view_project_history_flagged');">
+                            <i class="bi bi-flag"></i>
+                        </button>
+                    {% endif %}
+                </th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody class="table-group-divider">
+            {% for doc, aset in documents.items %}
+                <tr>
+                    <th scope="row">{{ doc.id }}</th>
+                    <td>{{ doc.text | safe }}</td>
+                    <td class="text-center">
+                        {% if aset.flagged %}
+                            <i class="bi bi-check-lg"></i>
+                        {% else %}
+                            <i class="bi bi-x-lg"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a class="btn btn-outline-primary"
+                           href="{{ url_for('annotate.annotate', project_id=project.id, document_id=doc.id) }}">
+                            <i class="bi bi-tag"></i>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="d-flex justify-content-center">{{ render_pagination(documents, 'project.view_project_history') }}</div>
+{% endblock content %}
+{% block scripts %}
+    {{ super() }}
+    <script>
+    const url_for = {
+        'view_project_history_not_flagged': "{{ url_for('project.view_project_history',project_id=project.id,flagged=false) }}",
+        'view_project_history_flagged': "{{ url_for('project.view_project_history',project_id=project.id,flagged=true) }}",
+        'view_project_history': "{{ url_for('project.view_project_history',project_id=project.id) }}",
+    }
+
+    function redirect(path) {
+        location.replace(url_for[path]);
+    }
+    </script>
+{% endblock scripts %}

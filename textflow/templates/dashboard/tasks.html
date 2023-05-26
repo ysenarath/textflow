@@ -1,0 +1,191 @@
+{% for form in forms['update_tasks'] %}
+    <form id="update-task-form-{{ form.id.data }}"
+          method="post"
+          action="{{ url_for('dashboard.update_task', project_id=project_id, task_id=form.id.data) }}">
+        {{ form.csrf_token }}
+        <div class="row gy-3">
+            <div class="col col-5">
+                <label class="form-label">{{ form.title.label }}</label>
+                {{ form.title(class_="form-control") }}
+            </div>
+        </div>
+        <div class="row gy-3">
+            <div class="col col-5">
+                <label class="form-label">{{ form.description.label }}</label>
+                {{ form.description(class_="form-control") }}
+            </div>
+        </div>
+        <div class="row gy-3">
+            <div class="col col-5">
+                <label class="form-label">{{ form.condition.label }}</label>
+                {{ form.condition(class_="form-control") }}
+            </div>
+        </div>
+        <table class="table">
+            <tr>
+                <th></th>
+                <th>Label</th>
+                <th>Value</th>
+                <th>Order</th>
+                <th>Color</th>
+                <th>Group</th>
+            </tr>
+            {% set _ = form.labels.append_entry() %}
+            {% for row in form.labels %}
+                {% if loop.last %}
+                    <tr v-for="i in numCreatedLabels['update-task-form-{{ form.id.data }}']">
+                        <td>
+                            {{ row['selected'](class_="checkbox", **{
+                            ':id': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-selected\'',
+                            ':value': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-selected\'',
+                            }) }}
+                        </td>
+                        <td>
+                            {{ row['label'](class_="input", **{
+                            ':id': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-label\'',
+                            ':name': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-label\'',
+                            }) }}
+                        </td>
+                        <td>
+                            {{ row['value'](class_="input", **{
+                            ':id': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-value\'',
+                            ':name': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-value\'',
+                            }) }}
+                        </td>
+                        <td>
+                            {{ row['order'](class_="input", type='number', **{
+                            ':id': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-order\'',
+                            ':name': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-order\'',
+                            }) }}
+                        </td>
+                        <td>
+                            {{ row['color'](class_="input", **{
+                            ':id': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-color\'',
+                            ':name': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-color\'',
+                            }) }}
+                        </td>
+                        <td>
+                            {{ row['group'](class_="input", **{
+                            ':id': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-group\'',
+                            ':name': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-group\'',
+                            }) }}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td hidden>{{ row['id'](class_="input") }}</td>
+                        <td>{{ row['selected'](class_="checkbox") }}</td>
+                        <td>{{ row['label'](class_="input") }}</td>
+                        <td>{{ row['value'](class_="input") }}</td>
+                        <td>{{ row['order'](class_="input", type='number') }}</td>
+                        <td>{{ row['color'](class_="input") }}</td>
+                        <td>{{ row['group'](class_="input") }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </table>
+        <button type="submit" class="btn btn-primary">Update Task</button>
+        <button type="submit"
+                class="btn btn-primary"
+                formaction="{{ url_for('dashboard.delete_task', project_id=project_id, task_id=form.id.data) }}">
+            Delete Task
+        </button>
+        <button type="button"
+                class="btn btn-primary"
+                v-on:click="'update-task-form-{{ form.id.data }}' in numCreatedLabels ? numCreatedLabels['update-task-form-{{ form.id.data }}']++ : numCreatedLabels['update-task-form-{{ form.id.data }}'] = 1">
+            Add Label
+        </button>
+    </form>
+{% endfor %}
+{% set form = forms['create_task'] %}
+<form id="create-task-form"
+      method="post"
+      action="{{ url_for('dashboard.create_task', project_id=project_id) }}">
+    {{ form.csrf_token }}
+    <div class="row gy-3">
+        <div class="col col-5">
+            <label class="form-label">{{ form.title.label }}</label>
+            {{ form.title(class_="form-control") }}
+        </div>
+    </div>
+    <div class="row gy-3">
+        <div class="col col-5">
+            <label class="form-label">{{ form.description.label }}</label>
+            {{ form.description(class_="form-control") }}
+        </div>
+    </div>
+    <div class="row gy-3">
+        <div class="col col-5">
+            <label class="form-label">{{ form.condition.label }}</label>
+            {{ form.condition(class_="form-control") }}
+        </div>
+    </div>
+    <table class="table">
+        <tr>
+            <th></th>
+            <th>Label</th>
+            <th>Value</th>
+            <th>Order</th>
+            <th>Color</th>
+            <th>Group</th>
+        </tr>
+        {% set _ = form.labels.append_entry() %}
+        {% for row in form.labels %}
+            {% if loop.last %}
+                <tr v-for="i in numCreatedLabels['create-task-form']">
+                    <td>
+                        {{ row['selected'](class_="checkbox", **{
+                        ':id': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-selected\'',
+                        ':value': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-selected\'',
+                        }) }}
+                    </td>
+                    <td>
+                        {{ row['label'](class_="input", **{
+                        ':id': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-label\'',
+                        ':name': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-label\'',
+                        }) }}
+                    </td>
+                    <td>
+                        {{ row['value'](class_="input", **{
+                        ':id': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-value\'',
+                        ':name': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-value\'',
+                        }) }}
+                    </td>
+                    <td>
+                        {{ row['order'](class_="input", type='number', **{
+                        ':id': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-order\'',
+                        ':name': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-order\'',
+                        }) }}
+                    </td>
+                    <td>
+                        {{ row['color'](class_="input", **{
+                        ':id': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-color\'',
+                        ':name': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-color\'',
+                        }) }}
+                    </td>
+                    <td>
+                        {{ row['group'](class_="input", **{
+                        ':id': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-group\'',
+                        ':name': '\'labels-\' + (' + loop.index | string + '+ i).toString() + \'-group\'',
+                        }) }}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td>{{ row['selected'](class_="checkbox") }}</td>
+                    <td>{{ row['label'](class_="input") }}</td>
+                    <td>{{ row['value'](class_="input") }}</td>
+                    <td>{{ row['order'](class_="input", type='number') }}</td>
+                    <td>{{ row['color'](class_="input") }}</td>
+                    <td>{{ row['group'](class_="input") }}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+    <button type="submit" class="btn btn-primary">Create Task</button>
+    <button type="button"
+            class="btn btn-primary"
+            v-on:click="'create-task-form' in numCreatedLabels ? numCreatedLabels['create-task-form']++ : numCreatedLabels['create-task-form']=1">
+        Add Label
+    </button>
+</form>

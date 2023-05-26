@@ -28,6 +28,12 @@
                         {{ create_label_form['color'](class_="input", type='color') }}
                     </p>
                 </div>
+                <div class="field w-100">
+                    <label class="label">{{ create_label_form['group'].label }}</label>
+                    <p class="control">
+                        {{ create_label_form['group'](class_="input") }}
+                    </p>
+                </div>
                 <div class="field">
                     <label class="label">⠀</label>
                     <div class="control is-flex is-justify-content-flex-end">
@@ -42,7 +48,7 @@
             </div>
         </div>
     </form>
-    <form method="POST" action="{{ url_for('dashboard.update_labels', project_id=project_id) }}">
+    <form method="post" action="{{ url_for('dashboard.update_labels', project_id=project_id) }}">
         {% set update_labels_form = forms.update_labels %}
         {{ update_labels_form.csrf_token }}
         <div class="is-flex is-justify-content-space-between">
@@ -60,6 +66,7 @@
                 <th>Value</th>
                 <th>Order</th>
                 <th>Color</th>
+                <th>Group</th>
             </tr>
             {% for row in update_labels_form.labels %}
                 {{ row.csrf_token }}
@@ -69,6 +76,7 @@
                     <td>{{ row['value'](class_="input") }}</td>
                     <td>{{ row['order'](class_="input", type='number') }}</td>
                     <td>{{ row['color'](class_="input") }}</td>
+                    <td>{{ row['group'](class_="input") }}</td>
                 </tr>
             {% endfor %}
         </table>
