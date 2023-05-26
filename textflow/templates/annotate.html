@@ -53,10 +53,10 @@ updated in the user interface, therfore, we need to use AJAX.
                             <div class="pt-3"
                                  :class="index != 0 ? 'border-top' : ''"
                                  v-if="taskState[index]">
-                                <div class="mb-3" v-if="isTaskType(task, 'span-categorization', true)">
+                                <div class="mb-3" v-if="isTaskType(task, 'span-categorization')">
                                     <annotation-component :id="'annotation-field-' + index" :labels="task.labels" :text="document.text" :annotations="annotationSet.annotations" v-on:created="createAnnotation" v-on:deleted="deleteAnnotation" v-on:updated="createAnnotation"></annotation-component>
                                 </div>
-                                <div class="mb-3" v-if="isTaskType(task, 'text-classification', true)">
+                                <div class="mb-3" v-if="isTaskType(task, 'text-classification')">
                                     <h1 v-if="task.title">${ task.title }</h1>
                                     <p v-if="task.description">${ task.description }</p>
                                     <template v-for="label in task.labels">
@@ -153,13 +153,10 @@ updated in the user interface, therfore, we need to use AJAX.
                     }
                     return result;
                 },
-                isTaskType: function (task, type, default_=false) {
-                    // Returns true if task.type is type
-                    // if task.type is not defined, returns default_
-                    let result = default_;
-                    // if task.type is a string
+                isTaskType: function (task, type) {
+                    // the task type is not dedined => false
                     if (!task.type) {
-                        return result;
+                        return false;
                     }
                     return task.type === type;
                 },

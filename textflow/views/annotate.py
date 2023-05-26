@@ -74,7 +74,6 @@ def annotate(project_id, document_id):
         project_id=project_id,
     )
     if project is None:
-        print('project is none')
         return redirect(url_for('project.list_projects'))
     document = queries.get_document(
         # user_id, project_id, document_id
@@ -167,6 +166,7 @@ def get_annotations(project_id, document_id):
 )
 @auth.login_required
 def post_annotation(project_id, document_id):
+    print(request.json)
     if 'data' in request.json and request.json['type'] == 'annotation':
         annotations = request.json['data']
         if isinstance(annotations, dict):
@@ -212,9 +212,6 @@ def post_annotation(project_id, document_id):
             user_id=auth.current_user.id,
             document_id=document_id,
             flagged=flag_status,
-            # current_user.id,
-            # document_id,
-            # flagged=flag_status
         )
     elif 'data' in request.json:
         labels = request.json['data']['labels']

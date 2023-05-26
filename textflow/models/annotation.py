@@ -6,7 +6,6 @@ Classes
 -------
 AnnotationSpan
 Annotation
-AnnotationSetLog
 AnnotationSet
 """
 from typing import List
@@ -20,7 +19,6 @@ from textflow.database import db
 __all__ = [
     'Annotation',
     'AnnotationSet',
-    'AnnotationSetLog',
     'AnnotationSpan',
 ]
 
@@ -161,40 +159,6 @@ class Annotation(db.Model):
         }
 
 
-class AnnotationSetLog(db.Model):
-    """AnnotationSetLog Entity - keeps track of changes to an AnnotationSet.
-
-    Attributes
-    ----------
-    id : int
-        Primary key.
-    annotation_id : int
-        Annotation id.
-    completed : bool
-        Completed.
-    flagged : bool
-        Flagged.
-    skipped : bool
-        Skipped.
-    created_on : datetime
-        Created on.
-    updated_on : datetime
-        Updated on.
-    """
-    id = db.Column(db.Integer, primary_key=True)
-    annotation_set_id = db.Column(
-        db.Integer, db.ForeignKey('annotation_set.id'), nullable=False
-    )
-    flagged = db.Column(db.Boolean(), nullable=False, default=False)
-    skipped = db.Column(db.Boolean(), nullable=False, default=False)
-    completed = db.Column(db.Boolean(), nullable=False, default=False)
-    created_on = db.Column(db.DateTime, server_default=db.func.now())
-    updated_on = db.Column(
-        db.DateTime, server_default=db.func.now(),
-        server_onupdate=db.func.now()
-    )
-
-
 class AnnotationSet(db.Model):
     """AnnotationSet Entity - contains annotations by a user for a document.
 
@@ -244,10 +208,6 @@ class AnnotationSet(db.Model):
         db.DateTime, server_default=db.func.now(),
         server_onupdate=db.func.now()
     )
-    logger = db.relationship(
-        'AnnotationSetLog', backref='annotation_set',
-        lazy=True, cascade='all, delete'
-    )
 
     __table_args__ = (db.UniqueConstraint('user_id', 'document_id'),)
 
@@ -268,29 +228,3 @@ class AnnotationSet(db.Model):
             'skipped': self.skipped,
             'annotations': [a.to_dict() for a in self.annotations],
         }
-
-
-@db.event.listens_for(AnnotationSet, 'after_insert')
-@db.event.listens_for(AnnotationSet, 'after_update')
-def log_update_event(mapper, connection, target):
-    """Log AnnotationSet update event.
-
-    Parameters
-    ----------
-    mapper : Mapper
-        Mapper.
-    connection : Connection
-        Connection.
-    target : AnnotationSet
-        AnnotationSet object.
-
-    Returns
-    -------
-    None
-        None.
-    """
-    log = AnnotationSetLog(annotation_set_id=target.id)
-    log.completed = target.completed
-    log.flagged = target.flagged
-    log.skipped = target.skipped
-    db.session.add(log)

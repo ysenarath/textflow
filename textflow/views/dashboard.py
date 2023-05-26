@@ -78,6 +78,10 @@ class TaskForm(FlaskForm):
     title = StringField('Title', validators=[])
     description = StringField('Description', validators=[])
     condition = StringField('Condition', validators=[])
+    type = SelectField('Type', validators=[DataRequired()], choices=[
+        ('text-classification', 'Text Classification'),
+        ('span-categorization', 'Span Categorization'),
+    ])
     labels = FieldList(FormField(LabelForm))
 
 
@@ -393,12 +397,13 @@ def create_task(project_id):
     task_form = TaskForm()
     task = Task(project_id=project_id)
     flash_message = 'Error while creating task. Please check and try again.'
-    if task_form.validate_on_submit():
+    if not task_form.validate_on_submit():
         flash(flash_message)
         return redirect(url_for('dashboard.index', project_id=project_id))
-    task.title = task_form.data['title']
-    task.description = task_form.data['description']
-    task.condition = task_form.data['condition']
+    task.title = task_form.data.get('title') or None
+    task.description = task_form.data.get('description') or None
+    task.condition = task_form.data.get('condition') or None
+    task.type = task_form.data.get('type') or None
     # add label one by one
     successfull = True
     for label_form in task_form.labels:
@@ -467,21 +472,10 @@ def update_task(project_id, task_id):
         flash(flash_message)
         return redirect(url_for('dashboard.index', project_id=project_id))
     successfull = True
-    if 'title' in task_form.data:
-        if task_form.data['title'] == '':
-            task.title = None
-        else:
-            task.title = task_form.data['title']
-    if 'description' in task_form.data:
-        if task_form.data['description'] == '':
-            task.description = None
-        else:
-            task.description = task_form.data['description']
-    if 'condition' in task_form.data:
-        if task_form.data['condition'] == '':
-            task.condition = None
-        else:
-            task.condition = task_form.data['condition']
+    task.title = task_form.data.get('title') or None
+    task.description = task_form.data.get('description') or None
+    task.condition = task_form.data.get('condition') or None
+    task.type = task_form.data.get('type') or None
     # update label one by one
     for label_form in task_form.labels:
         if label_form.validate_on_submit():
@@ -496,9 +490,9 @@ def update_task(project_id, task_id):
         else:
             successfull = False
             break
-    else:
+    if len(task_form.labels) == 0:
         successfull = False
-        print(task_form.errors)
+        flash_message = 'No labels provided. Please provide at least one label.'
     if successfull:
         try:
             queries.db.session.commit()

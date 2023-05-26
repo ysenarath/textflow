@@ -404,7 +404,7 @@ def add_annotation(*, user_id, project_id, document_id, data):
         return annotation.id
     except SQLAlchemyError:
         db.session.rollback()
-        return None
+    return None
 
 
 def get_annotation(*, user_id, project_id, annotation_id):

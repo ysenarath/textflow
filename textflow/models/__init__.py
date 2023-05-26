@@ -13,7 +13,11 @@ User
 BackgroundJob
 Task
 """
-from textflow.models.annotation import AnnotationSet, Annotation, AnnotationSpan
+from textflow.models.annotation import (
+    AnnotationSet,
+    Annotation,
+    AnnotationSpan,
+)
 from textflow.models.document import Document
 from textflow.models.label import Label
 from textflow.models.project import Project
