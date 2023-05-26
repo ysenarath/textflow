@@ -153,3 +153,4 @@ cython_debug/
 /examples/ch-annotation-server/
 /examples/textflow-citizenhelper/
 /examples/basic_server/dump.rdb
+.vscode/settings.json
