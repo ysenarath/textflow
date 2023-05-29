@@ -35,7 +35,7 @@ from textflow.models import (
 )
 from textflow.database import queries
 from textflow.views.base import render_template
-from textflow.tasks import shared as st
+from textflow.jobs import shared as st
 from textflow.utils import jsend
 
 __all__ = [
@@ -65,9 +65,9 @@ class LabelForm(FlaskForm):
         DataRequired(),
         Regexp('^[A-Za-z0-9_-]+$', message='The value must be alphanumeric.')
     ])
-    order = IntegerField('Order')
+    order = IntegerField('Order', default=1)
     color = StringField('Color')
-    group = StringField('Group')
+    group = StringField('Group', filters=[lambda x: x or None])
 
     class Meta:
         csrf = False  # Disable CSRF
@@ -79,9 +79,11 @@ class TaskForm(FlaskForm):
     description = StringField('Description', validators=[])
     condition = StringField('Condition', validators=[])
     type = SelectField('Type', validators=[DataRequired()], choices=[
+        ('document-text', 'Document Text (Read Only)'),
         ('text-classification', 'Text Classification'),
         ('span-categorization', 'Span Categorization'),
     ])
+    order = IntegerField('Order', default=1, filters=[lambda x: int(x) if x else 1])
     labels = FieldList(FormField(LabelForm))
 
 
@@ -378,7 +380,7 @@ def delete_documents(project_id):
     return jsonify(jsend.success(job.to_dict()))
 
 
-@bp.route('/projects/<project_id>/dashboard/tasks', methods=['POST'])
+@bp.route('/projects/<project_id>/dash/tasks', methods=['POST'])
 @auth.login_required
 @auth.roles_required(role='admin')
 def create_task(project_id):
@@ -404,6 +406,7 @@ def create_task(project_id):
     task.description = task_form.data.get('description') or None
     task.condition = task_form.data.get('condition') or None
     task.type = task_form.data.get('type') or None
+    task.order = task_form.data.get('order') or None
     # add label one by one
     successfull = True
     for label_form in task_form.labels:
@@ -476,6 +479,7 @@ def update_task(project_id, task_id):
     task.description = task_form.data.get('description') or None
     task.condition = task_form.data.get('condition') or None
     task.type = task_form.data.get('type') or None
+    task.order = task_form.data.get('order') or None
     # update label one by one
     for label_form in task_form.labels:
         if label_form.validate_on_submit():
@@ -490,13 +494,11 @@ def update_task(project_id, task_id):
         else:
             successfull = False
             break
-    if len(task_form.labels) == 0:
-        successfull = False
-        flash_message = 'No labels provided. Please provide at least one label.'
     if successfull:
         try:
             queries.db.session.commit()
-        except Exception:
+        except Exception as ex:
+            print(ex)
             queries.db.session.rollback()
             successfull = False
     if not successfull:
@@ -559,7 +561,7 @@ def delete_labels(project_id):
     for ll in labels_form.labels:
         if ll.data['selected']:
             label_id = ll.data['id']
-            queries.delete_label(label_id)
+            queries.delete_label(label_id=label_id)
             none_selected = False
     if none_selected:
         flash('No labels selected. Please select at \

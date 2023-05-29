@@ -53,6 +53,9 @@ updated in the user interface, therfore, we need to use AJAX.
                             <div class="pt-3"
                                  :class="index != 0 ? 'border-top' : ''"
                                  v-if="taskState[index]">
+                                 <div class="mb-3" v-if="isTaskType(task, 'document-text')">
+                                     <p>${ document.text }</p>
+                                 </div>
                                 <div class="mb-3" v-if="isTaskType(task, 'span-categorization')">
                                     <annotation-component :id="'annotation-field-' + index" :labels="task.labels" :text="document.text" :annotations="annotationSet.annotations" v-on:created="createAnnotation" v-on:deleted="deleteAnnotation" v-on:updated="createAnnotation"></annotation-component>
                                 </div>

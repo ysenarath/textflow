@@ -7,7 +7,7 @@ import pandas as pd
 from sqlalchemy.exc import SQLAlchemyError
 
 from textflow.database import queries
-from textflow.tasks.base import shared_task
+from textflow.jobs.base import shared_task
 from textflow.models import Document
 
 

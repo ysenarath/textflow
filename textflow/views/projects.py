@@ -2,8 +2,8 @@
 from flask import Blueprint, request, redirect, url_for, jsonify
 
 from textflow import auth
-from textflow.views.base import render_template, Pagination
-from textflow.database import queries
+from textflow.views.base import render_template
+from textflow.database import queries, PaginationArgs
 from textflow.utils import jsend
 
 __all__ = [
@@ -27,7 +27,7 @@ def list_projects():
     str
         rendered template
     """
-    pagination = Pagination()
+    pagination = PaginationArgs()
     projects = queries.list_projects(
         user_id=auth.current_user.id,
         paginate=pagination,
@@ -69,7 +69,7 @@ def view_project(project_id):
         user_id=auth.current_user.id,
         project_id=project.id
     )
-    pagination = Pagination()
+    pagination = PaginationArgs()
     return render_template(
         'project.html',
         project=project,
@@ -122,7 +122,7 @@ def view_project_history(project_id):
     flagged = request.args.get('flagged', default=None)
     if flagged is not None:
         flagged = flagged.lower() != 'false'
-    pagination = Pagination()
+    pagination = PaginationArgs()
     documents = queries.list_documents_completed_by_user(
         user_id=auth.current_user.id,
         project_id=project_id,

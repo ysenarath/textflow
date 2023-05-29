@@ -8,9 +8,9 @@ from textflow.views import (
     annotate,
     index,
     login,
-    project,
-    user,
     dashboard,
+    projects,
+    users,
 )
 
 __all__ = [
@@ -19,8 +19,8 @@ __all__ = [
     'annotate',
     'index',
     'login',
-    'project',
-    'user',
+    'projects',
+    'users',
     'dashboard',
 ]
 
@@ -31,7 +31,7 @@ def get_blueprints():
         annotate,
         index,
         login,
-        project,
-        user,
+        projects,
+        users,
         dashboard,
     ] if hasattr(view, 'bp')]

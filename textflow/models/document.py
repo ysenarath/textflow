@@ -6,7 +6,13 @@ Classes
 -------
 Document
 """
+import dataclasses
 import html
+import typing
+
+import pydantic
+
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from textflow.database import db
 
@@ -15,7 +21,9 @@ __all__ = [
 ]
 
 
-class Document(db.Model):
+@db.mapper_registry.mapped
+@pydantic.dataclasses.dataclass
+class Document(db.ModelMixin):
     """Document Entity. Contains text and meta information.
 
     Attributes
@@ -31,40 +39,37 @@ class Document(db.Model):
     project_id : int
         Project id.
     """
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    __table__ = db.Table(
+        'document',
+        db.mapper_registry.metadata,
+        db.Column('id', db.Integer, primary_key=True, autoincrement=True),
+        db.Column('source_id', db.String(128), nullable=True),
+        db.Column('text', db.Text(), nullable=False),
+        db.Column('meta', db.JSON, nullable=True),
+        db.Column('project_id', db.Integer, db.ForeignKey('project.id'),
+                  nullable=False),
+
+    )
+    project_id: int = pydantic.Field()
+    text: str = pydantic.Field()
     # id_str is different from the id field because it is used to store the
     # original id from the source file
-    id_str = db.Column('source_id', db.String(128), nullable=True)
-    text = db.Column(db.Text(), nullable=False)
-    meta = db.Column(db.JSON, nullable=True)
-    project_id = db.Column(
-        db.Integer,
-        db.ForeignKey('project.id'),
-        nullable=False
-    )
+    source_id: typing.Optional[str] = pydantic.Field(default=None)
+    meta: typing.Optional[pydantic.Json] = \
+        pydantic.Field(default=None)
+    id: typing.Optional[int] = pydantic.Field(default=None)
 
-    def __init__(self, **kwargs):
-        super(Document, self).__init__(**kwargs)
-        # TODO: fix \n repr
+    def __post_init_post_parse__(self):
         text = self.text.replace('\n', ' ')
         self.text = html.escape(text)
 
     def __getitem__(self, item):
         return html.unescape(self.text.__getitem__(item))
 
-    @property
-    def source_id(self):
-        return self.id_str
+    @hybrid_property
+    def id_str(self):
+        return self.source_id
 
-    @source_id.setter
-    def source_id(self, value):
-        self.id_str = value
-
-    def to_dict(self):
-        return {
-            'id_str': self.id_str,
-            'id': self.id,
-            'text': self.text,
-            'meta': self.meta,
-            'project_id': self.project_id,
-        }
+    @id_str.setter
+    def id_str(self, value):
+        self.source_id = value

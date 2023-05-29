@@ -27,6 +27,12 @@
                 {{ form.type(class_="form-control") }}
             </div>
         </div>
+        <div class="row gy-3">
+            <div class="col col-5">
+                <label class="form-label">{{ form.order.label }}</label>
+                {{ form.order(class_="form-control") }}
+            </div>
+        </div>
         <table class="table">
             <tr>
                 <th></th>
@@ -101,6 +107,9 @@
                 v-on:click="'update-task-form-{{ form.id.data }}' in numCreatedLabels ? numCreatedLabels['update-task-form-{{ form.id.data }}']++ : numCreatedLabels['update-task-form-{{ form.id.data }}'] = 1">
             Add Label
         </button>
+        <button type="submit" 
+            class="btn btn-primary"
+            formaction="{{ url_for('dashboard.delete_labels', project_id=project_id) }}">Delete Labels</button>
     </form>
 {% endfor %}
 {% set form = forms['create_task'] %}
@@ -130,6 +139,12 @@
         <div class="col col-5">
             <label class="form-label">{{ form.type.label }}</label>
             {{ form.type(class_="form-control") }}
+        </div>
+    </div>
+    <div class="row gy-3">
+        <div class="col col-5">
+            <label class="form-label">{{ form.order.label }}</label>
+            {{ form.order(class_="form-control") }}
         </div>
     </div>
     <table class="table">

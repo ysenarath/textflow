@@ -2,6 +2,7 @@ import math
 
 from sqlalchemy import or_, func, and_
 from sqlalchemy.exc import SQLAlchemyError
+from textflow.database.pagination import PaginationArgs
 
 from textflow.models import (
     User,
@@ -15,7 +16,6 @@ from textflow.models import (
     Assignment,
     BackgroundJob,
 )
-from textflow.database.base import database as db
 
 __all__ = [
     'ignore',
@@ -131,7 +131,7 @@ def list_documents_completed_by_user(*, user_id, project_id, flagged=False,
     if flagged is not None:
         q = q.filter(AnnotationSet.flagged.is_(flagged))
     if paginate:
-        if hasattr(paginate, 'to_dict'):
+        if isinstance(paginate, PaginationArgs):
             paginate_kwargs = paginate.to_dict()
         return q.paginate(**paginate_kwargs)
     return q.all()
@@ -578,9 +578,10 @@ def list_projects(*, user_id, paginate=None, paginate_kwargs=None):
         q = q.join(Assignment, Assignment.project_id == Project.id) \
             .filter(Assignment.user_id == user_id)
     if paginate:
-        if hasattr(paginate, 'to_dict'):
+        if isinstance(paginate, PaginationArgs):
             paginate_kwargs = paginate.to_dict()
         return q.paginate(**paginate_kwargs)
+    # todo: the output should be pagination object
     return q.all()
 
 

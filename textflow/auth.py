@@ -2,6 +2,7 @@
 
 This module contains the authentication logic for the application.
 """
+
 from flask import abort, flash, g
 from flask_login import (
     LoginManager,

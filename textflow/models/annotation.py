@@ -8,13 +8,15 @@ AnnotationSpan
 Annotation
 AnnotationSet
 """
-from typing import List
+import datetime
+import typing
 
-from sqlalchemy import ForeignKey, Table, Column
+import pydantic
+
+import sqlalchemy as sa
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import Mapped
 
-from textflow.database import db
+from textflow.database.base import ModelMixin
 
 __all__ = [
     'Annotation',
@@ -23,7 +25,9 @@ __all__ = [
 ]
 
 
-class AnnotationSpan(db.Model):
+@db.mapper_registry.mapped
+@pydantic.dataclasses.dataclass
+class AnnotationSpan(ModelMixin):
     """Annotation-Span Entity - contains start and length.
 
     Attributes
@@ -37,14 +41,25 @@ class AnnotationSpan(db.Model):
     annotation_id : int
         Annotation id.
     """
-    id = db.Column(db.Integer, primary_key=True)
-    start = db.Column(db.Integer)
-    length = db.Column(db.Integer)
-    annotation_id = db.Column(db.Integer, db.ForeignKey(
-        'annotation.id'), unique=True, nullable=False)
+    __table__ = sa.Table(
+        'annotation_span',
+        mapper_registry.metadata,
+        sa.Column('id', sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column('start', sa.Integer, nullable=False),
+        sa.Column('length', sa.Integer, nullable=False),
+        sa.Column(
+            'annotation_id', sa.Integer, sa.ForeignKey('annotation.id'),
+            unique=True, nullable=False
+        ),
+    )
+
+    start: int = pydantic.Field()
+    length: int = pydantic.Field()
+    annotation_id: int = pydantic.Field()
+    id: typing.Optional[int] = pydantic.Field(default=None)
 
     @hybrid_property
-    def end(self) -> int:
+    def end(self):
         """Get end of span.
 
         Returns
@@ -64,35 +79,53 @@ class AnnotationSpan(db.Model):
         """
         return slice(self.start, self.start + self.length)
 
-    def to_dict(self):
-        """Convert to dictionary.
 
-        Returns
-        -------
-        dict
-            Dictionary representation of AnnotationSpan.
-        """
-        return {
-            'id': self.id,
-            'start': self.start,
-            'length': self.length,
-            'annotation_id': self.annotation_id,
-        }
+@db.mapper_registry.mapped
+@pydantic.dataclasses.dataclass
+class AnnotationLabel(db.ModelMixin):
+    """AnnotationLabel Entity - contains label_id and annotation_id.
+
+    Attributes
+    ----------
+    label_id : int
+        Label id.
+    annotation_id : int
+        Annotation id.
+    created_on : datetime
+        Created on.
+    updated_on : datetime
+        Updated on.
+    """
+    __table__ = db.Table(
+        'annotation_label',
+        db.mapper_registry.metadata,
+        db.Column(
+            'label_id', db.Integer, db.ForeignKey('label.id'),
+            primary_key=True
+        ),
+        db.Column(
+            'annotation_id', db.Integer, db.ForeignKey('annotation.id'),
+            primary_key=True
+        ),
+        db.Column('created_on', db.DateTime, server_default=db.func.now()),
+        db.Column(
+            'updated_on', db.DateTime,
+            server_default=db.func.now(),
+            server_onupdate=db.func.now()
+        ),
+    )
+
+    label_id: int = pydantic.Field()
+    annotation_id: int = pydantic.Field()
+    created_on: typing.Optional[datetime.datetime] = \
+        pydantic.Field(default=None)
+    updated_on: typing.Optional[datetime.datetime] = \
+        pydantic.Field(default=None)
 
 
-# Many to Many relationship between Annotation and Label
-annotation_label = Table(
-    'annotation_label',
-    db.Model.metadata,
-    Column('label_id', ForeignKey('label.id'), primary_key=True),
-    Column('annotation_id', ForeignKey('annotation.id'), primary_key=True),
-    Column('created_on', db.DateTime, server_default=db.func.now()),
-    Column('updated_on', db.DateTime, server_default=db.func.now(),
-           server_onupdate=db.func.now()),
-)
-
-
-class Annotation(db.Model):
+@db.mapper_registry.mapped
+@pydantic.dataclasses.dataclass
+class Annotation(db.ModelMixin):
     """Annotation Entity - contains annotations by a user for a document.
 
     Attributes
@@ -114,22 +147,46 @@ class Annotation(db.Model):
     -------
     get_slice()
         Get slice from span.
-    to_dict()
-        Convert to dictionary.
     """
-    id = db.Column(db.Integer, primary_key=True)
-    span = db.relationship('AnnotationSpan', backref='annotation',
-                           uselist=False, cascade="all, delete-orphan")
-    labels: Mapped[List['Label']] = db.relationship(  # noqa # type: ignore
-        secondary='annotation_label'
+    __table__ = db.Table(
+        'annotation',
+        db.mapper_registry.metadata,
+        db.Column(
+            'id', db.Integer, primary_key=True,
+            autoincrement=True
+        ),
+        db.Column(
+            'annotation_set_id', db.Integer,
+            db.ForeignKey('annotation_set.id'), nullable=False
+        ),
+        db.Column(
+            'created_on', db.DateTime, server_default=db.func.now()
+        ),
+        db.Column(
+            'updated_on', db.DateTime, server_default=db.func.now(),
+            server_onupdate=db.func.now()
+        ),
     )
-    created_on = db.Column(db.DateTime, server_default=db.func.now())
-    updated_on = db.Column(
-        db.DateTime, server_default=db.func.now(),
-        server_onupdate=db.func.now()
-    )
-    annotation_set_id = db.Column(db.Integer, db.ForeignKey(
-        'annotation_set.id'), nullable=False)
+    __mapper_args__ = {  # type: ignore
+        "properties": dict(
+            span=db.relationship(
+                'AnnotationSpan', backref='annotation',
+                uselist=False, cascade="all, delete-orphan"
+            ),
+            labels=db.relationship(
+                'Label', secondary='annotation_label'
+            )
+        )
+    }
+
+    annotation_set_id: int = pydantic.Field()
+    id: typing.Optional[int] = pydantic.Field(default=None)
+    created_on: typing.Optional[datetime.datetime] = \
+        pydantic.Field(
+        default=None)
+    updated_on: typing.Optional[datetime.datetime] = \
+        pydantic.Field(
+        default=None)
 
     def get_slice(self):
         """Get slice from span.
@@ -143,23 +200,10 @@ class Annotation(db.Model):
             return slice(None, None, None)
         return self.span.slice()
 
-    def to_dict(self):
-        """Convert to dictionary.
 
-        Returns
-        -------
-        dict
-            Dictionary representation of Annotation.
-        """
-        return {
-            'id': self.id,
-            'span': self.span.to_dict() if self.span else None,
-            'labels': [label.to_dict() for label in self.labels],
-            'annotation_set_id': self.annotation_set_id,
-        }
-
-
-class AnnotationSet(db.Model):
+@db.mapper_registry.mapped
+@pydantic.dataclasses.dataclass
+class AnnotationSet(db.ModelMixin):
     """AnnotationSet Entity - contains annotations by a user for a document.
 
     Attributes
@@ -187,44 +231,71 @@ class AnnotationSet(db.Model):
     updated_on : datetime
         Updated on.
     """
-    id = db.Column(db.Integer, primary_key=True)
-    document_id = db.Column(db.Integer, db.ForeignKey(
-        'document.id', ondelete="CASCADE"), nullable=False)
-    document = db.relationship('Document', backref=db.backref(
-        'annotation_set', lazy=True, cascade="all,delete"), uselist=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    user = db.relationship('User', backref=db.backref(
-        'annotation_set', lazy=True), uselist=False
-    )
-    annotations = db.relationship(
-        'Annotation', backref='annotation_set',
-        lazy=True, cascade='all, delete'
-    )
-    completed = db.Column(db.Boolean(), nullable=False, default=False)
-    flagged = db.Column(db.Boolean(), nullable=False, default=False)
-    skipped = db.Column(db.Boolean(), nullable=False, default=False)
-    created_on = db.Column(db.DateTime, server_default=db.func.now())
-    updated_on = db.Column(
-        db.DateTime, server_default=db.func.now(),
-        server_onupdate=db.func.now()
+    __table__ = db.Table(
+        'annotation_set',
+        db.mapper_registry.metadata,
+        db.Column(
+            'id', db.Integer, primary_key=True,
+            autoincrement=True
+        ),
+        db.Column(
+            'document_id', db.Integer,
+            db.ForeignKey('document.id', ondelete="CASCADE"),
+            nullable=False
+        ),
+        db.Column(
+            'user_id', db.Integer,
+            db.ForeignKey('user.id', ondelete="CASCADE"),
+            nullable=False
+        ),
+        db.Column(
+            'completed', db.Boolean(), nullable=False, default=False
+        ),
+        db.Column(
+            'flagged', db.Boolean(), nullable=False, default=False
+        ),
+        db.Column(
+            'skipped', db.Boolean(), nullable=False, default=False
+        ),
+        db.Column(
+            'created_on', db.DateTime, server_default=db.func.now()
+        ),
+        db.Column(
+            'updated_on', db.DateTime, server_default=db.func.now(),
+            server_onupdate=db.func.now()
+        ),
     )
 
-    __table_args__ = (db.UniqueConstraint('user_id', 'document_id'),)
+    __mapper_args__ = {  # type: ignore
+        "properties": dict(
+            document=db.relationship(
+                'Document',
+                backref=db.backref(
+                    'annotation_set', lazy=True, cascade="all,delete"),
+                uselist=False
+            ),
+            user=db.relationship(
+                'User', backref=db.backref('annotation_set', lazy=True),
+                uselist=False
+            ),
+            annotations=db.relationship(
+                'Annotation', backref='annotation_set',
+                lazy=True, cascade='all, delete'
+            )
+        )
+    }
 
-    def to_dict(self):
-        """Convert to dictionary.
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'document_id'),
+    )
 
-        Returns
-        -------
-        dict
-            Dictionary representation of AnnotationSet.
-        """
-        return {
-            'id': self.id,
-            'document_id': self.document_id,
-            'user_id': self.user_id,
-            'completed': self.completed,
-            'flagged': self.flagged,
-            'skipped': self.skipped,
-            'annotations': [a.to_dict() for a in self.annotations],
-        }
+    document_id: int = pydantic.Field()
+    user_id: int = pydantic.Field()
+    completed: bool = pydantic.Field(default=False)
+    flagged: bool = pydantic.Field(default=False)
+    skipped: bool = pydantic.Field(default=False)
+    id: typing.Optional[int] = pydantic.Field(default=None)
+    created_on: typing.Optional[datetime.datetime] = \
+        pydantic.Field(default=None)
+    updated_on: typing.Optional[datetime.datetime] = \
+        pydantic.Field(default=None)

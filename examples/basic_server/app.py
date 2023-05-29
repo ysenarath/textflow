@@ -12,13 +12,6 @@ with open(os.path.join(os.getcwd(), 'config.json')) as fp:
 
 tf = TextFlow(config, url_prefix='/textflow')
 
+celery_app = tf.celery_app
 
-def create_app():
-    return tf.app
-
-
-celery_app = tf.app.extensions['celery']
-
-if __name__ == '__main__':
-    tf.app.config['TESTING'] = True
-    tf.app.run(port=8002, debug=True)
+app = tf.api.api

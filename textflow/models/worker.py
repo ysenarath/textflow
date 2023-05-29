@@ -7,6 +7,11 @@ Classes
 -------
 BackgroundJob
 """
+import dataclasses
+import typing
+
+import pydantic
+
 from textflow.database import db
 
 __all__ = [
@@ -14,7 +19,9 @@ __all__ = [
 ]
 
 
-class BackgroundJob(db.Model):
+@db.mapper_registry.mapped
+@pydantic.dataclasses.dataclass
+class BackgroundJob(db.ModelMixin):
     """BackgroundJob Entity.
 
     This entity is used to keep track of background jobs that are running.
@@ -33,27 +40,31 @@ class BackgroundJob(db.Model):
         identify if a task with the same parameters has already been run
         (or is running) and avoid running it again simultaneously.
     """
+    __table__ = db.Table(
+        'background_job',
+        db.mapper_registry.metadata,
+        db.Column('id', db.String(128), primary_key=True),
+        db.Column('user_id', db.Integer, db.ForeignKey('user.id'),
+                  nullable=False),
+        db.Column('project_id', db.Integer, db.ForeignKey('project.id'),
+                  nullable=True),
+        db.Column('hash', db.String(512), nullable=True),
+    )
+
     # task id is a unique id of the task that is running (e.g., from celery)
-    id = db.Column(db.String(128), primary_key=True)
+    id: int = pydantic.Field()
     # user id of the user who started the task is stored here to keep track of
     # who started the task (todo: and who can cancel it)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id: int = pydantic.Field()
     # project id of the project that the task is related to
-    project_id = db.Column(db.Integer, db.ForeignKey(
-        'project.id'), nullable=False
+    project_id: typing.Optional[int] = pydantic.Field(
+        default=None
     )
     # hash of a task is the hash of the task's parameters so that we can
     # identify if a task with the same parameters has already been run
     # (or is running) and avoid running it again simultaneously
     # for example you dont want to delete the documents of a project twice at
     # the same time by same or two users
-    hash = db.Column(db.String(512), nullable=False, default='default')
-
-    def to_dict(self):
-        """Convert to dictionary."""
-        return {
-            'id': self.id,
-            'user_id': self.user_id,
-            'project_id': self.project_id,
-            'hash': self.hash,
-        }
+    hash: typing.Optional[str] = pydantic.Field(
+        default=None
+    )

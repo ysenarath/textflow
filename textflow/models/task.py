@@ -6,8 +6,11 @@ Classes
 -------
 Task
 """
+import dataclasses
 import logging
-import json
+import typing
+
+import pydantic
 
 from textflow.database import db
 
@@ -18,7 +21,9 @@ __all__ = [
 ]
 
 
-class Task(db.Model):
+@db.mapper_registry.mapped
+@pydantic.dataclasses.dataclass
+class Task(db.ModelMixin):
     """Task Entity. Contains labels and condition.
 
     Attributes
@@ -33,38 +38,41 @@ class Task(db.Model):
         Type of task.
     project_id : int
         Project id of task.
+    order : int
+        Order of task.
     labels : list of Label
         Labels of task.
     condition : dict
         Condition of task.
     """
-    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    title = db.Column(db.String(80), default=None)
-    description = db.Column(db.Text, default=None)
-    type = db.Column(db.String(80), nullable=False)
-    project_id = db.Column(db.Integer, db.ForeignKey(
-        'project.id'), nullable=False)
-    labels = db.relationship('Label', backref='task', lazy=True,
-                             cascade='all, delete', order_by='Label.order')
-    condition = db.Column(db.JSON)
+    __table__ = db.Table(
+        'task',
+        db.mapper_registry.metadata,
+        db.Column('id', db.Integer, primary_key=True, autoincrement=True),
+        db.Column('title', db.String(80), default=None, nullable=True),
+        db.Column('description', db.Text, default=None, nullable=True),
+        db.Column('type', db.String(80), nullable=False),
+        db.Column('order', db.Integer, default=1),
+        db.Column('condition', db.JSON, nullable=True),
+        db.Column('project_id', db.Integer, db.ForeignKey('project.id'),
+                  nullable=False),
+    )
 
-    def to_dict(self):
-        """Convert task to dict.
+    __mapper_args__ = {
+        'properties': dict(
+            labels=db.relationship(
+                'Label', backref='task', lazy=True,
+                cascade='all, delete', order_by='Label.order'
+            )
+        )
+    }
 
-        Returns
-        -------
-        dict
-            Task as dict.
-        """
-        condition = None
-        if self.condition is not None:
-            condition = json.loads(self.condition)
-        return {
-            'id': self.id,
-            'title': self.title,
-            'description': self.description,
-            'project_id': self.project_id,
-            'type': self.type,
-            'labels': [label.to_dict() for label in self.labels],
-            'condition': condition,
-        }
+    project_id: int = pydantic.Field()
+    type: str = pydantic.Field()
+    title: typing.Optional[str] = pydantic.Field(default=None)
+    description: typing.Optional[str] = pydantic.Field(
+        default=None)
+    order: typing.Optional[int] = pydantic.Field(default=1)
+    condition: typing.Optional[pydantic.Json[typing.Any]] = \
+        pydantic.Field(default=None)
+    id: typing.Optional[int] = pydantic.Field(default=None)
