@@ -1,51 +1,48 @@
-""" Contains db object """
-import math
-import re
-import json
+"""Database connection and session management.
 
+This module provides a database object that manages database connections and
+sessions. This depends on models defined in the models module.
+
+Example
+-------
+>>> from textflow.database import db
+>>> # set database connection valid for the current thread
+>>> db.context.set_config(config)
+>>> db.create_all()
+>>> db.session.add(...)
+>>> db.session.commit()
+"""
+import contextlib
+import typing
+from typing import Optional
 import pydantic
-from pydantic import BaseModel
 
-import sqlalchemy as sa
-from sqlalchemy import create_engine, Column
-from sqlalchemy.orm import (
-    backref,
-    declared_attr,
-    DeclarativeBase,
-    Query,
-    relationship,
-    scoped_session,
-    sessionmaker,
-    MappedAsDataclass,
-)
-from sqlalchemy.orm import registry
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import Engine, create_engine
+from sqlalchemy.orm import sessionmaker, Query, Session
 
-from textflow.database.pagination import Pagination
-
-
-__all__ = [
-    'database',
-]
+from textflow.database.pagination import Pagination, PaginationArgs
+from textflow.models import mapper_registry as default_mapper_registry
 
 
 class BaseQuery(Query):
-    """Extend query to support additional functions."""
-
-    DEFAULT_PER_PAGE = 20
-
-    def get_or(self, ident, default=None):
-        result = self.get(ident)
-        return default if result is None else result
-
-    def paginate(self, page, per_page=20, error_out=True):
+    def paginate(self, page, *, per_page=20, error_out=True):
         """Return `Pagination` instance using already defined query
         parameters.
         """
-        if error_out and page < 1:
-            raise IndexError
+        if page is None:
+            return self.all()
+        if isinstance(page, PaginationArgs):
+            error_out = page.error_out
+            per_page = page.per_page
+            page = page.page
+        if page < 1:
+            if error_out:
+                raise IndexError
+            page = PaginationArgs.page.default
         if per_page is None:
-            per_page = self.DEFAULT_PER_PAGE
+            per_page = PaginationArgs.per_page.default
+        if per_page > PaginationArgs.per_page.le:
+            per_page = PaginationArgs.per_page.le
         # query.limit(self.per_page).offset(self._query_offset).all()
         query_offset = (page - 1) * per_page
         items = self.limit(per_page).offset(query_offset).all()
@@ -57,96 +54,106 @@ class BaseQuery(Query):
             total = len(items)
         else:
             total = self.order_by(None).count()
-        return Pagination(self, page, per_page, total, items)
+        return Pagination(page, per_page, total, items)
 
 
-class ExtendedEncoder(json.JSONEncoder):
-    def default(self, obj):
-        return str(obj)
-
-
-def sanitize_dict(d):
-    """ Remove all non-serializable objects from dict
-
-    :param d: dict
-    :return: sanitized dict
-    """
-    if d is None:
-        return None
-    if isinstance(d, str):
-        return d
-    if isinstance(d, (int, float, str, bool)):
-        if math.isnan(d):
-            return None
-        return d
-    if isinstance(d, (list, tuple)):
-        return [sanitize_dict(v) for v in d]
-    if isinstance(d, dict):
-        return {key: sanitize_dict(value) for key, value in d.items()}
-    return str(d)
-
-
-class classproperty(property):
-    def __get__(self, owner_self, owner_cls):
-        return self.fget(owner_cls)
-
-
-class ModelMixin(object):
-    @declared_attr.directive
-    def __tablename__(cls) -> str:
-        # ThisTable -> this_table
-        return re.sub(r'(?<!^)(?=[A-Z])', '_', cls.__name__).lower()
-
-    # make class functional property called query taking cls as argument
-    @classproperty
-    def query(cls):
-        return database.Session.query(cls)
-
-    def to_json(self):
-        encoded = json.loads(json.dumps(self.to_dict(), cls=ExtendedEncoder))
-        return sanitize_dict(encoded)
-
-    class Config:
-        validate_assignment = True
-
-
-mapper_registry = registry()
-
-
-class SQLAlchemy(object):
-    def __init__(self, query_class) -> None:
-        self.query_class = query_class
-        self.Session = None
-
-    def init_config(self, config):
-        """Initialize database connection.
+class DatabaseContext(object):
+    def __init__(self, config) -> None:
+        """Update database connection using config provided. Existing ones will
+        be overwritten.
 
         Parameters
         ----------
         uri : str
             Database URI.
         """
-        self.engine = create_engine(config["SQLALCHEMY_DATABASE_URI"])
-        self.Session = scoped_session(sessionmaker(
+        SQLALCHEMY_DATABASE_URL = config['SQLALCHEMY_DATABASE_URI']
+        self.engine: Engine = create_engine(
+            SQLALCHEMY_DATABASE_URL,
+            connect_args={"check_same_thread": False}
+        )
+        self.Session: sessionmaker = sessionmaker(
             autocommit=False,
-            autoflush=False,
+            autoflush=True,
             bind=self.engine,
-            query_cls=self.query_class,
-        ))
+            query_cls=BaseQuery,
+        )
 
-    def init_app(self, app):
-        """Initialize database from flask app.
+
+class Database(object):
+    """Handle database connection and session and keeps track of all models.
+
+    Context variables are used to keep track of the connections for each 
+    thread. Fork will create a copy of context variables (at the time of 
+    form) for each thread.
+
+    Attributes
+    ----------
+    mapper_registry : sqlalchemy.orm.registry
+    """
+
+    def __init__(self, mapper_registry=None):
+        """Initialize database object."""
+        if mapper_registry is None:
+            # use default mapper registry from models package
+            mapper_registry = default_mapper_registry
+        self.mapper_registry = mapper_registry
+
+    def init_context(self, config):
+        """Initialize database context from config.
 
         Parameters
         ----------
-        app : Flask
-            Flask application.
-        """
-        self.init_config(app.config)
+        config : dict
+            Configuration dictionary.
 
-        @app.teardown_appcontext
-        def shutdown_session(exception=None):
-            self.Session.remove()
+        Returns
+        -------
+        None
+            None.
+        """
+        self.ctx = DatabaseContext(config)
+
+    @contextlib.contextmanager
+    def session(self, *args, **kwargs) -> \
+            typing.Generator[Session, None, None]:
+        """Get database session from session factory.
+
+        Notes
+        -----
+        Make sure you have set the database context before calling this
+            property.
+        This can beused as a Dependency in FastAPI.
+
+        Returns
+        -------
+        typing.Generator[Session, None, None]
+            Database session.
+        """
+        # call the session factory to get the session
+        # this will generate existing session if it is
+        # in the thread otherwise, it will create a
+        # new session
+        if self.ctx.Session is None:
+            raise RuntimeError('Database context not initialized. \
+                               Use db.init_context(config) \
+                               to initialize the context.')
+        session = self.ctx.Session()
+        try:
+            yield session
+        finally:
+            session.close()
+
+    @property
+    def engine(self):
+        """Get database engine.
+
+        Returns
+        -------
+        sqlalchemy.engine.Engine
+            Database engine.
+        """
+        return self.ctx.engine
 
     def create_all(self):
         """Create all tables.
@@ -156,35 +163,7 @@ class SQLAlchemy(object):
         None
             None.
         """
-        self.Model.metadata.create_all(self.engine)
-
-    @property
-    def session(self):
-        """Get session.
-
-        Returns
-        -------
-        Session
-            Session object.
-        """
-        session = self.Session()
-        return session
-
-    def Column(self, *args, **kwargs):
-        return Column(*args, **kwargs)
-
-    @classmethod
-    def relationship(cls, *args, **kwargs):
-        return relationship(*args, **kwargs)
-
-    @classmethod
-    def backref(cls, *args, **kwargs):
-        return backref(*args, **kwargs)
-
-    def __getattr__(self, name):
-        if hasattr(sa, name):
-            return getattr(sa, name)
-        raise AttributeError(name)
+        self.mapper_registry.metadata.create_all(self.engine)
 
 
-database = SQLAlchemy(query_class=BaseQuery, model_class=Model)
+db: Database = Database()

@@ -1,7 +1,10 @@
-from textflow.database.base import database as db
-from textflow.database.pagination import PaginationArgs
+from textflow.database.base import db
+from textflow.database import operations as op
+from textflow.database.pagination import PaginationArgs, Pagination
 
 __all__ = [
     'db',
-    'PaginationArgs'
+    'op',
+    'PaginationArgs',
+    'Pagination',
 ]

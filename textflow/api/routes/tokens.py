@@ -2,9 +2,14 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 
+from sqlalchemy.orm import Session
 
-from textflow.api.dependencies import oauth2_scheme, create_access_token
-from textflow.database import queries
+from textflow.api.dependencies import (
+    oauth2_scheme,
+    create_access_token,
+    get_session,
+)
+from textflow.database import op
 
 __all__ = [
     'router',
@@ -12,19 +17,24 @@ __all__ = [
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-router = APIRouter()
+router = APIRouter(
+    prefix='/tokens',
+    tags=['Tokens'],
+)
 
 
-@router.get('/tokens/')
+@router.get('/')
 async def read_tokens(token: str = Depends(oauth2_scheme)):
     return {'token': token}
 
 
-@router.post('/tokens/get/')
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+@router.post('/get/')
+async def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    session: Session = Depends(get_session),
+):
     # get user from database
-    users = queries.filter_users(username=form_data.username)
-    user = users[0] if users else None
+    user = op.get_user_by(session, username=form_data.username)
     if not user:
         raise HTTPException(
             status_code=400,

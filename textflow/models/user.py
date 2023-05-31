@@ -8,16 +8,11 @@ User
 Profile
 Assignment
 """
-import dataclasses
-import enum
-import typing
-from flask import g
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
 
-import pydantic
+import sqlalchemy as sa
 
-from textflow.database import db
+from textflow.models.base import mapper_registry, ModelMixin
 
 __all__ = [
     'User',
@@ -26,10 +21,10 @@ __all__ = [
 ]
 
 
-@db.mapper_registry.mapped
-@pydantic.dataclasses.dataclass
-class Assignment(db.ModelMixin):
-    """Assignment of user to project.
+@mapper_registry.mapped
+# @pydantic.dataclasses.dataclass
+class Assignment(ModelMixin):
+    """User assignment of user to project.
 
     Attributes
     ----------
@@ -40,30 +35,20 @@ class Assignment(db.ModelMixin):
     role : str
         Role of user in project.
     """
-    __table__ = db.Table(
+    __table__ = sa.Table(
         'assignment',
-        db.mapper_registry.metadata,
-        db.Column('user_id', db.Integer, db.ForeignKey('user.id'),
+        mapper_registry.metadata,
+        sa.Column('user_id', sa.Integer, sa.ForeignKey('user.id'),
                   primary_key=True),
-        db.Column('project_id', db.Integer, db.ForeignKey('project.id'),
+        sa.Column('project_id', sa.Integer, sa.ForeignKey('project.id'),
                   primary_key=True),
-        db.Column('role', db.String(512), nullable=False, default='default'),
+        sa.Column('role', sa.String(512), nullable=False, default='default'),
     )
 
-    user_id: int = pydantic.Field()
-    project_id: int = pydantic.Field()
-    role: str = pydantic.Field(default='default')
 
-
-class ThemeEnum(enum.Enum):
-    light = 'light'
-    dark = 'dark'
-    auto = 'auto'
-
-
-@db.mapper_registry.mapped
-@pydantic.dataclasses.dataclass
-class Profile(db.ModelMixin):
+@mapper_registry.mapped
+# @pydantic.dataclasses.dataclass
+class Profile(ModelMixin):
     """Profile of user.
 
     Attributes
@@ -79,39 +64,27 @@ class Profile(db.ModelMixin):
     theme : str
         Theme of user.
     """
-    __table__ = db.Table(
+    __table__ = sa.Table(
         'profile',
-        db.mapper_registry.metadata,
-        db.Column('user_id', db.Integer, db.ForeignKey('user.id'),
+        mapper_registry.metadata,
+        sa.Column('user_id', sa.Integer, sa.ForeignKey('user.id'),
                   primary_key=True),
-        db.Column('first_name', db.String(512), nullable=True),
-        db.Column('last_name', db.String(512), nullable=True),
-        db.Column('email', db.String(120), unique=True, nullable=True),
-        db.Column('theme', db.String(80), nullable=False, default='light'),
+        sa.Column('first_name', sa.String(512), nullable=True),
+        sa.Column('last_name', sa.String(512), nullable=True),
+        sa.Column('email', sa.String(120), unique=True, nullable=True),
+        sa.Column('theme', sa.String(80), nullable=False, default='light'),
     )
 
     __mapper_args__ = {
         'properties': dict(
-            user=db.relationship('User', back_populates='profile')
+            user=sa.orm.relationship('User', back_populates='profile')
         )
     }
 
-    user_id: int = pydantic.Field()
-    first_name: typing.Optional[str] = \
-        pydantic.Field(default=None)
-    last_name: typing.Optional[str] = \
-        pydantic.Field(default=None)
-    email: typing.Optional[str] = pydantic.Field(
-        default=None,
-    )
-    theme: typing.Optional[ThemeEnum] = pydantic.Field(
-        default='light',
-    )
 
-
-@db.mapper_registry.mapped
-@pydantic.dataclasses.dataclass
-class User(db.ModelMixin, UserMixin):
+@mapper_registry.mapped
+# @pydantic.dataclasses.dataclass
+class User(ModelMixin, UserMixin):
     """User model.
 
     Attributes
@@ -129,111 +102,30 @@ class User(db.ModelMixin, UserMixin):
     jobs : list of BackgroundJob
         Background jobs related to this user.
     """
-    __table__ = db.Table(
+    __table__ = sa.Table(
         'user',
-        db.mapper_registry.metadata,
-        db.Column('id', db.Integer, primary_key=True, autoincrement=True),
-        db.Column('disabled', db.Boolean, default=False),
-        db.Column('username', db.String(80), unique=True, nullable=False),
-        db.Column('password', db.String(512), nullable=False,
+        mapper_registry.metadata,
+        sa.Column('id', sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column('disabled', sa.Boolean, default=False),
+        sa.Column('username', sa.String(80), unique=True, nullable=False),
+        sa.Column('password', sa.String(512), nullable=False,
                   key='hashed_password'),
     )
 
     __mapper_args__ = {
         'properties': dict(
-            profile=db.relationship(
+            profile=sa.orm.relationship(
                 'Profile', uselist=False, back_populates='user',
                 lazy='joined', cascade='all, delete-orphan'
             ),
-            jobs=db.relationship(
+            jobs=sa.orm.relationship(
                 'BackgroundJob',
                 backref='user', lazy='joined'
             ),
-            projects=db.relationship(
+            projects=sa.orm.relationship(
                 'Assignment',
                 backref='user', lazy=True,
                 cascade='all, delete-orphan',
             )
         )
     }
-
-    username: str = pydantic.Field()
-    # plaintext password is not stored in database
-    password: typing.Optional[pydantic.SecretStr] = \
-        pydantic.Field(default=None)
-    disabled: bool = pydantic.Field(default=False)
-    # hashed password is stored in database
-    hashed_password: typing.Optional[str] = \
-        pydantic.Field(default=None, alias='hashed_password')
-    id: typing.Optional[int] = \
-        pydantic.Field(None)
-
-    def __post_init_post_parse__(self):
-        """Create a new user."""
-        if self.password is not None:
-            self.set_password(self.password)
-        if self.profile is None and self.id is not None:
-            # create a new profile for the user
-            self.profile = Profile(user_id=self.id)
-
-    @pydantic.validator('username')
-    def username_alphanumeric(cls, v):
-        if not v.isalnum():
-            raise ValueError('must be alphanumeric')
-        return v
-
-    def set_password(self, password):
-        """Set the password.
-
-        Parameters
-        ----------
-        password : str
-            Password of user.
-
-        Returns
-        -------
-        User
-            User with password set.
-        """
-        if isinstance(password, pydantic.SecretStr):
-            password = password.get_secret_value()
-        self.hashed_password = generate_password_hash(password)
-        return self
-
-    def verify_password(self, password):
-        """Verify the password.
-
-        Parameters
-        ----------
-        password : str
-            Password of user.
-
-        Returns
-        -------
-        bool
-            True if password is correct, False otherwise.
-        """
-        return check_password_hash(self.hashed_password, password)
-
-    def __repr__(self):
-        """Get the representation of the user.
-
-        Returns
-        -------
-        str
-            Representation of the user.
-        """
-        return '<User {}>'.format(self.username)
-
-    @property
-    def role(self):
-        """Get the role of the user.
-
-        Returns
-        -------
-        str
-            Role of the user.
-        """
-        if 'current_user_role' in g:
-            return g.current_user_role
-        return None

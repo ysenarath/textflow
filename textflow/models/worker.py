@@ -7,21 +7,18 @@ Classes
 -------
 BackgroundJob
 """
-import dataclasses
-import typing
+import sqlalchemy as sa
 
-import pydantic
-
-from textflow.database import db
+from textflow.models.base import mapper_registry, ModelMixin
 
 __all__ = [
     'BackgroundJob',
 ]
 
 
-@db.mapper_registry.mapped
-@pydantic.dataclasses.dataclass
-class BackgroundJob(db.ModelMixin):
+@mapper_registry.mapped
+# @pydantic.dataclasses.dataclass
+class BackgroundJob(ModelMixin):
     """BackgroundJob Entity.
 
     This entity is used to keep track of background jobs that are running.
@@ -40,31 +37,13 @@ class BackgroundJob(db.ModelMixin):
         identify if a task with the same parameters has already been run
         (or is running) and avoid running it again simultaneously.
     """
-    __table__ = db.Table(
+    __table__ = sa.Table(
         'background_job',
-        db.mapper_registry.metadata,
-        db.Column('id', db.String(128), primary_key=True),
-        db.Column('user_id', db.Integer, db.ForeignKey('user.id'),
+        mapper_registry.metadata,
+        sa.Column('id', sa.String(128), primary_key=True),
+        sa.Column('user_id', sa.Integer, sa.ForeignKey('user.id'),
                   nullable=False),
-        db.Column('project_id', db.Integer, db.ForeignKey('project.id'),
+        sa.Column('project_id', sa.Integer, sa.ForeignKey('project.id'),
                   nullable=True),
-        db.Column('hash', db.String(512), nullable=True),
-    )
-
-    # task id is a unique id of the task that is running (e.g., from celery)
-    id: int = pydantic.Field()
-    # user id of the user who started the task is stored here to keep track of
-    # who started the task (todo: and who can cancel it)
-    user_id: int = pydantic.Field()
-    # project id of the project that the task is related to
-    project_id: typing.Optional[int] = pydantic.Field(
-        default=None
-    )
-    # hash of a task is the hash of the task's parameters so that we can
-    # identify if a task with the same parameters has already been run
-    # (or is running) and avoid running it again simultaneously
-    # for example you dont want to delete the documents of a project twice at
-    # the same time by same or two users
-    hash: typing.Optional[str] = pydantic.Field(
-        default=None
+        sa.Column('hash', sa.String(512), nullable=True),
     )

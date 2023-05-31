@@ -6,16 +6,11 @@ Classes
 -------
 Project
 """
-import dataclasses
 import logging
-import typing
 
-import jinja2
+import sqlalchemy as sa
 
-import pydantic
-
-
-from textflow.database import db
+from textflow.models.base import mapper_registry, ModelMixin
 
 __all__ = [
     'Project',
@@ -24,9 +19,9 @@ __all__ = [
 logger = logging.getLogger(__name__)
 
 
-@db.mapper_registry.mapped
-@pydantic.dataclasses.dataclass
-class Project(db.ModelMixin):
+@mapper_registry.mapped
+# @pydantic.dataclasses.dataclass
+class Project(ModelMixin):
     """This model contains the project information.
 
     Attributes
@@ -50,45 +45,25 @@ class Project(db.ModelMixin):
     tasks : list of Task
         Tasks of project (ordedred by Task.order).
     """
-    __table__ = db.Table(
+    __table__ = sa.Table(
         'project',
-        db.mapper_registry.metadata,
-        db.Column('id', db.Integer, primary_key=True, autoincrement=True),
-        db.Column('name', db.String(80), nullable=False),
-        db.Column('description', db.Text,
+        mapper_registry.metadata,
+        sa.Column('id', sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column('name', sa.String(80), nullable=False),
+        sa.Column('description', sa.Text,
                   default='Description is not available.'),
-        db.Column('redundancy', db.Integer, default=3, nullable=True),
-        db.Column('guideline_template', db.Text, default=None, nullable=True),
+        sa.Column('redundancy', sa.Integer, default=3, nullable=True),
+        sa.Column('guideline_template', sa.Text, default=None, nullable=True),
     )
 
     __mapper_args__ = {
         'properties': dict(
-            documents=db.relationship('Document', backref='project'),
-            users=db.relationship('Assignment', backref='project',
-                                  lazy=True, cascade='all, delete'),
-            jobs=db.relationship('BackgroundJob', backref='project',
-                                 lazy=True),
-            tasks=db.relationship('Task', backref='project', lazy=True,
-                                  order_by='Task.order'),
+            documents=sa.orm.relationship('Document', backref='project'),
+            assignments=sa.orm.relationship('Assignment', backref='project',
+                                            lazy=True, cascade='all, delete'),
+            jobs=sa.orm.relationship('BackgroundJob', backref='project',
+                                     lazy=True),
+            tasks=sa.orm.relationship('Task', backref='project', lazy=True,
+                                      order_by='Task.order'),
         )
     }
-
-    name: str = pydantic.Field()
-    id: typing.Optional[int] = pydantic.Field(default=None)
-    description: typing.Optional[str] = \
-        pydantic.Field(default=None)
-    redundancy: typing.Optional[int] = pydantic.Field(default=3)
-    guideline_template: typing.Optional[str] = \
-        pydantic.Field(default=None)
-
-    def render_guideline(self):
-        """Render the guideline template.
-
-        Returns
-        -------
-        str
-            Rendered guideline template.
-        """
-        if self.guideline_template is None:
-            return None
-        return jinja2.Template(self.guideline_template).render(project=self)

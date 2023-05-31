@@ -5,13 +5,14 @@ Serves the text annotation project.
 import json
 import os
 
+import uvicorn
+
 from textflow import TextFlow
 
 with open(os.path.join(os.getcwd(), 'config.json')) as fp:
     config = json.load(fp)
 
-tf = TextFlow(config, url_prefix='/textflow')
+tf = TextFlow(config)
 
-celery_app = tf.celery_app
-
-app = tf.api.api
+if __name__ == "__main__":
+    uvicorn.run(tf.api, host="0.0.0.0", port=8000)

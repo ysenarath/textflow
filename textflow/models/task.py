@@ -6,13 +6,12 @@ Classes
 -------
 Task
 """
-import dataclasses
 import logging
-import typing
 
-import pydantic
+import sqlalchemy as sa
 
-from textflow.database import db
+from textflow.models.base import mapper_registry, ModelMixin
+
 
 logger = logging.getLogger(__name__)
 
@@ -21,9 +20,9 @@ __all__ = [
 ]
 
 
-@db.mapper_registry.mapped
-@pydantic.dataclasses.dataclass
-class Task(db.ModelMixin):
+@mapper_registry.mapped
+# @pydantic.dataclasses.dataclass
+class Task(ModelMixin):
     """Task Entity. Contains labels and condition.
 
     Attributes
@@ -45,34 +44,24 @@ class Task(db.ModelMixin):
     condition : dict
         Condition of task.
     """
-    __table__ = db.Table(
+    __table__ = sa.Table(
         'task',
-        db.mapper_registry.metadata,
-        db.Column('id', db.Integer, primary_key=True, autoincrement=True),
-        db.Column('title', db.String(80), default=None, nullable=True),
-        db.Column('description', db.Text, default=None, nullable=True),
-        db.Column('type', db.String(80), nullable=False),
-        db.Column('order', db.Integer, default=1),
-        db.Column('condition', db.JSON, nullable=True),
-        db.Column('project_id', db.Integer, db.ForeignKey('project.id'),
+        mapper_registry.metadata,
+        sa.Column('id', sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column('title', sa.String(80), default=None, nullable=True),
+        sa.Column('description', sa.Text, default=None, nullable=True),
+        sa.Column('type', sa.String(80), nullable=False),
+        sa.Column('order', sa.Integer, default=1),
+        sa.Column('condition', sa.JSON, nullable=True),
+        sa.Column('project_id', sa.Integer, sa.ForeignKey('project.id'),
                   nullable=False),
     )
 
     __mapper_args__ = {
         'properties': dict(
-            labels=db.relationship(
+            labels=sa.orm.relationship(
                 'Label', backref='task', lazy=True,
                 cascade='all, delete', order_by='Label.order'
             )
         )
     }
-
-    project_id: int = pydantic.Field()
-    type: str = pydantic.Field()
-    title: typing.Optional[str] = pydantic.Field(default=None)
-    description: typing.Optional[str] = pydantic.Field(
-        default=None)
-    order: typing.Optional[int] = pydantic.Field(default=1)
-    condition: typing.Optional[pydantic.Json[typing.Any]] = \
-        pydantic.Field(default=None)
-    id: typing.Optional[int] = pydantic.Field(default=None)
