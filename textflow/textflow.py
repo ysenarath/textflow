@@ -460,7 +460,8 @@ def cli_label_create(ctx, project_id, task_id, value, label, order, color):
                         f'No task found for project_id={project_id}'
                     )
             else:
-                task = queries.get_task.ignore_user(task_id=task_id)
+                task = queries.get_task(user_id=queries.ignore,
+                                        task_id=task_id)
             if task is None:
                 raise ValueError(f'No task found for task_id={task_id}')
             task_id = task.id
