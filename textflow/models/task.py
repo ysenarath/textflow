@@ -44,6 +44,7 @@ class Task(db.Model):
     type = db.Column(db.String(80), nullable=False)
     project_id = db.Column(db.Integer, db.ForeignKey(
         'project.id'), nullable=False)
+    order = db.Column(db.Integer, default=1)
     labels = db.relationship('Label', backref='task', lazy=True,
                              cascade='all, delete', order_by='Label.order')
     condition = db.Column(db.JSON)

@@ -78,6 +78,7 @@ class TaskForm(FlaskForm):
     title = StringField('Title', validators=[])
     description = StringField('Description', validators=[])
     condition = StringField('Condition', validators=[])
+    order = IntegerField('Order')
     type = SelectField('Type', validators=[DataRequired()], choices=[
         ('text-classification', 'Text Classification'),
         ('span-categorization', 'Span Categorization'),
@@ -404,6 +405,7 @@ def create_task(project_id):
     task.title = task_form.data.get('title') or None
     task.description = task_form.data.get('description') or None
     task.condition = task_form.data.get('condition') or None
+    task.order = task_form.data.get('order') or None
     task.type = task_form.data.get('type') or None
     # add label one by one
     successfull = True
@@ -476,6 +478,7 @@ def update_task(project_id, task_id):
     task.title = task_form.data.get('title') or None
     task.description = task_form.data.get('description') or None
     task.condition = task_form.data.get('condition') or None
+    task.order = task_form.data.get('order') or None
     task.type = task_form.data.get('type') or None
     # update label one by one
     for label_form in task_form.labels:

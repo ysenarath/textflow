@@ -52,7 +52,7 @@ class Project(db.Model):
     redundancy = db.Column(db.Integer, default=3)
     guideline_template = db.Column(db.String, nullable=True)
     jobs = db.relationship('BackgroundJob', backref='project', lazy=True)
-    tasks = db.relationship('Task', backref='project', lazy=True)
+    tasks = db.relationship('Task', backref='project', lazy=True, order_by='Task.order')
 
     def render_guideline(self):
         """Render the guideline template.
