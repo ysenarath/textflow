@@ -53,7 +53,7 @@ class Project(ModelMixin):
         sa.Column('description', sa.Text,
                   default='Description is not available.'),
         sa.Column('redundancy', sa.Integer, default=3, nullable=True),
-        sa.Column('guideline_template', sa.Text, default=None, nullable=True),
+        sa.Column('guideline', sa.Text, default=None, nullable=True),
     )
 
     __mapper_args__ = {
@@ -61,8 +61,6 @@ class Project(ModelMixin):
             documents=sa.orm.relationship('Document', backref='project'),
             assignments=sa.orm.relationship('Assignment', backref='project',
                                             lazy=True, cascade='all, delete'),
-            jobs=sa.orm.relationship('BackgroundJob', backref='project',
-                                     lazy=True),
             tasks=sa.orm.relationship('Task', backref='project', lazy=True,
                                       order_by='Task.order'),
         )

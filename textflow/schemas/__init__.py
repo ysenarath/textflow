@@ -11,9 +11,16 @@ Label
 Project
 Assignment
 User
-BackgroundJob
+RefreshToken
+TaskBase
 Task
 TaskSchema
+
+Enums
+-----
+UserRoleEnum
+AssignmentRoleEnum
+ThemeEnum
 """
 from textflow.schemas.annotation import (
     AnnotationSet,
@@ -24,14 +31,15 @@ from textflow.schemas.base import Schema
 from textflow.schemas.document import Document, DocumentBase
 from textflow.schemas.label import Label
 from textflow.schemas.project import Project, ProjectBase
-from textflow.schemas.task import Task
+from textflow.schemas.task import Task, TaskBase
 from textflow.schemas.user import (
-    Assignment,
     User,
-    RoleEnum,
+    RefreshToken,
+    Assignment,
+    UserRoleEnum,
+    AssignmentRoleEnum,
     ThemeEnum,
 )
-from textflow.schemas.worker import BackgroundJob
 
 
 __all__ = [
@@ -43,11 +51,13 @@ __all__ = [
     'Project',
     'ProjectBase',
     'Label',
-    'Assignment',
     'User',
-    'BackgroundJob',
+    'Assignment',
     'Task',
+    'TaskBase',
+    'RefreshToken',
     'Schema',
-    'RoleEnum',
+    'UserRoleEnum',
+    'AssignmentRoleEnum',
     'ThemeEnum',
 ]

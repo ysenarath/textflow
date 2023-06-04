@@ -10,9 +10,11 @@ import pydantic
 
 from textflow.database import db, op
 from textflow import schemas
+from textflow.database.pagination import PaginationArgs
 
 __all__ = [
     'oauth2_scheme',
+    'get_listing_query_params',
 ]
 
 
@@ -21,7 +23,7 @@ ALGORITHM = 'HS256'
 SECRET_KEY = '74c461c6be01eb70373a790ce7cf6c052c08772a63ea5ca087a7dad0e95c82a5'
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/tokens/get/')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='api/tokens')
 
 
 def get_session():
@@ -57,6 +59,27 @@ async def get_current_user(
     return user
 
 
+async def get_listing_query_params(
+    page: typing.Optional[int] = None,
+    per_page: typing.Optional[int] = None,
+    search: typing.Optional[str] = None,
+    sort: typing.Optional[str] = None,
+    order: typing.Optional[str] = None,
+) -> typing.Dict[str, typing.Any]:
+    query_params = {}
+    if page is not None:
+        query_params['page'] = PaginationArgs(page=page, per_page=per_page)
+    else:
+        query_params['page'] = PaginationArgs()
+    if search is not None:
+        query_params['search'] = search
+    if sort is not None:
+        query_params['sort'] = sort
+    if order is not None:
+        query_params['order'] = order
+    return query_params
+
+
 async def get_current_active_user(
     current_user: schemas.User = Depends(get_current_user)
 ) -> schemas.User:
@@ -80,21 +103,34 @@ def create_access_token(
 
 
 def roles_required(
-    role: typing.Union[str, typing.Set[str]],
+    role: typing.Union[str, typing.Collection[str]],
+    allow_admin: bool = True,
     raise_exception: bool = True
 ) -> typing.Callable:
-    if not isinstance(role, set):
-        if isinstance(role, str):
-            role = [role]
-        role = set(role)
+    # convert string input to list
+    if isinstance(role, str):
+        role = list(map(str.strip, role.split('|')))
+    role = set(map(schemas.AssignmentRoleEnum, role))
+    if schemas.AssignmentRoleEnum.admin in role:
+        role.add(schemas.AssignmentRoleEnum.manager)
+        role.add(schemas.AssignmentRoleEnum.default)
+    if schemas.AssignmentRoleEnum.manager in role:
+        role.add(schemas.AssignmentRoleEnum.default)
 
     def check_user_role(
         project_id: typing.Optional[int] = None,
         user: schemas.User = Depends(get_current_active_user),
         session: Session = Depends(get_session),
     ) -> bool:
+        if allow_admin and user.role == schemas.UserRoleEnum.admin:
+            return True
         if not role:
-            return
+            if not raise_exception:
+                return False
+            raise HTTPException(
+                status_code=403,
+                detail='You do not have permission to perform this action',
+            )
         if project_id is None and role:
             assignment = None
         else:

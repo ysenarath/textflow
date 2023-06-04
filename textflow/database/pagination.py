@@ -37,7 +37,8 @@ class Pagination(GenericModel, typing.Generic[ModelType]):
     next_num: typing.Optional[int] = pydantic.Field(default=None)
     has_next: typing.Optional[bool] = pydantic.Field(default=None)
 
-    def __post_init__(self):
+    def __init__(self, **kwargs):
+        super(Pagination, self).__init__(**kwargs)
         # The items for the current page.
         if self.per_page == 0:
             self.pages = 0

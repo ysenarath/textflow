@@ -13,9 +13,9 @@ AnnotationSpan
 Document
 Label
 Project
-Assignment
 User
-BackgroundJob
+RefreshToken
+Assignment
 Task
 TaskSchema
 """
@@ -30,10 +30,10 @@ from textflow.models.label import Label
 from textflow.models.project import Project
 from textflow.models.task import Task
 from textflow.models.user import (
-    Assignment,
     User,
+    Assignment,
+    RefreshToken,
 )
-from textflow.models.worker import BackgroundJob
 
 
 __all__ = [
@@ -43,9 +43,9 @@ __all__ = [
     'Document',
     'Project',
     'Label',
-    'Assignment',
     'User',
-    'BackgroundJob',
+    'Assignment',
+    'RefreshToken',
     'Task',
     'mapper_registry',
     'ModelType',

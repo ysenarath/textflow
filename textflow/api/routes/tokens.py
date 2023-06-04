@@ -15,7 +15,7 @@ __all__ = [
     'router',
 ]
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 router = APIRouter(
     prefix='/tokens',
@@ -28,7 +28,7 @@ async def read_tokens(token: str = Depends(oauth2_scheme)):
     return {'token': token}
 
 
-@router.post('/get/')
+@router.post('/')
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(get_session),
@@ -49,4 +49,11 @@ async def login(
     access_token = create_access_token(
         data={'sub': user.username}, expires_delta=access_token_expires
     )
-    return {'access_token': access_token, 'token_type': 'bearer'}
+    refresh_token = None
+    return {
+        'access_token': access_token,
+        'refresh_token': refresh_token,
+        # ACCESS_TOKEN_EXPIRE_MINUTES is in minutes, convert to seconds
+        'expires_in': ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        'token_type': 'bearer'
+    }

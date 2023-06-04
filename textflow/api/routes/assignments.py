@@ -28,17 +28,14 @@ router = APIRouter(
 )
 
 
-@router.post(
-    '/{username}/role',
-    response_model=schemas.Assignment,
-)
+@router.post('/{username}/role', response_model=schemas.Assignment)
 async def assign_project(
     project_id: int,
     username: str,
-    role: schemas.RoleEnum,
+    role: schemas.AssignmentRoleEnum,
     # the user must be admin to update the role of a user
     session: Session = Depends(get_session),
-    _: bool = Depends(roles_required({'admin'})),
+    _: bool = Depends(roles_required('admin|manager')),
 ):
     """Assign a user to a project.
 
@@ -79,19 +76,17 @@ async def assign_project(
 
 
 @router.put(
-    '/{username}/role',
-    response_model=schemas.Assignment,
+    '/{username}/role', response_model=schemas.Assignment,
     responses={
         404: {'description': 'Assignment not found'},
     }
 )
 async def update_project_role(
-    project_id: int,
-    username: str,
-    role: schemas.RoleEnum,
+    project_id: int, username: str,
+    role: schemas.AssignmentRoleEnum,
     session: Session = Depends(get_session),
     # the user must be admin to update the role of a user
-    _: bool = Depends(roles_required({'admin'})),
+    _: bool = Depends(roles_required('admin|manager')),
 ):
     """Update the role of a user in a project.
 
@@ -139,8 +134,7 @@ async def update_project_role(
 
 
 @router.get(
-    '/',
-    response_model=typing.List[schemas.User],
+    '/', response_model=typing.List[schemas.User],
     responses={
         404: {'description': 'Project not found'},
     }
@@ -148,7 +142,7 @@ async def update_project_role(
 def read_assignments_of_project(
     project_id: int,
     session: Session = Depends(get_session),
-    _: bool = Depends(roles_required({'admin'})),
+    _: bool = Depends(roles_required('admin|manager')),
 ) -> typing.List[schemas.User]:
     project = op.get_project(session, project_id=project_id)
     return [assignment for assignment in project.assignments]

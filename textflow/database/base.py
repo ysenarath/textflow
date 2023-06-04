@@ -14,14 +14,14 @@ Example
 """
 import contextlib
 import typing
-from typing import Optional
-import pydantic
 
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import sessionmaker, Query, Session
 
 from textflow.database.pagination import Pagination, PaginationArgs
+from textflow.database.operations import create_user, get_user_by
 from textflow.models import mapper_registry as default_mapper_registry
+from textflow import schemas
 
 
 class BaseQuery(Query):
@@ -54,7 +54,12 @@ class BaseQuery(Query):
             total = len(items)
         else:
             total = self.order_by(None).count()
-        return Pagination(page, per_page, total, items)
+        return Pagination(
+            page=page,
+            per_page=per_page,
+            total=total,
+            items=items,
+        )
 
 
 class DatabaseContext(object):
@@ -163,7 +168,16 @@ class Database(object):
         None
             None.
         """
+        # create database tables
         self.mapper_registry.metadata.create_all(self.engine)
+        admin = schemas.User(username='admin', role='admin', password='admin')
+        with self.session() as session:
+            if get_user_by(session, username=admin.username) is None:
+                create_user(session, user=admin)
+                print('admin created')
+            else:
+                print('admin already exists')
+        print('database created')
 
 
 db: Database = Database()

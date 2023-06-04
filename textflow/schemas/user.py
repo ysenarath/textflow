@@ -5,7 +5,14 @@ Classes
 User
 Profile
 Assignment
+
+Enums
+-----
+UserRoleEnum
+AssignmentRoleEnum
+ThemeEnum
 """
+import datetime
 import enum
 import typing
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -18,22 +25,29 @@ __all__ = [
     'User',
     'Profile',
     'Assignment',
-    'RoleEnum',
+    'RefreshToken',
+    'UserRoleEnum',
+    'AssignmentRoleEnum',
     'ThemeEnum',
 ]
 
 
-class RoleEnum(enum.Enum):
+class UserRoleEnum(enum.Enum):
+    admin = 'admin'
+    default = 'default'
+
+
+class AssignmentRoleEnum(enum.Enum):
     admin = 'admin'
     manager = 'manager'
-    annotator = 'annotator'
     default = 'default'
+    annotator = 'default'
 
 
 class Assignment(Schema):
     user_id: int = pydantic.Field()
     project_id: int = pydantic.Field()
-    role: RoleEnum = pydantic.Field(default='default')
+    role: AssignmentRoleEnum = pydantic.Field(default='default')
 
 
 class ThemeEnum(enum.Enum):
@@ -56,8 +70,17 @@ class Profile(Schema):
     )
 
 
+class RefreshToken(Schema):
+    user_id: int = pydantic.Field()
+    refresh_token: str = pydantic.Field()
+    updated_on: typing.Optional[datetime.datetime] = \
+        pydantic.Field(default=None)
+
+
 class User(Schema):
     username: str = pydantic.Field()
+    # non-nullable with default value
+    role: UserRoleEnum = pydantic.Field(default='default')
     # plaintext password is not stored in database
     password: typing.Optional[pydantic.SecretStr] = \
         pydantic.Field(default=None)
@@ -66,9 +89,9 @@ class User(Schema):
     hashed_password: typing.Optional[str] = pydantic.Field(default=None)
     id: typing.Optional[int] = pydantic.Field(default=None)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         """Create a new user."""
-        super(User, self).__init__(*args, **kwargs)
+        super(User, self).__init__(**kwargs)
         if self.password is not None:
             self.set_password(self.password)
 

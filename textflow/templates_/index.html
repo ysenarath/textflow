@@ -1,0 +1,140 @@
+{% extends 'layouts/base.html' %}
+
+{% set is_index = true %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    body {
+        overflow-y: overlay;
+    }
+
+    .footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        padding: 2.5rem 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="px-4 py-5 text-center">
+    <h1 class="display-5 fw-bold text-body-emphasis">
+        TextFlow
+    </h1>
+    <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4">
+            TextFlow is a web application for annotating text data.
+            It is designed to be simple and intuitive to use.
+        </p>
+    </div>
+</div>
+<div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+    <div class="col d-flex align-items-start">
+        <div
+            class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+            <svg class="bi" width="1em" height="1em">
+                <use xlink:href="#toggles2"></use>
+            </svg>
+        </div>
+        <div>
+            <h3 class="fs-2">Annotate</h3>
+            <p>Annotate text data with a simple and intuitive interface.</p>
+        </div>
+    </div>
+    <div class="col d-flex align-items-start">
+        <div
+            class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+            <svg class="bi" width="1em" height="1em">
+                <use xlink:href="#cpu-fill"></use>
+            </svg>
+        </div>
+        <div>
+            <h3 class="fs-2">Model</h3>
+            <p>
+                Connect with your favorite machine learning framework to train models.
+            </p>
+        </div>
+    </div>
+    <div class="col d-flex align-items-start">
+        <div
+            class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+            <svg class="bi" width="1em" height="1em">
+                <use xlink:href="#tools"></use>
+            </svg>
+        </div>
+        <div>
+            <h3 class="fs-2">
+                Evaluate
+            </h3>
+            <p>
+                Evaluate the agreement between annotators while annotation is in progress.
+            </p>
+        </div>
+    </div>
+</div>
+<!-- bootstrap version of above footer -->
+<div class="footer border-top">
+    <div class="container">
+        <footer class="d-flex flex-wrap justify-content-between align-items-center py-1 my-1">
+            <div class="col-md-4 d-flex align-items-center">
+                <a href="/" class="mb-3 me-2 mb-md-0 text-body-secondary text-decoration-none lh-1">
+                    <svg class="bi" width="30" height="24">
+                        <use xlink:href="#bootstrap"></use>
+                    </svg>
+                </a>
+                <span class="mb-3 mb-md-0 text-body-secondary">© 2023 TextFlow</span>
+            </div>
+            <div class="col justify-content-end d-flex">
+                <p>
+                    The source code is licensed
+                    <a href="http://opensource.org/licenses/mit-license.php">MIT</a>. The website content is licensed <a
+                        href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
+                </p>
+            </div>
+        </footer>
+    </div>
+</div>
+<!-- Vertically centered modal -->
+{% set form = login_form %}
+<div id="loginModal" class='modal fade' data-bs-backdrop="static" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Login</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('login.login') }}?next={{ next | safe }}">
+                    {{ form.csrf_token }}
+                    <div class="form-floating mb-4">
+                        {{ form.username(size=24, class_="form-control", placeholder="Username") }}
+                        <label for="username">{{ form.username.label }}</label>
+                    </div>
+                    <div class="form-floating mb-4">
+                        {{ form.password(size=24, class_="form-control", placeholder="Password") }}
+                        <label for="password">{{ form.password.label }}</label>
+                    </div>
+                    <div class="form-floating text-end">
+                        <input class="btn btn-primary" type="submit" value="Login" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    let showLogin = "{{ show_login_form | lower }}" === 'true';
+    $(document).ready(function () {
+        if (showLogin) {
+            $('#loginModal').modal('show');
+        }
+    });
+</script>
+{% endblock %}

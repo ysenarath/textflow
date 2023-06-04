@@ -11,13 +11,15 @@ Assignment
 from flask_login import UserMixin
 
 import sqlalchemy as sa
+from textflow import schemas
 
 from textflow.models.base import mapper_registry, ModelMixin
 
 __all__ = [
     'User',
-    'Profile',
     'Assignment',
+    'Profile',
+    'RefreshToken',
 ]
 
 
@@ -42,7 +44,8 @@ class Assignment(ModelMixin):
                   primary_key=True),
         sa.Column('project_id', sa.Integer, sa.ForeignKey('project.id'),
                   primary_key=True),
-        sa.Column('role', sa.String(512), nullable=False, default='default'),
+        sa.Column('role', sa.Enum(schemas.AssignmentRoleEnum),
+                  nullable=False, default=schemas.AssignmentRoleEnum.default),
     )
 
 
@@ -72,12 +75,36 @@ class Profile(ModelMixin):
         sa.Column('first_name', sa.String(512), nullable=True),
         sa.Column('last_name', sa.String(512), nullable=True),
         sa.Column('email', sa.String(120), unique=True, nullable=True),
-        sa.Column('theme', sa.String(80), nullable=False, default='light'),
+        sa.Column('theme', sa.Enum(schemas.ThemeEnum),
+                  nullable=False, default=schemas.ThemeEnum.light),
     )
 
     __mapper_args__ = {
         'properties': dict(
             user=sa.orm.relationship('User', back_populates='profile')
+        )
+    }
+
+
+@mapper_registry.mapped
+class RefreshToken(ModelMixin):
+    __tablename__ = "refresh_token"
+
+    __table__ = sa.Table(
+        'refresh_token',
+        mapper_registry.metadata,
+        sa.Column('id', sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column('user_id', sa.Integer, sa.ForeignKey(
+            'user.id', ondelete="CASCADE"), unique=True, nullable=False),
+        sa.Column('refresh_token', sa.String(512), nullable=False),
+        sa.Column(
+            'created_on', sa.DateTime, server_default=sa.func.now()
+        ),
+    )
+
+    __mapper_args__ = {
+        'properties': dict(
+            user=sa.orm.relationship('User', back_populates='refresh_token')
         )
     }
 
@@ -110,6 +137,8 @@ class User(ModelMixin, UserMixin):
         sa.Column('username', sa.String(80), unique=True, nullable=False),
         sa.Column('password', sa.String(512), nullable=False,
                   key='hashed_password'),
+        sa.Column('role', sa.Enum(schemas.UserRoleEnum),
+                  nullable=False, default=schemas.UserRoleEnum.default),
     )
 
     __mapper_args__ = {
@@ -118,9 +147,9 @@ class User(ModelMixin, UserMixin):
                 'Profile', uselist=False, back_populates='user',
                 lazy='joined', cascade='all, delete-orphan'
             ),
-            jobs=sa.orm.relationship(
-                'BackgroundJob',
-                backref='user', lazy='joined'
+            refresh_token=sa.orm.relationship(
+                'RefreshToken', uselist=False, back_populates='user',
+                lazy='joined', cascade='all, delete-orphan'
             ),
             projects=sa.orm.relationship(
                 'Assignment',

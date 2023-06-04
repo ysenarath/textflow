@@ -54,6 +54,7 @@ def operation(func: typing.Callable):
     """
     @functools.wraps(func)
     def wrapper(session, **kwargs):
+        # convert the schema input to orm model
         for key, value in kwargs.items():
             schema_name = type(value).__name__
             if not hasattr(schemas, schema_name):
@@ -64,7 +65,9 @@ def operation(func: typing.Callable):
             Model = getattr(models, schema_name)
             cols = set(Model.__table__.columns.keys())
             kwargs[key] = Model(**value.dict(include=cols))
+        # perform the operation
         output = func(session, **kwargs)
+        # convert the orm output to schema model
         return from_orm(output)
     return wrapper
 
@@ -787,7 +790,9 @@ def get_project(session: Session, *,
 @operation
 def list_projects_by(session: Session, *,
                      user_id: int = None,
-                     page: PageType = None) -> \
+                     search: str = None,
+                     page: PageType = None,
+                     ) -> \
         ModelListType[Project]:
     """List projects.
 
@@ -797,6 +802,8 @@ def list_projects_by(session: Session, *,
         Database session.
     user_id : int
         User id.
+    search: str
+        Search string.
     page : PageType
         Page.
 
@@ -810,6 +817,9 @@ def list_projects_by(session: Session, *,
         query = query \
             .join(Assignment, Assignment.project_id == Project.id) \
             .filter(Assignment.user_id == user_id)
+    if search is not None and len(search) > 0:
+        query = query \
+            .filter(Project.name.ilike(f'%{search}%'))
     return query.paginate(page)
 
 
@@ -919,7 +929,7 @@ def list_tasks_by(session: Session, *,
 
 
 @operation
-def get_task(session: Session, *, task_id: int) -> \
+def get_task(session: Session, *, project_id: int, task_id: int) -> \
         typing.Optional[Task]:
     """Get task by id. Return None if not found.
 
@@ -927,6 +937,8 @@ def get_task(session: Session, *, task_id: int) -> \
     ----------
     session : Session
         Database session.
+    project_id : int
+        Project id.
     task_id : int
         Task id.
 
@@ -935,7 +947,36 @@ def get_task(session: Session, *, task_id: int) -> \
     typing.Optional[Task]
         Task.
     """
-    return session.query(Task).get(task_id)
+    query = session.query(Task)
+    if project_id is not None:
+        query = query.filter_by(project_id=project_id)
+    return query.get(task_id)
+
+
+@operation
+def create_task(session: Session, *, task: Task) -> Task:
+    """Add task.
+
+    Parameters
+    ----------
+    session : Session
+        Database session.
+    task : Task
+        Task.
+
+    Returns
+    -------
+    Task
+        Task.
+    """
+    try:
+        session.add(task)
+    except Exception:
+        session.rollback()
+        raise
+    else:
+        session.commit()
+    return task
 
 
 @operation
