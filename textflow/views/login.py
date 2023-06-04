@@ -131,6 +131,7 @@ def login():
             return redirect(target or url_for('index.index'))
     else:
         flash('Invalid username or password', 'error')
+    return redirect(url_for('index.index', login=True, target=target))
 
 
 @bp.route("/logout")
