@@ -18,7 +18,8 @@ __all__ = [
 
 @shared_task(ignore_result=False)
 def delete_documents(user_id, project_id) -> int:
-    delete_documents_iter = queries.delete_documents(user_id, project_id)
+    delete_documents_iter = queries.delete_documents(
+        user_id=user_id, project_id=project_id)
     for num_docs_deleted, num_docs_total in delete_documents_iter:
         progress = math.floor(num_docs_deleted * 100 / num_docs_total)
         print(f'Progress: {progress:3d}%')
@@ -35,7 +36,6 @@ def upload_documents(user_id, project_id, filename, content=None) -> int:
         # todo: create a generator from the stream to avoid loading the
         # whole file into memory
         df = pd.read_csv(buffer)
-        print('Uploading documents...', buffer, df)
         data = df.to_dict(orient='records')
     elif filename.endswith('.jsonl'):
         # create a generator to avoid loading the whole file into memory
@@ -68,8 +68,11 @@ def upload_documents(user_id, project_id, filename, content=None) -> int:
     if check:
         try:
             queries.db.session.commit()
-        except SQLAlchemyError:
+            print(f'Uploaded {i} documents')
+        except SQLAlchemyError as e:
+            print(e)
             queries.db.session.rollback()
     else:
+        print('Error: Invalid data')
         queries.db.session.rollback()
     buffer.close()
