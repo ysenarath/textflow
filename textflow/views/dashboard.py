@@ -81,6 +81,7 @@ class TaskForm(FlaskForm):
     type = SelectField('Type', validators=[DataRequired()], choices=[
         ('text-classification', 'Text Classification'),
         ('span-categorization', 'Span Categorization'),
+        ('document-text', 'Document Text'),
     ])
     labels = FieldList(FormField(LabelForm))
 
