@@ -1,0 +1,4 @@
+[submodule "textflow"]
+	path = textflow
+	url = git@github.com:ysenarath/textflow.git
+	branch = main
