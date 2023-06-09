@@ -1,4 +1,4 @@
-""" Project Server
+"""Project Server
 
 Serves the text annotation project.
 """
