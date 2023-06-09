@@ -1,3 +1,0 @@
-web: ./venv/bin/gunicorn -w 4 -b :8002 "app:create_app()"
-redis: ./bin/redis-server
-worker: celery -A app worker --loglevel INFO

@@ -7,5 +7,8 @@ export const useNotificationsStore = defineStore('notifications', {
         }
     },
     actions: {
+        getNotifications() {
+
+        },
     },
 })

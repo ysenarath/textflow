@@ -29,13 +29,10 @@ router = APIRouter(
 )
 
 
-@router.get(
-    '/',
-    response_model=typing.Union[
-        Pagination[schemas.Project],
-        typing.List[schemas.Project]
-    ]
-)
+@router.get('/', response_model=typing.Union[
+    Pagination[schemas.Project],
+    typing.List[schemas.Project]
+])
 async def read_projects(
     q: dict[typing.Any] = Depends(get_listing_query_params),
     current_user: schemas.User = Depends(get_current_active_user),

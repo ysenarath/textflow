@@ -1,24 +1,17 @@
 <script>
+import { useNotificationsStore } from '../stores/notifications';
+
 export default {
     setup() {
+        const notificationsStore = useNotificationsStore();
         return {
-            notifications: [],
-        }
+            notificationsStore: notificationsStore,
+        };
     },
-    methods: {
-        getNotifications() {
-            const config = {
-
-            }
-            fetch('/api/users/me/notifications', config)
-                .then(response => response.json())
-                .then(data => {
-                    this.notifications = data;
-                });
+    computed: {
+        notifications() {
+            return this.notificationsStore.notifications;
         },
-    },
-    mounted() {
-        this.getNotifications();
     },
 }
 </script>

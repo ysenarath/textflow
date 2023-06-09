@@ -11,10 +11,11 @@ app = typer.Typer()
 
 @app.command()
 def init():
-    config_path = os.path.join(os.getcwd(), 'config.json')
+    cwd = os.getcwd()
+    config_path = os.path.join(cwd, 'config.json')
     if not os.path.exists(config_path):
         config = {
-            'SQLALCHEMY_DATABASE_URI': 'sqlite:///textflow.db',
+            'SQLALCHEMY_DATABASE_URI': f'sqlite:///{cwd}/textflow.db',
         }
         with open(config_path, 'w') as fp:
             json.dump(config, fp)

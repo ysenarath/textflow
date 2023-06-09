@@ -20,7 +20,7 @@ __all__ = [
 ]
 
 router = APIRouter(
-    prefix='projects/{project_id}/tasks',
+    prefix='/projects/{project_id}/tasks',
     tags=['Tasks'],
     dependencies=[Depends(get_current_active_user)],
     responses={
@@ -30,6 +30,10 @@ router = APIRouter(
 
 
 @router.get('/', response_model=typing.Union[
+    Pagination[schemas.Task],
+    typing.List[schemas.Task]
+])
+@router.get('', response_model=typing.Union[
     Pagination[schemas.Task],
     typing.List[schemas.Task]
 ])
@@ -50,24 +54,15 @@ async def read_tasks(
     return tasks
 
 
-@router.post('/')
+@router.post('/', response_model=schemas.Task, status_code=201)
+@router.post('', response_model=schemas.Task, status_code=201)
 async def create_task(
+    project_id: int,
     task: schemas.TaskBase,
     session: Session = Depends(get_session),
     _: bool = Depends(roles_required('admin')),
 ):
-    task = schemas.Task(**task.dict())
-    task = op.create_task(session, task=task)
-    return task
-
-
-@router.post('/')
-async def create_task(
-    task: schemas.TaskBase,
-    session: Session = Depends(get_session),
-    _: bool = Depends(roles_required('admin')),
-):
-    task = schemas.Task(**task.dict())
+    task = schemas.Task(project_id=project_id, **task.dict())
     task = op.create_task(session, task=task)
     return task
 
@@ -96,6 +91,6 @@ async def update_task(
     session: Session = Depends(get_session),
     _: bool = Depends(roles_required('admin')),
 ):
-    project = schemas.Project(id=task_id, project_id=project_id, **task.dict())
-    project = op.update_project(session, project=project)
-    return project
+    task = schemas.Task(id=task_id, project_id=project_id, **task.dict())
+    task = op.update_task(session, task=task)
+    return task

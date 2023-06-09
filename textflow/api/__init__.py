@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from textflow.api.routes import (
     projects,
+    tasks,
     users,
     tokens,
     assignments,
@@ -19,5 +20,6 @@ router = APIRouter(
 router.include_router(tokens.router)
 router.include_router(users.router)
 router.include_router(projects.router)
+router.include_router(tasks.router)
 router.include_router(assignments.router)
 router.include_router(documents.router)

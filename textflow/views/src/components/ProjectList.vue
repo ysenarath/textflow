@@ -1,7 +1,6 @@
 <script>
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth.js'
-import ProjectListItem from './ProjectListItem.vue'
 import Pagination from './Pagination.vue'
 
 export default {
@@ -12,7 +11,6 @@ export default {
         }
     },
     components: {
-        ProjectListItem,
         Pagination,
     },
     data() {
@@ -31,7 +29,7 @@ export default {
         },
     },
     methods: {
-        updateProjects() {
+        getProjects() {
             const config = {
                 headers: { Authorization: `Bearer ${this.authStore.token}` }
             }
@@ -78,23 +76,22 @@ export default {
     watch: {
         paginationArgs: {
             handler(newPage, oldPage) {
-                this.updateProjects();
+                this.getProjects();
             },
             deep: true
         }
     },
     mounted: function () {
-        this.updateProjects();
+        this.getProjects();
     },
 }
 </script>
 
 <template>
     <div class="list-group list-group-flush mb-3">
-        <div class="list-group-item" :class="'py-0'">
+        <div class="list-group-item p-0">
             <div class="btn-toolbar justify-content-between">
                 <div class="d-flex">
-                    <!-- search projects -->
                     <div class="input-group me-3">
                         <input type="text" class="form-control" placeholder="Search projects" aria-label="Search projects"
                             aria-describedby="button-search" v-model="searchQuery" @keyup="updateProjects" />
@@ -126,11 +123,40 @@ export default {
             </div>
         </div>
     </div>
-    <ul class="list-group border-top border-bottom mb-3">
-        <ProjectListItem v-for="(project, index) in projects" :key="project.id" :project="project" :index="index"
-            @click="console.log" />
-        <!-- <ProjectListItem v-for="i in paginationArgs.perPage" :key="i"
-                                        :project=null :index="i" @click="console.log" /> -->
-    </ul>
-    <Pagination :pagination="pagination" @click="(page) => paginationArgs.page = page" />
+    <div class="table-responsive">
+        <table class="table table-hover w-100">
+            <thead>
+                <tr>
+                    <th scope="col" style="width:0%;">#</th>
+                    <th scope="col" style="min-width: 56px;">Name</th>
+                    <th scope="col" style="min-width: 56px;">Description</th>
+                    <th scope="col" style="width:0%; min-width: 158px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider">
+                <tr v-for="(project, index) in projects" :key="project.id">
+                    <th scope="row">{{ index }}</th>
+                    <td>{{ project.name }}</td>
+                    <td>{{ project.description }}</td>
+                    <td class="d-flex flex-nowrap">
+                        <RouterLink :to="`/projects/${project.id}/`" class="btn btn-outline-success me-2"
+                            aria-current="page" :disabled="project === null">
+                            <i class="bi bi-view-list"></i>
+                        </RouterLink>
+                        <RouterLink :to="`/projects/${project.id}/annotate/`" class="btn btn-outline-success me-2"
+                            aria-current="page" :disabled="project === null">
+                            <i class="bi bi-tag"></i>
+                        </RouterLink>
+                        <RouterLink :to="`/projects/${project.id}/stat/`" class="btn btn-outline-danger" aria-current="page"
+                            :disabled="project === null">
+                            <i class="bi bi-pencil-square"></i>
+                        </RouterLink>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="mt-auto">
+            <Pagination :pagination="pagination" @click="(page) => paginationArgs.page = page" />
+        </div>
+    </div>
 </template>

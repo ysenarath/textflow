@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-// import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
     history: createWebHistory(textflow.config.routerBasePath),
@@ -7,7 +6,6 @@ const router = createRouter({
         {
             path: '/',
             name: 'home',
-            // need not lazy load the home view - frequently used
             // component: HomeView,
             component: () => import('../views/HomeView.vue')
         },
@@ -25,6 +23,22 @@ const router = createRouter({
             component: () => import('../views/AnnotateView.vue')
         },
         {
+            path: '/projects/:projectId/tasks/create',
+            name: 'create-task',
+            component: () => import('../views/DashboardView.vue'),
+            props: route => Object.assign({
+                section: 'create-task',
+            }, route.params),
+        },
+        {
+            path: '/projects/:projectId/tasks/:taskId',
+            name: 'update-task',
+            component: () => import('../views/DashboardView.vue'),
+            props: route => Object.assign({
+                section: 'update-task',
+            }, route.params),
+        },
+        {
             path: '/projects/:projectId/:section',
             name: 'dashboard',
             component: () => import('../views/DashboardView.vue'),
@@ -34,7 +48,10 @@ const router = createRouter({
             path: '/projects/create',
             name: 'create',
             component: () => import('../views/DashboardView.vue'),
-            props: { projectId: null, section: 'create' }
+            props: route => Object.assign({
+                projectId: null,
+                section: 'create',
+            }, route.params),
         },
         {
             path: '/projects/:projectId',

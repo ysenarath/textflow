@@ -8,6 +8,7 @@ import * as bootstrap from 'bootstrap'
 import axios from 'axios'
 // import local plugins
 import errorsPlugin from './plugins/errors'
+import formsPlugin from './plugins/forms'
 
 import './assets/main.css'
 
@@ -25,5 +26,6 @@ app.provide('textflow', textflow)
 app.use(createPinia())
 app.use(router)
 app.use(errorsPlugin)
+app.use(formsPlugin)
 
 app.mount('#app')

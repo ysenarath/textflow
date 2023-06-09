@@ -13,7 +13,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from textflow.models.base import mapper_registry, ModelMixin
 
 __all__ = [
-    'Document',
+'Document',
 ]
 
 

@@ -18,3 +18,9 @@ Flask-SQLAlchemy
 sklearn-crfsuite
 Flask-WTF
 celery>=5.2.0
+
+fastapi
+uvicorn[standard]
+pydantic
+invoke
+honcho

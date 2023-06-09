@@ -947,10 +947,10 @@ def get_task(session: Session, *, project_id: int, task_id: int) -> \
     typing.Optional[Task]
         Task.
     """
-    query = session.query(Task)
-    if project_id is not None:
-        query = query.filter_by(project_id=project_id)
-    return query.get(task_id)
+    task = session.query(Task).get(task_id)
+    if task.project_id != project_id:
+        return None
+    return task
 
 
 @operation
@@ -971,6 +971,32 @@ def create_task(session: Session, *, task: Task) -> Task:
     """
     try:
         session.add(task)
+    except Exception:
+        session.rollback()
+        raise
+    else:
+        session.commit()
+    return task
+
+
+@operation
+def update_task(session: Session, *, task: Task) -> Task:
+    """Update task.
+
+    Parameters
+    ----------
+    session : Session
+        Database session.
+    task : Task
+        Task.
+
+    Returns
+    -------
+    Task
+        Task.
+    """
+    try:
+        session.merge(task)
     except Exception:
         session.rollback()
         raise
